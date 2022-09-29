@@ -78,8 +78,7 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    _logger.debug("Starting crazy calculations...")
-    _logger.info("Script ends here")
+    _logger.debug("Starting up TradingBot")
 
 
 def run():
@@ -99,6 +98,6 @@ if __name__ == "__main__":
     # After installing your project with pip, users can also run your Python
     # modules as scripts via the ``-m`` flag, as defined in PEP 338::
     #
-    #     python -m trading_bot.skeleton 42
+    #     python -m trading_bot.main
     #
     run()
