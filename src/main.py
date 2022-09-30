@@ -82,12 +82,8 @@ def main(args):
 
     _logger.info("Starting up TradingBot...")
 
-    # initialize extractors
-    accountsExtractorPs = Process(target=AccountsExtractor().run, args=())
-
     # run extractors
-    accountsExtractorPs.start()
-    accountsExtractorPs.join()
+    AccountsExtractor(_logger).run()
 
 
 def run():
