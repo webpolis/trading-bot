@@ -7,12 +7,14 @@ References:
 import argparse
 import logging
 import sys
+from multiprocessing import Process
 
-from trading_bot import __version__
+from com.cryptobot.extractors.accounts import AccountsExtractor
 
 __author__ = "Nicolas Iglesias"
 __copyright__ = "Nicolas Iglesias"
 __license__ = "MIT"
+__version__ = "0.0.1"
 
 _logger = logging.getLogger(__name__)
 
@@ -78,7 +80,14 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    _logger.debug("Starting up TradingBot")
+    _logger.info("Starting up TradingBot...")
+
+    # initialize extractors
+    accountsExtractorPs = Process(target=AccountsExtractor().run, args=())
+
+    # run extractors
+    accountsExtractorPs.start()
+    accountsExtractorPs.join()
 
 
 def run():
