@@ -7,7 +7,7 @@ References:
 import argparse
 import logging
 import sys
-from multiprocessing import Process
+import threading
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
 
@@ -82,8 +82,13 @@ def main(args):
 
     _logger.info('Starting up TradingBot...')
 
+    # init extractors
+    ae_thread = threading.Thread(name='AccountsExtractor',
+                                 daemon=True, target=AccountsExtractor(_logger).run)
+
     # run extractors
-    AccountsExtractor(_logger).run()
+    ae_thread.start()
+    ae_thread.join()
 
 
 def run():
