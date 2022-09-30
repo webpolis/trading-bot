@@ -18,7 +18,7 @@ class AccountsExtractor():
         page_number = 1
         addresses_df = pd.DataFrame()
 
-        while len(addresses_df) < 1:
+        while len(addresses_df) < 100:
             url_to_top_addresses_page_number = "https://etherscan.io/accounts/" + str(
                 page_number)
 

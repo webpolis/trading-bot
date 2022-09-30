@@ -7,4 +7,4 @@ def is_contract(address: str):
     address = Web3.toChecksumAddress(address.lower())
     code = w3.eth.get_code(address)
 
-    return code != '0x'
+    return code != b''
