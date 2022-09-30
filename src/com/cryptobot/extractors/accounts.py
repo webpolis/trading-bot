@@ -1,31 +1,35 @@
-#!/usr/bin/env python
-
-import requests
-from bs4 import BeautifulSoup
-import csv
-
-URL = "https://etherscan.io/accounts"
-resp = requests.get(URL)
-sess = requests.Session()
-soup = BeautifulSoup(sess.get(URL).text, 'html.parser')
+import pandas as pd
+from bs4 import BeautifulSoup as soup
+from selenium import webdriver
+from com.cryptobot.utils.pandas import top_addresses_table_to_df
 
 
 class AccountsExtractor():
-    def run():
-        with open('output.csv', 'wb') as f:
-            wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-            wr.writerow(map(str, "Rank Address Balance Percentage TxCount".split()))
+    def run(this):
+        page_number = 1
+        addresses_df = pd.DataFrame()
+        self.driver = webdriver.Chrome('/home/nico/dev/chromedriver')
 
-            for tr in soup.find_all('tr'):
-                tds = tr.find_all('td')
-                rows = [0] * len(tds)
-                for i in xrange(len(tds)):
-                    rows[i] = tds[i].get_text()
+        while len(addresses_df) < number_of_whales:
+            url_to_top_addresses_page_number = self.tokens[token.name].url_whales + str(
+                page_number)
+            time.sleep(3)
+            self.driver.get(url_to_top_addresses_page_number)
+            time.sleep(3)
+            soup_data = soup(self.driver.page_source, 'html.parser')
+            # self.driver.close()
+            if token.network == 'ethereum':
+                table_addresses_html = soup_data.findAll(
+                    "table", {"class": "table table-hover"})[0]
+                addresses_df = addresses_df.append(
+                    self.ethereum_getter.top_addresses_table_to_df(table_addresses_html))
+            elif token.network == 'cardano':
+                table_addresses_html = soup_data.findAll(
+                    "table", {"class": "table table-hover"})[0]
+                addresses_df = addresses_df.append(
+                    self.ethereum_getter.top_addresses_table_to_df(table_addresses_html))
+            page_number += 1
+        self.driver.close()
 
-                try:
-                    wr.writerow(rows)
-                except:
-                    # The page contains another table that we're
-                    # not worried about but which contains special
-                    # characters...
-                    pass
+        # MODIFICARLO PARA QUE TAMBIÉN TRACKEE EL MKT SHARE DE LA WHALE
+        return addresses_df
