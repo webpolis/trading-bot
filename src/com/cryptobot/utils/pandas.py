@@ -23,6 +23,6 @@ def top_addresses_table_to_df(table_html):
         balances,
         percentages,
         is_contracts)),
-        columns=["address", "balance_in_ether", "ether_share_percent", "is_contract"])
+        columns=['address', 'balance_in_ether', 'ether_share_percent', 'is_contract'])
 
     return table

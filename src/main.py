@@ -11,10 +11,10 @@ from multiprocessing import Process
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
 
-__author__ = "Nicolas Iglesias"
-__copyright__ = "Nicolas Iglesias"
-__license__ = "MIT"
-__version__ = "0.0.1"
+__author__ = 'Nicolas Iglesias'
+__copyright__ = 'Nicolas Iglesias'
+__license__ = 'MIT'
+__version__ = '0.0.1'
 
 _logger = logging.getLogger(__name__)
 
@@ -34,26 +34,26 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description="A crypto trading bot")
+    parser = argparse.ArgumentParser(description='A crypto trading bot')
     parser.add_argument(
-        "--version",
-        action="version",
-        version="trading-bot {ver}".format(ver=__version__),
+        '--version',
+        action='version',
+        version='trading-bot {ver}'.format(ver=__version__),
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
-        dest="loglevel",
-        help="set loglevel to INFO",
-        action="store_const",
+        '-v',
+        '--verbose',
+        dest='loglevel',
+        help='set loglevel to INFO',
+        action='store_const',
         const=logging.INFO,
     )
     parser.add_argument(
-        "-vv",
-        "--very-verbose",
-        dest="loglevel",
-        help="set loglevel to DEBUG",
-        action="store_const",
+        '-vv',
+        '--very-verbose',
+        dest='loglevel',
+        help='set loglevel to DEBUG',
+        action='store_const',
         const=logging.DEBUG,
     )
     return parser.parse_args(args)
@@ -65,9 +65,9 @@ def setup_logging(loglevel):
     Args:
       loglevel (int): minimum loglevel for emitting messages
     """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    logformat = '[%(asctime)s] %(levelname)s:%(name)s:%(message)s'
     logging.basicConfig(
-        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
+        level=loglevel, stream=sys.stdout, format=logformat, datefmt='%Y-%m-%d %H:%M:%S'
     )
 
 
@@ -80,7 +80,7 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    _logger.info("Starting up TradingBot...")
+    _logger.info('Starting up TradingBot...')
 
     # run extractors
     AccountsExtractor(_logger).run()
@@ -94,7 +94,7 @@ def run():
     main(sys.argv[1:])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # ^  This is a guard statement that will prevent the following code from
     #    being executed in the case someone imports this file instead of
     #    executing it as a script.
