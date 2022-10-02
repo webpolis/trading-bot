@@ -11,7 +11,7 @@ import threading
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
-from com.cryptobot.utils.logger import get_logger
+from com.cryptobot.utils.logger import PrettyLogger
 
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
@@ -70,7 +70,7 @@ def main(args):
     global _logger
 
     args = parse_args(args)
-    _logger = get_logger(__name__, args.loglevel)
+    _logger = PrettyLogger(__name__, args.loglevel)
 
     _logger.info('Starting up TradingBot...')
 

@@ -1,3 +1,4 @@
+from pprint import pformat
 from time import sleep
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.ethereum import fetch_mempool
@@ -15,7 +16,7 @@ class MempoolExtractor(Extractor):
 
             sleep(1)
 
-            self.logger.info(mempool)
+            self.logger.info(mempool, format=True)
 
     def run(self):
         self.listen()

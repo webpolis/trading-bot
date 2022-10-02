@@ -1,11 +1,11 @@
 import logging
 
-from com.cryptobot.utils.logger import get_logger
+from com.cryptobot.utils.logger import PrettyLogger
 
 
 class Extractor():
     def __init__(self, cls):
-        self.logger = get_logger(cls, logging.INFO)
+        self.logger = PrettyLogger(cls, logging.INFO)
 
         self.logger.info('Initialized.')
 
