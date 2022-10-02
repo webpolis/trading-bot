@@ -11,7 +11,7 @@ class MempoolExtractor(Extractor):
         self.whales_classifier = MempoolWhaleTXClassifier()
 
     def listen(self):
-        self.logger.info('Watching the mempool...')
+        self.logger.info('Monitoring the mempool...')
 
         while (True):
             mempool = fetch_mempool()
