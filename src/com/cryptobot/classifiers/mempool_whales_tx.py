@@ -1,4 +1,3 @@
-from lib2to3.pytree import convert
 import pandas as pd
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
 from com.cryptobot.utils.formatters import tx_parse
