@@ -1,0 +1,20 @@
+query LatestSwaps {
+  swaps(
+    orderBy: timestamp
+    orderDirection: desc
+    first: 100
+  ) {
+    sender
+    recipient
+    amount0
+    amount1
+    amountUSD
+    token0 {
+      symbol
+    }
+    token1 {
+      symbol
+    }
+    timestamp
+  }
+}
