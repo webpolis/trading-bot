@@ -1,4 +1,3 @@
-import logging
 import time
 
 import pandas as pd
@@ -7,7 +6,6 @@ from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.pandas import top_addresses_table_to_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.selenium import get_driver
-from selenium import webdriver
 
 
 class AccountsExtractor(Extractor):
@@ -19,6 +17,7 @@ class AccountsExtractor(Extractor):
         page_number = 1
         addresses_df = pd.DataFrame()
 
+        # collect the top 100 addresses
         while len(addresses_df) < 100:
             url_to_top_addresses_page_number = 'https://etherscan.io/accounts/' + str(
                 page_number)
@@ -39,11 +38,10 @@ class AccountsExtractor(Extractor):
 
             page_number += 1
 
+        # store locally just for reference
         addresses_df.to_csv(get_data_path() + 'whales.csv', index=False)
 
         self.driver.quit()
         self.driver = None
 
         self.logger.info('Accounts extraction finished.')
-
-        return addresses_df
