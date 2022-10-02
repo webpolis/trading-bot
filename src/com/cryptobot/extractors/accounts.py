@@ -4,7 +4,6 @@ import time
 import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.utils.logger import get_logger
 from com.cryptobot.utils.pandas import top_addresses_table_to_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.selenium import get_driver
