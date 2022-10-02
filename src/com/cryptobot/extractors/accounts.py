@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 from bs4 import BeautifulSoup as soup
+from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.logger import get_logger
 from com.cryptobot.utils.pandas import top_addresses_table_to_df
 from com.cryptobot.utils.path import get_data_path
@@ -10,14 +11,12 @@ from com.cryptobot.utils.selenium import get_driver
 from selenium import webdriver
 
 
-class AccountsExtractor():
+class AccountsExtractor(Extractor):
     def __init__(self):
-        self._logger = get_logger(__name__, logging.INFO)
-        self.driver = get_driver()
-
-        self._logger.info('Initialized AccountsExtractor.')
+        super().__init__(__name__)
 
     def run(self):
+        self.driver = get_driver()
         page_number = 1
         addresses_df = pd.DataFrame()
 
@@ -25,13 +24,13 @@ class AccountsExtractor():
             url_to_top_addresses_page_number = 'https://etherscan.io/accounts/' + str(
                 page_number)
 
-            self._logger.info('Browsing to ' + url_to_top_addresses_page_number)
+            self.logger.info('Browsing to ' + url_to_top_addresses_page_number)
             time.sleep(3)
 
             self.driver.get(url_to_top_addresses_page_number)
             time.sleep(3)
 
-            self._logger.info(url_to_top_addresses_page_number + ' loaded')
+            self.logger.info(url_to_top_addresses_page_number + ' loaded')
 
             soup_data = soup(self.driver.page_source, 'html.parser')
             table_addresses_html = soup_data.findAll(
@@ -46,6 +45,6 @@ class AccountsExtractor():
         self.driver.quit()
         self.driver = None
 
-        self._logger.info('Accounts extraction finished.')
+        self.logger.info('Accounts extraction finished.')
 
         return addresses_df

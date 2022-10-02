@@ -10,6 +10,7 @@ import sys
 import threading
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
+from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.utils.logger import get_logger
 
 __author__ = 'Nicolas Iglesias'
@@ -76,10 +77,15 @@ def main(args):
     # init extractors
     ae_thread = threading.Thread(name='AccountsExtractor',
                                  daemon=True, target=AccountsExtractor().run)
+    mp_thread = threading.Thread(name='MempoolExtractor',
+                                 daemon=True, target=MempoolExtractor().run)
 
     # run extractors
-    ae_thread.start()
-    ae_thread.join()
+    # ae_thread.start()
+    mp_thread.start()
+
+    # ae_thread.join()
+    mp_thread.join()
 
 
 def run():
