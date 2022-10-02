@@ -1,7 +1,5 @@
 from web3 import Web3
 
-from com.cryptobot.utils.formatters import tx_parse
-
 w3Http = Web3(Web3.HTTPProvider(
     'https://mainnet.infura.io/v3/f3dbb404662d4016b0e95237873038c4'))
 
@@ -16,6 +14,6 @@ def is_contract(address: str):
 def fetch_mempool():
     pending_block = w3Http.eth.getBlock(
         block_identifier='pending', full_transactions=True)
-    pending_transactions = [tx_parse(tx) for tx in pending_block['transactions']]
+    pending_transactions = pending_block['transactions']
 
     return pending_transactions
