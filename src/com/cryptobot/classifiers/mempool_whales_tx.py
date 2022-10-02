@@ -16,8 +16,9 @@ class MempoolWhaleTXClassifier(TXClassifier):
         # retrieve a list of big wallets (collected by com.cryptobot.extractors.AccountsExtractor)
         whales_df = pd.read_csv(get_data_path() + 'whales.csv',
                                 converters={'balance_in_ether': decimal.Decimal})
+        addresses = [str(address).lower() for address in list(whales_df.address)]
 
         return list(item for item in items if (
-            item['from'] in list(whales_df.address)
-            or item['to'] in list(whales_df.address)
+            str(item['from']).lower() in addresses
+            or str(item['to']).lower() in addresses
         ))
