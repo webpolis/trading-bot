@@ -10,13 +10,13 @@ import sys
 import threading
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
+from com.cryptobot.utils.logger import get_logger
 
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
 __license__ = 'MIT'
 __version__ = '0.0.1'
-
-_logger = logging.getLogger(__name__)
+_logger = None
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
@@ -56,19 +56,8 @@ def parse_args(args):
         action='store_const',
         const=logging.DEBUG,
     )
+
     return parser.parse_args(args)
-
-
-def setup_logging(loglevel):
-    """Setup basic logging
-
-    Args:
-      loglevel (int): minimum loglevel for emitting messages
-    """
-    logformat = '[%(asctime)s] %(levelname)s:%(name)s:%(message)s'
-    logging.basicConfig(
-        level=loglevel, stream=sys.stdout, format=logformat, datefmt='%Y-%m-%d %H:%M:%S'
-    )
 
 
 def main(args):
@@ -77,14 +66,16 @@ def main(args):
       args (List[str]): command line parameters as list of strings
           (for example  ``["--verbose", "42"]``).
     """
+    global _logger
+
     args = parse_args(args)
-    setup_logging(args.loglevel)
+    _logger = get_logger(__name__, args.loglevel)
 
     _logger.info('Starting up TradingBot...')
 
     # init extractors
     ae_thread = threading.Thread(name='AccountsExtractor',
-                                 daemon=True, target=AccountsExtractor(_logger).run)
+                                 daemon=True, target=AccountsExtractor().run)
 
     # run extractors
     ae_thread.start()
