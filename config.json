@@ -5,5 +5,10 @@
 				"http": "https://mainnet.infura.io/v3/f3dbb404662d4016b0e95237873038c4"
 			}
 		}
+	},
+	"endpoints": {
+		"coingecko": {
+			"markets": "https://api.coingecko.com/api/v3/coins/markets"
+		}
 	}
 }
