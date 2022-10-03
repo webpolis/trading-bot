@@ -1,0 +1,9 @@
+{
+	"web3": {
+		"providers": {
+			"infura": {
+				"http": "https://mainnet.infura.io/v3/f3dbb404662d4016b0e95237873038c4"
+			}
+		}
+	}
+}

@@ -1,7 +1,8 @@
 from web3 import Web3
 
-w3Http = Web3(Web3.HTTPProvider(
-    'https://mainnet.infura.io/v3/f3dbb404662d4016b0e95237873038c4'))
+from com.cryptobot.config import Config
+
+w3Http = Web3(Web3.HTTPProvider(Config().get_settings().web3.providers.infura.http))
 
 
 def is_contract(address: str):
