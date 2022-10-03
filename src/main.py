@@ -76,17 +76,21 @@ def main(args):
     _logger.info('Starting up TradingBot...')
 
     # init extractors
-    ae_thread = threading.Thread(name='AccountsExtractor',
-                                 daemon=True, target=AccountsExtractor().run)
-    mp_thread = threading.Thread(name='MempoolExtractor',
-                                 daemon=True, target=MempoolExtractor().run)
+    # ae_thread = threading.Thread(name='AccountsExtractor',
+    #                              daemon=True, target=AccountsExtractor().run)
+    mpe_thread = threading.Thread(name='MempoolExtractor',
+                                  daemon=True, target=MempoolExtractor().run)
+    te_thread = threading.Thread(name='TokensExtractor',
+                                 daemon=True, target=TokensExtractor().run)
 
     # run extractors
+    te_thread.start()
     # ae_thread.start()
-    mp_thread.start()
+    # mpe_thread.start()
 
+    te_thread.join()
     # ae_thread.join()
-    mp_thread.join()
+    # mpe_thread.join()
 
 
 def run():

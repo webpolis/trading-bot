@@ -9,6 +9,9 @@
 	"endpoints": {
 		"coingecko": {
 			"markets": "https://api.coingecko.com/api/v3/coins/markets"
-		}
+		},
+    "ftx": {
+      "markets": "https://ftx.com/api/markets"
+    }
 	}
 }
