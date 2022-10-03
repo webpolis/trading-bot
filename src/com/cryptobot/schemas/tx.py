@@ -1,7 +1,7 @@
-import json
+from com.cryptobot.schemas.schema import Schema
 
 
-class Tx():
+class Tx(Schema):
     def __init__(self, _blockNumber, _hash, _from, _to, _gas, _gasPrice, _value):
         self.blockNumber = _blockNumber
         self.hash = _hash
@@ -11,7 +11,3 @@ class Tx():
         self.gas = _gas
         self.gasPrice = _gasPrice
         self.value = _value
-
-    def __str__(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
