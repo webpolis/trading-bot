@@ -2,12 +2,12 @@ from com.cryptobot.schemas.schema import Schema
 
 
 class Tx(Schema):
-    def __init__(self, _blockNumber, _hash, _from, _to, _gas, _gasPrice, _value):
-        self.blockNumber = _blockNumber
-        self.hash = _hash
+    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value):
+        self.blockNumber = blockNumber
+        self.hash = hash
         # underscore (reserved keyword)
         self.sender = _from
-        self.receiver = _to
-        self.gas = _gas
-        self.gasPrice = _gasPrice
-        self.value = _value
+        self.receiver = to
+        self.gas = gas
+        self.gasPrice = gasPrice
+        self.value = value
