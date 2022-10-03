@@ -19,7 +19,9 @@ class MempoolExtractor(Extractor):
 
             sleep(1)
 
-            self.logger.info(mempool, format=True)
+            if len(mempool) > 0:
+                self.logger.info(
+                    f'{len(mempool)} transactions caught our attention at block #{mempool[0].blockNumber}')
 
     def run(self):
         self.listen()

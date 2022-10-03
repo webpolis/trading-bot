@@ -1,13 +1,16 @@
+import decimal
+from typing import List
+
 import pandas as pd
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
+from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.path import get_data_path
-import decimal
 
 
 class MempoolWhaleTXClassifier(TXClassifier):
     def parse(self, items):
-        items = [tx_parse(tx) for tx in items]
+        items: List[Tx] = [tx_parse(tx) for tx in items]
 
         return items
 
@@ -22,6 +25,6 @@ class MempoolWhaleTXClassifier(TXClassifier):
         addresses = [str(address).lower() for address in list(whales_df.address)]
 
         return list(item for item in items if (
-            str(item['from']).lower() in addresses
-            or str(item['to']).lower() in addresses
+            str(item.sender).lower() in addresses
+            or str(item.receiver).lower() in addresses
         ))
