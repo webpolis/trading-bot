@@ -26,3 +26,7 @@ def top_addresses_table_to_df(table_html):
         columns=['address', 'balance_in_ether', 'ether_share_percent', 'is_contract'])
 
     return table
+
+
+def merge_dict_into_df(dict1, dict2, key):
+    return pd.merge(pd.DataFrame(dict1), pd.DataFrame(dict2), on=key)
