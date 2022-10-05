@@ -11,6 +11,7 @@ class HttpRequest():
         out = None
         params = urllib.parse.urlencode(params) if params != None else None
         url = f'{url}%s' % (('?' + params) if params != None else '')
+
         req = Request(url)
 
         req.add_header(
