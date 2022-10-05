@@ -54,10 +54,11 @@ class TokensExtractor(Extractor):
         ftx_tokens = self.ftx_classifier.classify(ftx_markets)
 
         # convert and merge
+        self.logger.info('Produce tokens union list...')
         tokens = merge_dict_into_df([token.__dict__
                                     for token in coingecko_tokens], [token.__dict__
                                     for token in ftx_tokens], 'symbol')
         tokens = tokens.drop_duplicates('symbol')
 
-        self.logger.info(f'Collected {len(tokens)} tokens from Coingecko & FTX')
+        self.logger.info(f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
         self.logger.info(list(tokens.symbol))
