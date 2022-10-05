@@ -13,6 +13,8 @@ class FTXTokensClassifier(TokenClassifier):
         return [token for token in items if token['baseCurrency'] != None and token['type'] == 'spot']
 
     def parse(self, items):
+        items.sort(key=lambda item: item['volumeUsd24h'], reverse=True)
+
         tokens: List[Token] = [token_parse(
             token, TokenSource.FTX) for token in items]
 
