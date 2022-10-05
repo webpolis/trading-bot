@@ -1,5 +1,6 @@
 import re
 
+from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.schemas.tx import Tx
 
 
@@ -20,3 +21,22 @@ def tx_parse(tx):
         parsed_tx['gasPrice'],
         parsed_tx['value']
     )
+
+
+def token_parse(token, token_source: TokenSource):
+    parsed_token = None
+
+    if token_source == TokenSource.COINGECKO:
+        parsed_token = {key: token[key] for key in token.keys()
+                        & {'name', 'symbol'}}
+
+    if token_source == TokenSource.FTX:
+        parsed_token = {key: token[key] for key in token.keys()
+                        & {'name', 'baseCurrency'}}
+        parsed_token['symbol'] = parsed_token['baseCurrency']
+
+    return Token(
+        parsed_token['symbol'].upper(),
+        parsed_token['name'].upper(),
+        None
+    ) if parsed_token != None else None

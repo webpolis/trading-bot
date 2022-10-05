@@ -1,3 +1,4 @@
+import json
 import urllib.parse
 from urllib.request import Request, urlopen
 
@@ -16,4 +17,4 @@ class HttpRequest():
             'user-agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36')
         out = urlopen(req).read().decode('utf-8')
 
-        return out
+        return json.loads(out) if type(out) == str else out
