@@ -29,4 +29,4 @@ def top_addresses_table_to_df(table_html):
 
 
 def merge_dict_into_df(dict1, dict2, key):
-    return pd.merge(pd.DataFrame(dict1), pd.DataFrame(dict2), on=key)
+    return pd.merge(pd.DataFrame(dict1), pd.DataFrame(dict2), on=key, how='inner')
