@@ -28,7 +28,7 @@ def top_addresses_table_to_df(table_html):
     return table
 
 
-def merge_dict_into_df(dict1, dict2, key):
+def merge_tokens_dicts_into_df(dict1, dict2, key):
     df = pd.merge(pd.DataFrame(dict1, columns=[
                   'symbol', 'name', 'address', 'market_cap']), pd.DataFrame(dict2, columns=[
                       'symbol', 'name', 'address', 'market_cap']), on=key, how='outer')
