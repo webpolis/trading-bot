@@ -36,7 +36,6 @@ class TokensExtractor(Extractor):
                 'per_page': 250,
                 'page': page,
                 'sparkline': 'false',
-                'category': 'ethereum-ecosystem'
             }) + coingecko_markets
             page += 1
 
