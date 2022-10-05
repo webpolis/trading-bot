@@ -1,6 +1,9 @@
-from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.utils.request import HttpRequest
+from typing import List
+
 from com.cryptobot.config import Config
+from com.cryptobot.extractors.extractor import Extractor
+from com.cryptobot.schemas.token import Token
+from com.cryptobot.utils.request import HttpRequest
 
 
 class TokensExtractor(Extractor):
@@ -8,8 +11,8 @@ class TokensExtractor(Extractor):
         super().__init__(__name__)
 
         self.tokens = {
-            'ftx': [],
-            'coingecko': []
+            'ftx': List[Token],
+            'coingecko': List[Token]
         }
 
     def run(self):
