@@ -7,7 +7,8 @@ from com.cryptobot.classifiers.ftx_tokens import FTXTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token
-from com.cryptobot.utils.pandas import merge_dict_into_df
+from com.cryptobot.utils.pandas import merge_tokens_dicts_into_df
+from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 
 
@@ -55,10 +56,13 @@ class TokensExtractor(Extractor):
 
         # convert and merge
         self.logger.info('Produce tokens union list...')
-        tokens = merge_dict_into_df([token.__dict__
+        tokens = merge_tokens_dicts_into_df([token.__dict__
                                     for token in coingecko_tokens], [token.__dict__
                                     for token in ftx_tokens], 'symbol')
         tokens = tokens.drop_duplicates('symbol')
+
+        # store locally just for reference
+        tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
         self.logger.info(f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
         self.logger.info(list(tokens.symbol))
