@@ -59,7 +59,6 @@ class TokensExtractor(Extractor):
         tokens = merge_tokens_dicts_into_df([token.__dict__
                                     for token in coingecko_tokens], [token.__dict__
                                     for token in ftx_tokens], 'symbol')
-        tokens = tokens.drop_duplicates('symbol')
 
         # store locally just for reference
         tokens.to_csv(get_data_path() + 'tokens.csv', index=False)

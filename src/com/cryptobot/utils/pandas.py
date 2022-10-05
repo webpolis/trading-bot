@@ -34,7 +34,11 @@ def merge_tokens_dicts_into_df(dict1, dict2, key):
                       'symbol', 'name', 'address', 'market_cap']), on=key, how='outer')
 
     # clean up
-    df.drop_duplicates(ignore_index=True, inplace=True)
+    df.dropna(subset=['market_cap_x'], inplace=True)
+    df.drop_duplicates(subset=['symbol'], ignore_index=True, inplace=True)
     df.reset_index(drop=True, inplace=True)
+    df.drop(['name_y', 'address_y', 'market_cap_y'], axis=1, inplace=True)
+    df.rename(columns={'name_x': 'name', 'market_cap_x': 'market_cap',
+              'address_x': 'address'}, inplace=True)
 
     return df
