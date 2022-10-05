@@ -28,7 +28,7 @@ def token_parse(token, token_source: TokenSource):
 
     if token_source == TokenSource.COINGECKO:
         parsed_token = {key: token[key] for key in token.keys()
-                        & {'name', 'symbol'}}
+                        & {'name', 'symbol', 'market_cap'}}
 
     if token_source == TokenSource.FTX:
         parsed_token = {key: token[key] for key in token.keys()
@@ -38,5 +38,6 @@ def token_parse(token, token_source: TokenSource):
     return Token(
         parsed_token['symbol'].upper(),
         parsed_token['name'].upper(),
-        None
+        None,
+        parsed_token['market_cap'] if 'market_cap' in parsed_token.keys() else None
     ) if parsed_token != None else None
