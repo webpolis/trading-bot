@@ -8,8 +8,12 @@ from com.cryptobot.utils.path import get_data_path
 with open(get_data_path() + 'coingecko_coins.json') as f:
     cg_coins = json.load(f)
 
+    f.close()
+
 with open(get_data_path() + 'ftx_coins.json') as f:
     ftx_coins = json.load(f)
+
+    f.close()
 
 
 class TokenSource(Enum):
@@ -44,4 +48,3 @@ class Token(Schema):
 
                 if token != None:
                     self.address = token['erc20Contract']
-                    print(self.address)

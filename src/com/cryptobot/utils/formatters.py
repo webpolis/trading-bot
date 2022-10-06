@@ -38,6 +38,6 @@ def token_parse(token, token_source: TokenSource):
     return Token(
         parsed_token['symbol'].upper(),
         parsed_token['name'].upper(),
-        parsed_token['market_cap'] if 'market_cap' in parsed_token.keys() else None,
+        parsed_token.get('market_cap', None),
         None
     ) if parsed_token != None else None
