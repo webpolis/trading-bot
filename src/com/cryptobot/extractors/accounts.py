@@ -3,18 +3,16 @@ import time
 import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
-from com.cryptobot.extractors.extractor import Extractor
+from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
 from com.cryptobot.utils.pandas import top_addresses_table_to_df
 from com.cryptobot.utils.path import get_data_path
-from com.cryptobot.utils.selenium import get_driver
 
 
-class AccountsExtractor(Extractor):
+class AccountsExtractor(SeleniumExtractor):
     def __init__(self):
         super().__init__(__name__)
 
     def run(self):
-        self.driver = get_driver()
         page_number = 1
         addresses_df = pd.DataFrame()
 
