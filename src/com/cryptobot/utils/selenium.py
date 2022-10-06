@@ -1,5 +1,7 @@
 from selenium import webdriver
 
+from com.cryptobot.config import Config
+
 
 def get_driver():
     chrome_options = webdriver.ChromeOptions()
@@ -11,4 +13,4 @@ def get_driver():
     chrome_options.add_argument("--disable-infobars")
 
     return webdriver.Chrome(
-        '/home/nico/dev/chromedriver', chrome_options=chrome_options)
+        Config().get_settings().selenium.chromedriverPath, chrome_options=chrome_options)
