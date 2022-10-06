@@ -2,6 +2,7 @@ import time
 
 import pandas as pd
 from bs4 import BeautifulSoup as soup
+from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.pandas import top_addresses_table_to_df
 from com.cryptobot.utils.path import get_data_path
@@ -19,16 +20,16 @@ class AccountsExtractor(Extractor):
 
         # collect the top 100 addresses
         while len(addresses_df) < 100:
-            url_to_top_addresses_page_number = 'https://etherscan.io/accounts/' + str(
+            url = Config().get_settings().endpoints.etherscan.accounts + '/' + str(
                 page_number)
 
-            self.logger.info('Browsing to ' + url_to_top_addresses_page_number)
+            self.logger.info('Browsing to ' + url)
             time.sleep(3)
 
-            self.driver.get(url_to_top_addresses_page_number)
+            self.driver.get(url)
             time.sleep(3)
 
-            self.logger.info(url_to_top_addresses_page_number + ' loaded')
+            self.logger.info(url + ' loaded')
 
             soup_data = soup(self.driver.page_source, 'html.parser')
             table_addresses_html = soup_data.findAll(
@@ -39,7 +40,7 @@ class AccountsExtractor(Extractor):
             page_number += 1
 
         # store locally just for reference
-        addresses_df.to_csv(get_data_path() + 'whales.csv', index=False)
+        addresses_df.to_csv(get_data_path() + 'etherscan_accounts.csv', index=False)
 
         self.driver.quit()
         self.driver = None
