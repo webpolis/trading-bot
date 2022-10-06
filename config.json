@@ -1,4 +1,7 @@
 {
+	"selenium": {
+		"chromedriverPath": "/home/nico/dev/chromedriver"
+	},
 	"web3": {
 		"providers": {
 			"infura": {
@@ -10,9 +13,9 @@
 		"coingecko": {
 			"markets": "https://api.coingecko.com/api/v3/coins/markets"
 		},
-    "ftx": {
-      "markets": "https://ftx.com/api/markets",
+		"ftx": {
+			"markets": "https://ftx.com/api/markets",
 			"coins": "https://ftx.com/api/wallet/coins"
-    }
+		}
 	}
 }
