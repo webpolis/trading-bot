@@ -24,6 +24,6 @@ class HttpRequest():
         try:
             out = urlopen(req, timeout=5).read().decode('utf-8')
         except socket.timeout as error:
-            self.get(url, params, try_num+1)
+            return self.get(url, params, try_num+1)
 
         return json.loads(out) if type(out) == str else out
