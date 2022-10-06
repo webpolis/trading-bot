@@ -16,6 +16,9 @@
 		"ftx": {
 			"markets": "https://ftx.com/api/markets",
 			"coins": "https://ftx.com/api/wallet/coins"
+		},
+		"etherscan": {
+			"accounts": "https://etherscan.io/accounts"
 		}
 	}
 }
