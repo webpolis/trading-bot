@@ -4,7 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
-from com.cryptobot.utils.pandas import top_addresses_table_to_df
+from com.cryptobot.utils.pandas import accounts_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
 
@@ -33,7 +33,7 @@ class AccountsExtractor(SeleniumExtractor):
             table_addresses_html = soup_data.findAll(
                 'table', {'class': 'table table-hover'})[0]
             addresses_df = pd.concat([addresses_df,
-                                     top_addresses_table_to_df(table_addresses_html)])
+                                     accounts_table_to_df(table_addresses_html)])
 
             page_number += 1
 
