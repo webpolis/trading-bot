@@ -1,4 +1,12 @@
 {
+	"runtime": {
+		"extractors": {
+			"token_holders": {
+				"max_token_addresses": 100,
+				"max_holders_pages": 5
+			}
+		}
+	},
 	"selenium": {
 		"chromedriverPath": "/home/nico/dev/chromedriver"
 	},
@@ -18,7 +26,8 @@
 			"coins": "https://ftx.com/api/wallet/coins"
 		},
 		"etherscan": {
-			"accounts": "https://etherscan.io/accounts"
+			"accounts": "https://etherscan.io/accounts",
+			"token_holders": "https://etherscan.io/token/generic-tokenholders2?m=normal&a={0}&s=40424999781259550&sid=b3f9fe67a3e82db021f7ba44682f4bdf0&p={1}"
 		}
 	}
 }

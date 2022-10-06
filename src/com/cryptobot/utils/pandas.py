@@ -1,9 +1,10 @@
 import pandas as pd
+import re
 from com.cryptobot.utils.ethereum import is_contract
 from com.cryptobot.utils.formatters import format_str_as_number
 
 
-def top_addresses_table_to_df(table_html):
+def accounts_table_to_df(table_html):
     rows = table_html.find_all('tr')
     # each td is a column
     # we will use the function STRING.replace() in order to clear the data
@@ -26,6 +27,22 @@ def top_addresses_table_to_df(table_html):
         columns=['address', 'balance_in_ether', 'ether_share_percent', 'is_contract'])
 
     return table
+
+
+def convert_link_to_address(cell):
+    return re.compile(r'^.*a=([\da-z]+)$').sub('\\1', cell[1])
+
+
+def holders_table_to_df(table_html):
+    table_as_df: pd.DataFrame = pd.read_html(str(table_html), converters={
+        1: convert_link_to_address
+    }, extract_links='all')[0]
+
+    table_as_df.reindex(columns=[
+        'rank', 'address', 'qty', 'percentage', 'value', 'dummy'])
+
+    print(table_as_df)
+    raise 'err'
 
 
 def merge_tokens_dicts_into_df(dict1, dict2, key):
