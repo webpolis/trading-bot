@@ -54,18 +54,18 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
                 try:
                     table_df = holders_table_to_df(table_addresses_html)
-                except error:
+                except:
                     break
 
                 table_df['token_address'] = token_address
                 table_df['token_symbol'] = token_symbol
                 holders_df = pd.concat([holders_df, table_df])
 
-                page_number += 1
+                # store locally just for reference
+                table_df.to_csv(output_path, index=False, mode='a',
+                                header=not os.path.exists(output_path))
 
-            # store locally just for reference
-            table_df.to_csv(output_path, index=False, mode='a',
-                            header=not os.path.exists(output_path))
+                page_number += 1
 
         self.driver.quit()
         self.driver = None

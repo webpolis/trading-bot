@@ -43,12 +43,11 @@ def holders_table_to_df(table_html):
         1: convert_link_to_address,
         2: parse_number,
         3: parse_number,
-        4: parse_number,
     }, extract_links='body')[0]
 
-    table_as_df.drop(table_as_df.columns[5:], axis=1, inplace=True)
+    table_as_df.drop(table_as_df.columns[4:], axis=1, inplace=True)
 
-    table_as_df.columns = ['rank', 'address', 'qty', 'percentage', 'value']
+    table_as_df.columns = ['rank', 'address', 'qty', 'percentage']
     table_as_df.reset_index(drop=True, inplace=True)
 
     return table_as_df
