@@ -37,7 +37,7 @@ class Token(Schema):
 
             # 1st try
             if token != None:
-                self.address = token['platforms']['ethereum'] if \
+                self.address = token['platforms']['ethereum'].lower() if \
                     token['platforms'].get(
                     'ethereum', None) != None else None
 
@@ -47,4 +47,4 @@ class Token(Schema):
                               and coin.get('erc20Contract', None) != None), None)
 
                 if token != None:
-                    self.address = token['erc20Contract']
+                    self.address = token['erc20Contract'].lower()

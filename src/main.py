@@ -5,14 +5,15 @@ References:
 """
 
 import argparse
+import locale
 import logging
 import sys
 import threading
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
-from com.cryptobot.extractors.tokens import TokensExtractor
 from com.cryptobot.extractors.token_holders import TokenHoldersExtractor
+from com.cryptobot.extractors.tokens import TokensExtractor
 from com.cryptobot.utils.logger import PrettyLogger
 
 __author__ = 'Nicolas Iglesias'
@@ -20,6 +21,8 @@ __copyright__ = 'Nicolas Iglesias'
 __license__ = 'MIT'
 __version__ = '0.0.1'
 _logger = None
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
