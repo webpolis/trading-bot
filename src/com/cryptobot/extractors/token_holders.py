@@ -1,3 +1,4 @@
+import os
 import time
 
 import pandas as pd
@@ -18,18 +19,26 @@ class TokenHoldersExtractor(SeleniumExtractor):
         ).runtime.extractors.token_holders.max_holders_pages
 
     def run(self):
-        page_number = 1
-        addresses_df = pd.DataFrame()
+        output_path = get_data_path() + 'tokens_holders.csv'
+        holders_df = pd.DataFrame()
         tokens: pd.DataFrame = pd.read_csv(get_data_path() + 'tokens.csv')
-        tokens_addresses = tokens[tokens['address'].notnull()].address
+        tokens_addresses = tokens[tokens['address'].notnull()]
         tokens_addresses.reset_index(inplace=True, drop=True)
+        tokens_addresses = tokens_addresses[['symbol', 'address']]
         tokens_addresses = tokens_addresses.loc[0:self.max_token_addresses-1]
 
         self.logger.info(
             f'Selecting Top #{self.max_token_addresses} tokens\' ERC20 addresses.')
 
-        for ix, token_address in tokens_addresses.items():
+        for ix, token in tokens_addresses.iterrows():
+            page_number = 1
+            token_symbol = token['symbol']
+            token_address = token['address']
+
+            self.logger.info(f'Retrieving holders for {token_symbol} ({token_address})')
+
             while page_number <= self.max_holders_pages:
+                table_df = None
                 url = Config().get_settings().endpoints.etherscan.token_holders.format(token_address, page_number)
 
                 self.logger.info('Browsing to ' + url)
@@ -42,15 +51,23 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
                 soup_data = soup(self.driver.page_source, 'html.parser')
                 table_addresses_html = soup_data.findAll('table')[0]
-                addresses_df = pd.concat([addresses_df,
-                                          holders_table_to_df(table_addresses_html)])
+
+                try:
+                    table_df = holders_table_to_df(table_addresses_html)
+                except error:
+                    break
+
+                table_df['token_address'] = token_address
+                table_df['token_symbol'] = token_symbol
+                holders_df = pd.concat([holders_df, table_df])
 
                 page_number += 1
 
-        # store locally just for reference
-        addresses_df.to_csv(get_data_path() + 'tokens_holders.csv', index=False)
+            # store locally just for reference
+            table_df.to_csv(output_path, index=False, mode='a',
+                            header=not os.path.exists(output_path))
 
         self.driver.quit()
         self.driver = None
 
-        self.logger.info('Accounts extraction finished.')
+        self.logger.info('Tokens Holders extraction finished.')
