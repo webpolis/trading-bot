@@ -1,7 +1,10 @@
-import pandas as pd
+import locale
 import re
+
 from com.cryptobot.utils.ethereum import is_contract
 from com.cryptobot.utils.formatters import format_str_as_number
+
+import pandas as pd
 
 
 def accounts_table_to_df(table_html):
@@ -30,11 +33,11 @@ def accounts_table_to_df(table_html):
 
 
 def convert_link_to_address(cell):
-    return re.compile(r'^.*a=([\da-z]+)$').sub('\\1', cell[1])
+    return re.compile(r'^.*a=([\da-z]+)$', flags=re.IGNORECASE).sub('\\1', cell[1]).lower()
 
 
 def parse_number(cell):
-    return re.compile(r'[^\d\.\,]').sub('', cell[0])
+    return locale.atof(re.compile(r'[^\d\.]').sub('', cell[0]))
 
 
 def holders_table_to_df(table_html):
