@@ -33,16 +33,25 @@ def convert_link_to_address(cell):
     return re.compile(r'^.*a=([\da-z]+)$').sub('\\1', cell[1])
 
 
+def parse_number(cell):
+    return re.compile(r'[^\d\.\,]').sub('', cell[0])
+
+
 def holders_table_to_df(table_html):
     table_as_df: pd.DataFrame = pd.read_html(str(table_html), converters={
-        1: convert_link_to_address
-    }, extract_links='all')[0]
+        0: parse_number,
+        1: convert_link_to_address,
+        2: parse_number,
+        3: parse_number,
+        4: parse_number,
+    }, extract_links='body')[0]
 
-    table_as_df.reindex(columns=[
-        'rank', 'address', 'qty', 'percentage', 'value', 'dummy'])
+    table_as_df.drop(table_as_df.columns[5:], axis=1, inplace=True)
 
-    print(table_as_df)
-    raise 'err'
+    table_as_df.columns = ['rank', 'address', 'qty', 'percentage', 'value']
+    table_as_df.reset_index(drop=True, inplace=True)
+
+    return table_as_df
 
 
 def merge_tokens_dicts_into_df(dict1, dict2, key):
