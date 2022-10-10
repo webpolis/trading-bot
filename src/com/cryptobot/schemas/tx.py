@@ -2,6 +2,8 @@ from enum import Enum
 from com.cryptobot.schemas.schema import Schema
 from ethtx.models.objects_model import Transaction
 
+from com.cryptobot.utils.ethereum import get_contract
+
 
 class TxType(Enum):
     UNCLASSIFIED = 0
@@ -21,3 +23,14 @@ class Tx(Schema):
         self.type = type
         self.raw = raw
         self.input = input
+
+    def decode_input(self):
+        if self.input is None:
+            return None
+
+        try:
+            contract = get_contract(self.receiver)
+
+            return contract.decode_function_input(self.input)
+        except Exception as error:
+            print({'error': error})
