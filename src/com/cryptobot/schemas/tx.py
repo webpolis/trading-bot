@@ -31,6 +31,8 @@ class Tx(Schema):
         try:
             contract = get_contract(self.receiver)
 
-            return contract.decode_function_input(self.input)
+            func_obj, func_params = contract.decode_function_input(self.input)
+
+            return {'func_obj': func_obj, 'func_params': func_params}
         except Exception as error:
             print({'error': error})
