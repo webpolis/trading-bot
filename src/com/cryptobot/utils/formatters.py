@@ -21,7 +21,7 @@ def tx_parse(tx):
 
     try:
         parsed_tx = {key: tx[key] for key in tx.keys()
-                     & {'blockNumber', 'hash', 'from', 'to', 'gas', 'gasPrice', 'value'}}
+                     & {'blockNumber', 'hash', 'from', 'to', 'gas', 'gasPrice', 'value', 'input'}}
     except:
         print(tx)
 
@@ -29,12 +29,13 @@ def tx_parse(tx):
 
     return Tx(
         parsed_tx['blockNumber'],
-        parsed_tx['hash'],
+        parsed_tx['hash'].hex(),
         parsed_tx['from'],
         parsed_tx['to'],
         parsed_tx['gas'],
         parsed_tx['gasPrice'],
-        parsed_tx['value']
+        parsed_tx['value'],
+        parsed_tx['input']
     )
 
 

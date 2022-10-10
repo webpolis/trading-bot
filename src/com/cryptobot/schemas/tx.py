@@ -1,5 +1,6 @@
 from enum import Enum
 from com.cryptobot.schemas.schema import Schema
+from ethtx.models.objects_model import Transaction
 
 
 class TxType(Enum):
@@ -8,7 +9,7 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value, type=TxType.UNCLASSIFIED):
+    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value, input, type=TxType.UNCLASSIFIED, raw: Transaction = None):
         self.blockNumber = blockNumber
         self.hash = hash
         # underscore (reserved keyword)
@@ -18,3 +19,5 @@ class Tx(Schema):
         self.gasPrice = gasPrice
         self.value = value
         self.type = type
+        self.raw = raw
+        self.input = input

@@ -16,8 +16,8 @@ class MempoolExtractor(Extractor):
         self.logger.info('Monitoring the mempool...')
 
         while (True):
-            mempool_txs = fetch_mempool_txs()
-            mempool_txs = self.whales_classifier.classify(mempool_txs)
+            mempool_txs_orig = fetch_mempool_txs()
+            mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
 
             if len(mempool_txs) > 0:
                 self.logger.info(
