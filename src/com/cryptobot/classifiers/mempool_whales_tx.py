@@ -12,9 +12,9 @@ class MempoolWhaleTXClassifier(TXClassifier):
     def __init__(self):
         super()
 
-        # load up the list of big wallets collected by com.cryptobot.extractors.AccountsExtractor
-        self.tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv',
-                                converters={'balance_in_ether': decimal.Decimal})
+        # load up the list of big wallets collected by com.cryptobot.extractors.TokenHoldersExtractor
+        self.tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
+        self.whales_addresses = list(self.tokens_holders_df.address.unique())
 
     def parse(self, items):
         items: List[Tx] = [tx_parse(tx) for tx in items]
@@ -22,7 +22,7 @@ class MempoolWhaleTXClassifier(TXClassifier):
         return items
 
     def filter(self, items):
-        addresses = [str(address).lower() for address in list(self.tokens_holders_df.address)]
+        addresses = [address.lower() for address in self.whales_addresses]
 
         return list(item for item in items if (
             str(item.sender).lower() in addresses
