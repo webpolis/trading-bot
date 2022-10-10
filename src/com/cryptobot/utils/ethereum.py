@@ -1,8 +1,8 @@
 import json
-from urllib import request
 from web3 import Web3
 
 from com.cryptobot.config import Config
+from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
 w3Http = Web3(Web3.HTTPProvider(settings.web3.providers.infura.http))
@@ -30,8 +30,8 @@ def client():
 def get_contract_abi(address):
     abi_endpoint = settings.endpoints.etherscan.abis.format(
         address, settings.endpoints.etherscan.api_key)
-
-    abi = json.loads(request.get(abi_endpoint).text)
+    response = HttpRequest().get(abi_endpoint)
+    abi = json.loads(response['result'])
 
     return abi
 
