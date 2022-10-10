@@ -1,3 +1,9 @@
 class Classifier():
-  def classify(self, items):
-    pass
+    def parse(self, items):
+        return items
+
+    def filter(self, items):
+        return items
+
+    def classify(self, items):
+        return items

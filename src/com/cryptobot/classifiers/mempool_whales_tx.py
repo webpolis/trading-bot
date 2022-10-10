@@ -16,12 +16,7 @@ class MempoolWhaleTXClassifier(TXClassifier):
         self.tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
         self.whales_addresses = list(self.tokens_holders_df.address.unique())
 
-    def parse(self, items):
-        items: List[Tx] = [tx_parse(tx) for tx in items]
-
-        return items
-
-    def filter(self, items):
+    def filter(self, items: List[Tx]) -> List[Tx]:
         addresses = [address.lower() for address in self.whales_addresses]
 
         return list(item for item in items if (
