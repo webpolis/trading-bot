@@ -13,11 +13,11 @@ class MempoolWhaleTXClassifier(TXClassifier):
         super()
 
         # load up the list of big wallets collected by com.cryptobot.extractors.AccountsExtractor
-        self.etherscan_accounts_df = pd.read_csv(get_data_path() + 'etherscan_accounts.csv',
+        self.tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv',
                                 converters={'balance_in_ether': decimal.Decimal})
 
         # filter out contracts
-        self.etherscan_accounts_df = self.etherscan_accounts_df[(self.etherscan_accounts_df['is_contract'] == 0)]
+        self.tokens_holders_df = self.tokens_holders_df[(self.tokens_holders_df['is_contract'] == 0)]
 
     def parse(self, items):
         items: List[Tx] = [tx_parse(tx) for tx in items]
@@ -25,7 +25,7 @@ class MempoolWhaleTXClassifier(TXClassifier):
         return items
 
     def filter(self, items):
-        addresses = [str(address).lower() for address in list(self.etherscan_accounts_df.address)]
+        addresses = [str(address).lower() for address in list(self.tokens_holders_df.address)]
 
         return list(item for item in items if (
             str(item.sender).lower() in addresses
