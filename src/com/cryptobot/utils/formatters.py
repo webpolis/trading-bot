@@ -4,6 +4,13 @@ from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.schemas.tx import Tx
 
 
+def parse_ethereum_address(address_str: str):
+    return re.sub(r'^(0x[a-z\d]+).*$', '\\1', address_str, flags=re.IGNORECASE)
+
+def parse_stoken_symbol(address_str: str):
+    return re.sub(r'[^a-z]', '', address_str, flags=re.IGNORECASE)
+
+
 def format_str_as_number(number):
     return float(re.sub(r'[^\d\.]+', '', str(number)))
 

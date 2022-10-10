@@ -16,9 +16,6 @@ class MempoolWhaleTXClassifier(TXClassifier):
         self.tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv',
                                 converters={'balance_in_ether': decimal.Decimal})
 
-        # filter out contracts
-        self.tokens_holders_df = self.tokens_holders_df[(self.tokens_holders_df['is_contract'] == 0)]
-
     def parse(self, items):
         items: List[Tx] = [tx_parse(tx) for tx in items]
 
