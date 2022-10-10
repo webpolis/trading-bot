@@ -11,9 +11,13 @@
 		"chromedriverPath": "/home/nico/dev/chromedriver"
 	},
 	"web3": {
+		"chain_id": "mainnet",
 		"providers": {
 			"infura": {
 				"http": "https://mainnet.infura.io/v3/f3dbb404662d4016b0e95237873038c4"
+			},
+			"achivenode": {
+				"http": "https://api.archivenode.io/58db800c-c787-41c1-96d5-ed35e126eb35"
 			}
 		}
 	},
@@ -26,6 +30,8 @@
 			"coins": "https://ftx.com/api/wallet/coins"
 		},
 		"etherscan": {
+			"api": "https://api.etherscan.io/api",
+			"api_key": "VQXUYMB6T6I2E9SF67JPKP6YCYFW5P645A",
 			"accounts": "https://etherscan.io/accounts",
 			"token_holders": "https://etherscan.io/token/generic-tokenholders2?m=normal&a={0}&s=40424999781259550&sid=b3f9fe67a3e82db021f7ba44682f4bdf0&p={1}"
 		}

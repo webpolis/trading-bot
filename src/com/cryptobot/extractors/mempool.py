@@ -1,7 +1,8 @@
 from time import sleep
 from com.cryptobot.classifiers.mempool_whales_tx import MempoolWhaleTXClassifier
+from com.cryptobot.classifiers.swap_classifier import SwapClassifier
 from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.utils.ethereum import fetch_mempool
+from com.cryptobot.utils.ethereum import fetch_mempool_txs
 
 
 class MempoolExtractor(Extractor):
@@ -9,19 +10,25 @@ class MempoolExtractor(Extractor):
         super().__init__(__name__)
 
         self.whales_classifier = MempoolWhaleTXClassifier()
+        self.swap_classifier = SwapClassifier()
 
     def listen(self):
         self.logger.info('Monitoring the mempool...')
 
         while (True):
-            mempool = fetch_mempool()
-            mempool = self.whales_classifier.classify(mempool)
+            mempool_txs = fetch_mempool_txs()
+            mempool_txs = self.whales_classifier.classify(mempool_txs)
+
+            if len(mempool_txs) > 0:
+                self.logger.info(
+                    f'{len(mempool_txs)} transactions caught our attention at block #{mempool_txs[0].blockNumber}')
+
+                # classify swap transactions
+                swap_txs = self.swap_classifier.classify(mempool_txs)
+
+                # feed event system
 
             sleep(1)
-
-            if len(mempool) > 0:
-                self.logger.info(
-                    f'{len(mempool)} transactions caught our attention at block #{mempool[0].blockNumber}')
 
     def run(self):
         self.listen()
