@@ -9,6 +9,8 @@ from ethtx.models.decoded_model import (DecodedBalance, DecodedCall,
 from ethtx.models.objects_model import Block, Call, Event, Transaction
 from ethtx.models.w3_model import W3Block, W3CallTree, W3Receipt, W3Transaction
 
+from com.cryptobot.schemas.tx import Tx
+
 
 class EthTxWrapper():
     def __init__(self) -> None:
@@ -29,22 +31,33 @@ class EthTxWrapper():
         )
 
         self.ethtx = EthTx.initialize(self.ethtx_config)
+        self.web3provider = self.ethtx.providers.web3provider
 
-    def get_raw_tx(self, tx: str):
-        web3provider = self.ethtx.providers.web3provider
+    def get_raw_tx(self, tx: Tx):
+        try:
+            # read raw transaction data directly from the node
+            w3transaction: W3Transaction = self.web3provider.get_transaction(tx.hash)
 
-        # read raw transaction data directly from the node
-        w3transaction: W3Transaction = web3provider.get_transaction(tx)
-        w3receipt: W3Receipt = web3provider.get_receipt(w3transaction.hash.hex())
-        w3calls: W3CallTree = web3provider.get_calls(w3transaction.hash.hex())
+            if w3transaction != None:
+                w3receipt: W3Receipt = self.web3provider.get_receipt(
+                    w3transaction.hash.hex())
+                w3calls: W3CallTree = self.web3provider.get_calls(
+                    w3transaction.hash.hex())
 
-        return Transaction.from_raw(
-            w3transaction=w3transaction, w3receipt=w3receipt, w3calltree=w3calls
-        )
+                print(f'Successfully got raw transaction for {tx.hash}')
+
+                return Transaction.from_raw(
+                    w3transaction=w3transaction, w3receipt=w3receipt, w3calltree=w3calls
+                )
+        except Exception as error:
+            print({'error': error, 'tx': tx.hash, 'from': tx.sender,
+                  'to': tx.receiver, 'blockNumber': tx.blockNumber})
+
+            return None
 
     def get_block(self, raw_tx: Transaction):
         return Block.from_raw(
-            w3block=self.ethtx.providers.web3provider.get_block(
+            w3block=self.web3provider.get_block(
                 raw_tx.metadata.block_number),
             chain_id=self.settings.web3.chain_id,
         )
