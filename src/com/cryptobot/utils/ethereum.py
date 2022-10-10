@@ -12,7 +12,7 @@ def is_contract(address: str):
     return code != b''
 
 
-def fetch_mempool():
+def fetch_mempool_txs():
     pending_block = w3Http.eth.getBlock(
         block_identifier='pending', full_transactions=True)
     pending_transactions = pending_block['transactions']
