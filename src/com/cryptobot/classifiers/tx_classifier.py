@@ -13,9 +13,6 @@ class TXClassifier(Classifier):
         items = super().parse(items)
         txs: List[Tx] = list(map(lambda item: tx_parse(item), items))
 
-        for tx in txs:
-            print(tx.decode_input())
-
         return txs
 
     def filter(self, items: List[Tx]) -> List[Tx]:
