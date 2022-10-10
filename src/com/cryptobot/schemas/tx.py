@@ -31,6 +31,9 @@ class Tx(Schema):
         try:
             contract = get_contract(self.receiver)
 
+            if contract is None:
+                return None
+
             func_obj, func_params = contract.decode_function_input(self.input)
 
             return {'func_obj': func_obj, 'func_params': func_params}

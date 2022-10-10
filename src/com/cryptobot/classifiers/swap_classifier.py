@@ -10,5 +10,14 @@ class SwapClassifier(TXClassifier):
 
         self.ethtx = EthTxWrapper()
 
+    def parse(self, items: List[Tx]) -> List[Tx]:
+        for tx in items:
+            decoded_input = tx.decode_input()
+
+            if decoded_input != None:
+                print(decoded_input)
+
+        return super().parse(items)
+
     def filter(self, items: List[Tx]) -> List[Tx]:
         return items
