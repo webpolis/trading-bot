@@ -7,6 +7,7 @@ from com.cryptobot.schemas.tx import Tx
 def parse_ethereum_address(address_str: str):
     return re.sub(r'^(0x[a-z\d]+).*$', '\\1', address_str, flags=re.IGNORECASE)
 
+
 def parse_stoken_symbol(address_str: str):
     return re.sub(r'[^a-z]', '', address_str, flags=re.IGNORECASE)
 
@@ -16,8 +17,15 @@ def format_str_as_number(number):
 
 
 def tx_parse(tx):
-    parsed_tx = {key: tx[key] for key in tx.keys()
-                 & {'blockNumber', 'hash', 'from', 'to', 'gas', 'gasPrice', 'value'}}
+    parsed_tx = {}
+
+    try:
+        parsed_tx = {key: tx[key] for key in tx.keys()
+                     & {'blockNumber', 'hash', 'from', 'to', 'gas', 'gasPrice', 'value'}}
+    except:
+        print(tx)
+
+        return None
 
     return Tx(
         parsed_tx['blockNumber'],
