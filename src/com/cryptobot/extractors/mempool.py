@@ -35,10 +35,13 @@ class MempoolExtractor(Extractor):
                     self.logger.info(f'Detected {swaps_count} swap transactions.')
 
                     for swap in swap_txs:
-                        self.logger.info({'sender': swap.sender, 'receiver': swap.receiver,
-                                          'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
-                                          'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty,
-                                          'hash': swap.hash, 'block_number': swap.block_number})
+                        try:
+                            self.logger.info({'sender': swap.sender, 'receiver': swap.receiver,
+                                              'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
+                                              'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty,
+                                              'hash': swap.hash, 'block_number': swap.block_number})
+                        except Exception as error:
+                            print({'error': error, 'tx': swap})
 
                     # @TODO: feed event system
                 else:
