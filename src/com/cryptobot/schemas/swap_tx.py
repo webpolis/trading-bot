@@ -4,7 +4,7 @@ from com.cryptobot.schemas.tx import Tx, TxType
 class SwapTx(Tx):
     def __init__(self, tx: Tx):
         super().__init__(tx.blockNumber, tx.hash, tx.sender, tx.receiver,
-                         tx.gas, tx.gasPrice, tx.value, tx.input, TxType.SWAP, tx.raw)
+                         tx.gas, tx.gasPrice, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
 
         # handle multiple signatures
         if 'path' in self.decoded_input['func_params']:
@@ -14,8 +14,8 @@ class SwapTx(Tx):
             self.token_from_qty = self.decoded_input['func_params'][
                 'amountIn'] if 'amountIn' in self.decoded_input['func_params'] else self.value
 
-            # this needs a double check
+            # output qty's key may vary
             self.token_to_qty = self.decoded_input['func_params'][
-                'amountOut'] if 'amountOut' in self.decoded_input['func_params'] else None
+                'amountOutMin'] if 'amountOutMin' in self.decoded_input['func_params'] else None
             self.token_to_qty = self.decoded_input['func_params'][
-                'amountOutMin'] if 'amountOutMin' in self.decoded_input['func_params'] else self.token_to_qty
+                'amountOut'] if 'amountOut' in self.decoded_input['func_params'] else self.token_to_qty
