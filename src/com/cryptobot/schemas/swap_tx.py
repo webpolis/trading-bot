@@ -7,17 +7,20 @@ class SwapTx(Tx):
                          tx.gas, tx.gasPrice, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
 
         # handle multiple signatures while extracting the swap details
-        if 'path' in self.decoded_input['func_params']:
+        params = self.decoded_input['func_params']
+
+        if 'path' in params:
             # Uniswap based contract
-            self.token_from = self.decoded_input['func_params']['path'][0]
-            self.token_to = self.decoded_input['func_params']['path'][-1]
-            self.token_from_qty = self.decoded_input['func_params'][
-                'amountIn'] if 'amountIn' in self.decoded_input['func_params'] else self.value
+            self.token_from = params['path'][0]
+            self.token_to = params['path'][-1]
+            self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
 
             # output qty's key may vary
-            self.token_to_qty = self.decoded_input['func_params'][
-                'amountOutMin'] if 'amountOutMin' in self.decoded_input['func_params'] else None
-            self.token_to_qty = self.decoded_input['func_params'][
-                'amountOut'] if 'amountOut' in self.decoded_input['func_params'] else self.token_to_qty
-        #elif 'desc' in self.decoded_input['func_params']:
+            self.token_to_qty = params['amountOutMin'] if 'amountOutMin' in params else None
+            self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
+        elif 'desc' in params:
             # 1inch based contract
+            self.token_from = params['desc'][0]
+            self.token_to = params['desc'][1]
+            self.token_from_qty = params['desc'][-4]
+            self.token_to_qty = params['desc'][-3]
