@@ -29,14 +29,19 @@ class MempoolExtractor(Extractor):
 
                 # classify swap transactions
                 swap_txs: List[SwapTx] = self.swap_classifier.classify(mempool_txs)
+                swaps_count = len(swap_txs)
 
-                if len(swap_txs) > 0:
+                if swaps_count > 0:
+                    self.logger.info(f'Detected {swaps_count} swap transactions.')
+
                     for swap in swap_txs:
-                        print({'sender': swap.sender, 'receiver': swap.receiver,
-                              'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
-                               'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty, 'hash': swap.hash})
+                        self.logger.info({'sender': swap.sender, 'receiver': swap.receiver,
+                                          'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
+                                          'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty, 'hash': swap.hash})
 
                     # @TODO: feed event system
+                else:
+                    self.logger.info('No swaps detected this time.')
 
             sleep(1)
 
