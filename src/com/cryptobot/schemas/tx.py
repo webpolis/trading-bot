@@ -11,7 +11,7 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value, input, type=TxType.UNCLASSIFIED, raw: Transaction = None):
+    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value, input, decoded_input=None, type=TxType.UNCLASSIFIED, raw: Transaction = None):
         self.blockNumber = blockNumber
         self.hash = hash
         # underscore (reserved keyword)
@@ -23,7 +23,7 @@ class Tx(Schema):
         self.type = type
         self.raw = raw
         self.input = input
-        self.decoded_input = None
+        self.decoded_input = decoded_input
 
     def decode_input(self):
         if self.input is None:

@@ -31,8 +31,6 @@ class SwapClassifier(TXClassifier):
                     self.cached_txs[tx.hash] = tx
                     swap_txs.append(tx)
 
-                    print({**decoded_input, 'hash': tx.hash})
-
         return swap_txs
 
     def filter(self, items: List[SwapTx]) -> List[SwapTx]:
