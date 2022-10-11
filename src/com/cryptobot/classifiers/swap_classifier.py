@@ -18,7 +18,6 @@ class SwapClassifier(TXClassifier):
 
         for tx in items:
             if tx.hash in self.cached_txs:
-                swap_txs.append(tx)
                 continue
 
             decoded_input = tx.decode_input()
