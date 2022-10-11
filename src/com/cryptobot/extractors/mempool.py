@@ -21,11 +21,11 @@ class MempoolExtractor(Extractor):
         while (True):
             mempool_txs_orig = fetch_mempool_txs()
             mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
-            # mempool_txs = TXClassifier().classify(mempool_txs_orig) # for devs only
+            # mempool_txs = TXClassifier().classify(mempool_txs_orig)  # for devs only
 
             if len(mempool_txs) > 0:
                 self.logger.info(
-                    f'{len(mempool_txs)} transactions coming from whales caught our attention at block #{mempool_txs[0].blockNumber} and we\'ll start classifying them.')
+                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{mempool_txs[0].block_number} and we\'ll start classifying them.')
 
                 # classify swap transactions
                 swap_txs: List[SwapTx] = self.swap_classifier.classify(mempool_txs)
@@ -37,7 +37,8 @@ class MempoolExtractor(Extractor):
                     for swap in swap_txs:
                         self.logger.info({'sender': swap.sender, 'receiver': swap.receiver,
                                           'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
-                                          'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty, 'hash': swap.hash})
+                                          'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty,
+                                          'hash': swap.hash, 'block_number': swap.block_number})
 
                     # @TODO: feed event system
                 else:

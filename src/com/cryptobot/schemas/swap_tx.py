@@ -3,8 +3,8 @@ from com.cryptobot.schemas.tx import Tx, TxType
 
 class SwapTx(Tx):
     def __init__(self, tx: Tx):
-        super().__init__(tx.blockNumber, tx.hash, tx.sender, tx.receiver,
-                         tx.gas, tx.gasPrice, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
+        super().__init__(tx.block_number, tx.hash, tx.sender, tx.receiver,
+                         tx.gas, tx.gas_price, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
 
         # handle multiple signatures while extracting the swap details
         params = self.decoded_input['func_params']

@@ -11,14 +11,14 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, blockNumber, hash, _from, to, gas, gasPrice, value, input, decoded_input=None, type=TxType.UNCLASSIFIED, raw: Transaction = None):
-        self.blockNumber = blockNumber
+    def __init__(self, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, type=TxType.UNCLASSIFIED, raw: Transaction = None):
+        self.block_number = block_number
         self.hash = hash
         # underscore (reserved keyword)
         self.sender = _from
         self.receiver = to
         self.gas = gas
-        self.gasPrice = gasPrice
+        self.gas_price = gas_price
         self.value = value
         self.type = type
         self.raw = raw
