@@ -31,7 +31,7 @@ class MempoolExtractor(Extractor):
 
                 if len(swap_txs) > 0:
                     for swap in swap_txs:
-                        print(swap.__dict__)
+                        print(str(swap))
 
                     # @TODO: feed event system
 
