@@ -6,7 +6,7 @@ class SwapTx(Tx):
         super().__init__(tx.blockNumber, tx.hash, tx.sender, tx.receiver,
                          tx.gas, tx.gasPrice, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
 
-        # handle multiple signatures
+        # handle multiple signatures while extracting the swap details
         if 'path' in self.decoded_input['func_params']:
             # Uniswap based contract
             self.token_from = self.decoded_input['func_params']['path'][0]
