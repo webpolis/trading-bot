@@ -26,8 +26,8 @@ class SwapClassifier(TXClassifier):
                 if re.match(r'^swap.*$', decoded_input['func_obj'].fn_name, flags=re.IGNORECASE) is not None:
                     # evolve tx
                     tx = SwapTx(tx)
-
                     self.cached_txs[tx.hash] = tx
+
                     swap_txs.append(tx)
 
         return swap_txs
