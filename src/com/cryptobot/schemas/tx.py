@@ -23,6 +23,7 @@ class Tx(Schema):
         self.type = type
         self.raw = raw
         self.input = input
+        self.decoded_input = None
 
     def decode_input(self):
         if self.input is None:
@@ -35,7 +36,8 @@ class Tx(Schema):
                 return None
 
             func_obj, func_params = contract.decode_function_input(self.input)
+            self.decoded_input = {'func_obj': func_obj, 'func_params': func_params}
 
-            return {'func_obj': func_obj, 'func_params': func_params}
+            return self.decoded_input
         except Exception as error:
             pass
