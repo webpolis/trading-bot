@@ -29,9 +29,9 @@ def tx_parse(tx):
 
     return Tx(
         parsed_tx['blockNumber'],
-        parsed_tx['hash'].hex(),
-        parsed_tx['from'],
-        parsed_tx['to'],
+        parsed_tx['hash'].hex().lower(),
+        parsed_tx['from'].lower() if 'from' in parsed_tx else None,
+        parsed_tx['to'].lower() if 'to' in parsed_tx else None,
         parsed_tx['gas'],
         parsed_tx['gasPrice'],
         parsed_tx['value'],
