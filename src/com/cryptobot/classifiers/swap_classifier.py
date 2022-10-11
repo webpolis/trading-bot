@@ -1,6 +1,7 @@
 import re
 from typing import List
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
+from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx, TxType
 from com.cryptobot.utils.ethtx import EthTxWrapper
 
@@ -12,7 +13,7 @@ class SwapClassifier(TXClassifier):
         self.ethtx = EthTxWrapper()
         self.cached_txs = {}
 
-    def parse(self, items: List[Tx]) -> List[Tx]:
+    def parse(self, items: List[Tx]) -> List[SwapTx]:
         swap_txs = []
 
         for tx in items:
@@ -24,12 +25,15 @@ class SwapClassifier(TXClassifier):
 
             if decoded_input != None:
                 if re.match(r'^<Function swap.*$', str(decoded_input['func_obj']), flags=re.IGNORECASE) is not None:
-                    tx.type = TxType.SWAP
+                    # evolve tx
+                    tx = SwapTx(tx)
 
                     self.cached_txs[tx.hash] = tx
                     swap_txs.append(tx)
 
-        return super().parse(swap_txs)
+                    print({**decoded_input, 'hash': tx.hash})
 
-    def filter(self, items: List[Tx]) -> List[Tx]:
+        return swap_txs
+
+    def filter(self, items: List[SwapTx]) -> List[SwapTx]:
         return items
