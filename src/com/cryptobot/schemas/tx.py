@@ -38,4 +38,4 @@ class Tx(Schema):
 
             return {'func_obj': func_obj, 'func_params': func_params}
         except Exception as error:
-            print({'error': error})
+            pass

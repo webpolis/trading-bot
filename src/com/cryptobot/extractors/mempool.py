@@ -21,10 +21,13 @@ class MempoolExtractor(Extractor):
 
             if len(mempool_txs) > 0:
                 self.logger.info(
-                    f'{len(mempool_txs)} transactions coming from whale(s) caught our attention at block #{mempool_txs[0].blockNumber} and we\'ll start classifying them.')
+                    f'{len(mempool_txs)} transactions coming from whales caught our attention at block #{mempool_txs[0].blockNumber} and we\'ll start classifying them.')
 
                 # classify swap transactions
                 swap_txs = self.swap_classifier.classify(mempool_txs)
+
+                if len(swap_txs) > 0:
+                    print(swap_txs)
 
                 # feed event system
 
