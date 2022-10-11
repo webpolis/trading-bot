@@ -6,6 +6,7 @@ from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
 w3Http = Web3(Web3.HTTPProvider(settings.web3.providers.infura.http))
+cached_abis = {}
 
 
 def is_contract(address: str):
@@ -28,20 +29,25 @@ def client():
 
 
 def get_contract_abi(address):
+    address = address.lower()
+
+    if address in cached_abis and cached_abis[address] != None:
+        return cached_abis[address]
+
     abi_endpoint = settings.endpoints.etherscan.abis.format(
         address, settings.endpoints.etherscan.api_key)
     response = HttpRequest().get(abi_endpoint)
-    abi = None
+    cached_abis[address] = None
 
     if response['message'] == 'NOTOK':
         return None
 
     try:
-        abi = json.loads(response['result'])
+        cached_abis[address] = json.loads(response['result'])
     except Exception as error:
         print({'error': error, 'response': response})
 
-    return abi
+    return cached_abis[address]
 
 
 def get_contract(address):
