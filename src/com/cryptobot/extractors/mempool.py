@@ -21,6 +21,7 @@ class MempoolExtractor(Extractor):
         while (True):
             mempool_txs_orig = fetch_mempool_txs()
             mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
+            # mempool_txs = TXClassifier().classify(mempool_txs_orig) # for devs only
 
             if len(mempool_txs) > 0:
                 self.logger.info(
@@ -31,7 +32,9 @@ class MempoolExtractor(Extractor):
 
                 if len(swap_txs) > 0:
                     for swap in swap_txs:
-                        print(str(swap))
+                        print({'sender': swap.sender, 'receiver': swap.receiver,
+                              'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
+                               'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty, 'hash': swap.hash})
 
                     # @TODO: feed event system
 
