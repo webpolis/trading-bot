@@ -23,7 +23,7 @@ class SwapClassifier(TXClassifier):
             decoded_input = tx.decode_input()
 
             if decoded_input != None:
-                if re.match(r'^<Function swap.*$', str(decoded_input['func_obj']), flags=re.IGNORECASE) is not None:
+                if re.match(r'^swap.*$', decoded_input['func_obj'].fn_name, flags=re.IGNORECASE) is not None:
                     # evolve tx
                     tx = SwapTx(tx)
 
