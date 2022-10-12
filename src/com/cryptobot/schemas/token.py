@@ -22,11 +22,12 @@ class TokenSource(Enum):
 
 
 class Token(Schema):
-    def __init__(self, symbol, name, market_cap, address=None):
+    def __init__(self, symbol, name, market_cap, price_usd, address=None):
         self.symbol = symbol
         self.name = name
         self.market_cap = market_cap
         self.address = address
+        self.price_usd = price_usd
 
         if self.address is None:
             # populate ERC20 address

@@ -42,10 +42,12 @@ def tx_parse(tx):
 
 def token_parse(token, token_source: TokenSource):
     parsed_token = None
+    price_usd = None
 
     if token_source == TokenSource.COINGECKO:
         parsed_token = {key: token[key] for key in token.keys()
-                        & {'name', 'symbol', 'market_cap'}}
+                        & {'name', 'symbol', 'market_cap', 'current_price'}}
+        price_usd = parsed_token['current_price']
 
     if token_source == TokenSource.FTX:
         parsed_token = {key: token[key] for key in token.keys()
@@ -56,5 +58,6 @@ def token_parse(token, token_source: TokenSource):
         parsed_token['symbol'].upper(),
         parsed_token['name'].upper(),
         parsed_token.get('market_cap', None),
+        float(price_usd) if price_usd is not None else None,
         None
     ) if parsed_token != None else None

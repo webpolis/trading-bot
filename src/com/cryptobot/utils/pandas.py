@@ -58,15 +58,15 @@ def holders_table_to_df(table_html):
 
 def merge_tokens_dicts_into_df(dict1, dict2, key):
     df = pd.merge(pd.DataFrame(dict1, columns=[
-                  'symbol', 'name', 'address', 'market_cap']), pd.DataFrame(dict2, columns=[
-                      'symbol', 'name', 'address', 'market_cap']), on=key, how='outer')
+                  'symbol', 'name', 'address', 'market_cap', 'price_usd']), pd.DataFrame(dict2, columns=[
+                      'symbol', 'name', 'address', 'market_cap', 'price_usd']), on=key, how='outer')
 
     # clean up
     df.dropna(subset=['market_cap_x'], inplace=True)
     df.drop_duplicates(subset=['symbol'], ignore_index=True, inplace=True)
     df.reset_index(drop=True, inplace=True)
-    df.drop(['name_y', 'address_y', 'market_cap_y'], axis=1, inplace=True)
+    df.drop(['name_y', 'address_y', 'market_cap_y', 'price_usd_y'], axis=1, inplace=True)
     df.rename(columns={'name_x': 'name', 'market_cap_x': 'market_cap',
-              'address_x': 'address'}, inplace=True)
+              'address_x': 'address', 'price_usd_x': 'price_usd'}, inplace=True)
 
     return df
