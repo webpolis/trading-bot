@@ -41,7 +41,7 @@ class MempoolExtractor(Extractor):
                                               'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty,
                                               'hash': swap.hash, 'block_number': swap.block_number})
                         except Exception as error:
-                            print({'error': error, 'tx': swap})
+                            print({'error': error, 'tx': str(swap)})
 
                     # @TODO: feed event system
                 else:
