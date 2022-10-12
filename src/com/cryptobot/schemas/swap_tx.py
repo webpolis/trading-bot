@@ -24,3 +24,9 @@ class SwapTx(Tx):
             self.token_to = params['desc'][1].lower()
             self.token_from_qty = params['desc'][-4]
             self.token_to_qty = params['desc'][-3]
+        elif 'singleSwap' in params:
+            # Balancer vault based contract
+            self.token_from = params['singleSwap'][2].lower()
+            self.token_to = params['singleSwap'][3].lower()
+            self.token_from_qty = params['singleSwap'][4]
+            self.token_to_qty = params['limit']  # a minimum amount to receive
