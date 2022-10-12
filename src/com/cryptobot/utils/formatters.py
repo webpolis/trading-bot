@@ -8,7 +8,7 @@ def parse_ethereum_address(address_str: str):
     return re.sub(r'^(0x[a-z\d]+).*$', '\\1', address_str, flags=re.IGNORECASE)
 
 
-def parse_stoken_symbol(address_str: str):
+def parse_token_symbol(address_str: str):
     return re.sub(r'[^a-z]', '', address_str, flags=re.IGNORECASE)
 
 
