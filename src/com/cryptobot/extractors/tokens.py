@@ -24,12 +24,14 @@ class TokensExtractor(Extractor):
         self.ftx_classifier = FTXTokensClassifier()
 
     def run(self):
-        cg_markets_endpoint = Config().get_settings().endpoints.coingecko.markets
-        ftx_markets_endpoint = Config().get_settings().endpoints.ftx.markets
+        settings = Config().get_settings()
+        cg_markets_endpoint = settings.endpoints.coingecko.markets
+        ftx_markets_endpoint = settings.endpoints.ftx.markets
 
         while True:
-            refresh_interval = Config().get_settings().runtime.extractors.tokens.refresh_interval_secs
-            max_pages = Config().get_settings().runtime.extractors.tokens.max_pages
+            runtime_settings = Config().get_settings().runtime
+            refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
+            max_pages = runtime_settings.extractors.tokens.max_pages
 
             # fetch markets from coingecko
             coingecko_markets = []
