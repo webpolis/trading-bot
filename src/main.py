@@ -92,13 +92,13 @@ def main(args):
 
     # run extractors
     # ae_thread.start()
-    # te_thread.start()
-    # th_thread.start()
+    te_thread.start()
+    th_thread.start()
     mpe_thread.start()
 
     # ae_thread.join()
-    # te_thread.join()
-    # th_thread.join()
+    te_thread.join()
+    th_thread.join()
     mpe_thread.join()
 
 
