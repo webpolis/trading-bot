@@ -3,14 +3,16 @@ from typing import List
 from com.cryptobot.classifiers.mempool_whales_tx import MempoolWhaleTXClassifier
 from com.cryptobot.classifiers.swap_classifier import SwapClassifier
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
+from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.utils.ethereum import fetch_mempool_txs
 
 
-class MempoolExtractor(Extractor):
+class MempoolExtractor(Extractor, EventsProducerMixin):
     def __init__(self):
-        super().__init__(__name__)
+        for base_class in MempoolExtractor.__bases__:
+            base_class.__init__(self, __name__)
 
         self.whales_classifier = MempoolWhaleTXClassifier()
         self.swap_classifier = SwapClassifier()
@@ -36,14 +38,12 @@ class MempoolExtractor(Extractor):
 
                     for swap in swap_txs:
                         try:
-                            self.logger.info({'sender': swap.sender, 'receiver': swap.receiver,
-                                              'token_from': swap.token_from, 'token_from_qty': swap.token_from_qty,
-                                              'token_to': swap.token_to, 'token_to_qty': swap.token_to_qty,
-                                              'hash': swap.hash, 'block_number': swap.block_number})
+                            self.logger.info(str(swap))
+
+                            # feed event system
+                            self.publish(str(swap))
                         except Exception as error:
                             print({'error': error, 'tx': str(swap)})
-
-                    # @TODO: feed event system
                 else:
                     self.logger.info('No swaps detected this time.')
 
