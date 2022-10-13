@@ -1,5 +1,10 @@
 {
 	"runtime": {
+		"utils": {
+			"request": {
+				"max_tries": 5
+			}
+		},
 		"extractors": {
 			"token_holders": {
 				"max_token_addresses": 100,

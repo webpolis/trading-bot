@@ -2,22 +2,21 @@ import json
 import socket
 import urllib.parse
 from urllib.request import Request, urlopen
+from com.cryptobot.config import Config
 
 
 class HttpRequest():
     def __init__(self) -> None:
-        pass
+        self.max_tries = Config().get_settings().runtime.utils.request.max_tries
 
     def get(self, url, params: dict = None, try_num=1):
-        if try_num > 3:
+        if try_num > self.max_tries:
             return None
-
-        if try_num > 1:
-            print(params)
 
         out = None
         params_encoded = urllib.parse.urlencode(params) if params != None else None
-        url_encoded = f'{url}%s' % (('?' + params_encoded) if params_encoded != None else '')
+        url_encoded = f'{url}%s' % (('?' + params_encoded)
+                                    if params_encoded != None else '')
         req = Request(url_encoded)
 
         req.add_header(
