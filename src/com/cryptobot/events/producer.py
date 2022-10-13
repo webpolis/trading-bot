@@ -17,10 +17,13 @@ class EventsProducerMixin():
         self.ns = EventsProducerMixin.__name__
 
         self.rsmq_producer = RedisSMQ(qname=self.queue, host=self.host,
-                             port=self.port, ns=self.ns, vt=self.vt,
-                             delay=self.delay, trace=self.trace)
+                                      port=self.port, ns=self.ns, vt=self.vt,
+                                      delay=self.delay, trace=self.trace)
 
-        self.rsmq_producer.createQueue(qname=self.queue, quiet=True).exceptions(False).execute()
+        self.rsmq_producer.deleteQueue(qname=self.queue, quiet=True).exceptions(
+            False).execute()
+        self.rsmq_producer.createQueue(
+            qname=self.queue, quiet=True).exceptions(False).execute()
 
         self._logger.info(f'Created queue {self.queue}')
 
