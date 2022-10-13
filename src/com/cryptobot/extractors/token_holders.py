@@ -24,6 +24,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
             output_path = get_data_path() + 'tokens_holders.csv'
 
             # truncate
+            initial = True
             f = open(output_path, 'a')
             f.truncate(0)
             f.close()
@@ -73,7 +74,8 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
                     # store locally just for reference
                     table_df.to_csv(output_path, index=False, mode='a',
-                                    header=not os.path.exists(output_path))
+                                    header=initial)
+                    initial = False
 
                     page_number += 1
 
