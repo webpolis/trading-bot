@@ -23,7 +23,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
     def process(self, message=None, id=None, rc=None, ts=None):
         self.logger.info(f"Processing {len(message['item'])} transactions...")
 
-        swap_txs = self.parse(
+        swap_txs = self.classify(
             list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item'])))
 
         self.logger.info(f'Found {len(swap_txs)} swap transaction(s) this time.')
