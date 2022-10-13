@@ -5,6 +5,11 @@
 				"max_token_addresses": 100,
 				"max_holders_pages": 5
 			}
+		},
+		"modifiers": {
+			"tokens_price": {
+				"refresh_interval_secs": 30
+			}
 		}
 	},
 	"selenium": {
@@ -23,7 +28,8 @@
 	},
 	"endpoints": {
 		"coingecko": {
-			"markets": "https://api.coingecko.com/api/v3/coins/markets"
+			"markets": "https://api.coingecko.com/api/v3/coins/markets",
+			"price": "https://api.coingecko.com/api/v3/simple/price"
 		},
 		"ftx": {
 			"markets": "https://ftx.com/api/markets",

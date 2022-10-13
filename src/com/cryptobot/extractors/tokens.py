@@ -24,44 +24,50 @@ class TokensExtractor(Extractor):
         self.ftx_classifier = FTXTokensClassifier()
 
     def run(self):
-        # fetch markets from coingecko
-        coingecko_markets = []
-        page = 1
+        refresh_interval = Config().get_settings().runtime.modifiers.tokens_price.refresh_interval_secs
 
-        while page < 10:
-            self.logger.info(f'Collecting markets from Coingecko (page #{page})')
+        while True:
+            # fetch markets from coingecko
+            coingecko_markets = []
+            page = 1
 
-            coingecko_markets = HttpRequest().get(Config().get_settings().endpoints.coingecko.markets, {
-                'vs_currency': 'usd',
-                'order': 'market_cap_desc,volume_desc',
-                'per_page': 250,
-                'page': page,
-                'sparkline': 'false',
-            }) + coingecko_markets
-            page += 1
+            while page < 10:
+                self.logger.info(f'Collecting markets from Coingecko (page #{page})')
 
-            self.logger.info(f'{len(coingecko_markets)} markets collected so far')
+                coingecko_markets = HttpRequest().get(Config().get_settings().endpoints.coingecko.markets, {
+                    'vs_currency': 'usd',
+                    'order': 'market_cap_desc,volume_desc',
+                    'per_page': 250,
+                    'page': page,
+                    'sparkline': 'false',
+                }) + coingecko_markets
+                page += 1
 
-            sleep(1)
+                self.logger.info(f'{len(coingecko_markets)} markets collected so far')
 
-        coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
+                sleep(1)
 
-        # fetch markets from FTX
-        self.logger.info(f'Collecting markets from FTX')
-        ftx_markets = HttpRequest().get(Config().get_settings().endpoints.ftx.markets)
-        ftx_markets = ftx_markets['result']
+            coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
 
-        self.logger.info(f'{len(ftx_markets)} markets collected so far')
-        ftx_tokens = self.ftx_classifier.classify(ftx_markets)
+            # fetch markets from FTX
+            self.logger.info(f'Collecting markets from FTX')
+            ftx_markets = HttpRequest().get(Config().get_settings().endpoints.ftx.markets)
+            ftx_markets = ftx_markets['result']
 
-        # convert and merge
-        self.logger.info('Produce tokens union list...')
-        tokens = merge_tokens_dicts_into_df([token.__dict__
-                                    for token in coingecko_tokens], [token.__dict__
-                                    for token in ftx_tokens], 'symbol')
+            self.logger.info(f'{len(ftx_markets)} markets collected so far')
+            ftx_tokens = self.ftx_classifier.classify(ftx_markets)
 
-        # store locally just for reference
-        tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
+            # convert and merge
+            self.logger.info('Produce tokens union list...')
+            tokens = merge_tokens_dicts_into_df([token.__dict__
+                                                 for token in coingecko_tokens], [token.__dict__
+                                                                                  for token in ftx_tokens], 'symbol')
 
-        self.logger.info(f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
-        self.logger.info(list(tokens.symbol))
+            # store locally just for reference
+            tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
+
+            self.logger.info(
+                f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
+            self.logger.info(list(tokens.symbol))
+
+            sleep(refresh_interval)
