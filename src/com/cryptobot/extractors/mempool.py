@@ -36,7 +36,8 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                 current_block = mempool_txs[0].block_number
 
                 self.logger.info(
-                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{current_block} and we\'ll start classifying them.')
+                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at \
+                        block #{current_block} and we\'ll start classifying them.')
 
                 self.publish(list(map(lambda tx: str(tx), mempool_txs)))
 
