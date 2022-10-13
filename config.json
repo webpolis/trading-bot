@@ -3,6 +3,9 @@
 		"utils": {
 			"request": {
 				"max_tries": 5
+			},
+			"selenium": {
+				"max_tries": 5
 			}
 		},
 		"extractors": {
