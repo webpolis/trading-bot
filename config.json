@@ -8,7 +8,8 @@
 		"extractors": {
 			"token_holders": {
 				"max_token_addresses": 100,
-				"max_holders_pages": 5
+				"max_holders_pages": 5,
+				"refresh_interval_secs": 86400
 			},
 			"tokens": {
 				"refresh_interval_secs": 30,
