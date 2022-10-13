@@ -7,7 +7,7 @@ from com.cryptobot.utils.formatters import token_parse
 
 class FTXTokensClassifier(TokenClassifier):
     def __init__(self):
-        super()
+        super().__init__()
 
     def filter(self, items):
         return [token for token in items if token['baseCurrency'] != None and token['type'] == 'spot']
