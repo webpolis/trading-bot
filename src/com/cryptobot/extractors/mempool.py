@@ -14,13 +14,18 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         for base_class in MempoolExtractor.__bases__:
             base_class.__init__(self, __name__)
 
+        self.cached_txs = {}
         self.whales_classifier = MempoolWhaleTXClassifier()
-        self.swap_classifier = SwapClassifier()
+        self.swap_classifier_1 = SwapClassifier(self.cached_txs)
+        self.swap_classifier_2 = SwapClassifier(self.cached_txs)
+        self.swap_classifier_3 = SwapClassifier(self.cached_txs)
 
     def listen(self):
         self.logger.info('Monitoring the mempool...')
 
-        self.swap_classifier.consume()
+        self.swap_classifier_1.consume()
+        self.swap_classifier_2.consume()
+        self.swap_classifier_3.consume()
 
         while (True):
             mempool_txs_orig = fetch_mempool_txs()
@@ -28,8 +33,10 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
             # mempool_txs = TXClassifier().classify(mempool_txs_orig)  # for devs only
 
             if len(mempool_txs) > 0:
+                current_block = mempool_txs[0].block_number
+
                 self.logger.info(
-                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{mempool_txs[0].block_number} and we\'ll start classifying them.')
+                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{current_block} and we\'ll start classifying them.')
 
                 self.publish(list(map(lambda tx: str(tx), mempool_txs)))
 

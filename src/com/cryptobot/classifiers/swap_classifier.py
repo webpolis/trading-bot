@@ -10,7 +10,7 @@ from com.cryptobot.utils.ethtx import EthTxWrapper
 
 
 class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
-    def __init__(self):
+    def __init__(self, cached_txs={}):
         for base_class in SwapClassifier.__bases__:
             if base_class == EventsConsumerMixin:
                 base_class.__init__(self, 'com.cryptobot.extractors.mempool')
@@ -18,13 +18,13 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
                 base_class.__init__(self, __name__)
 
         self.ethtx = EthTxWrapper()
-        self.cached_txs = {}
+        self.cached_txs = cached_txs
 
     def process(self, message=None, id=None, rc=None, ts=None):
         self.logger.info(f"Processing {len(message['item'])} transactions...")
 
-        swap_txs = self.classify(
-            list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item'])))
+        txs = list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item']))
+        swap_txs = self.classify(txs)
 
         self.logger.info(f'Found {len(swap_txs)} swap transaction(s) this time.')
 
@@ -36,6 +36,8 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         for tx in items:
             if tx.hash in self.cached_txs:
                 continue
+            else:
+                self.cached_txs[tx.hash] = True
 
             decoded_input = tx.decode_input()
 
@@ -43,8 +45,6 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
                 if re.match(r'^swap.*$', decoded_input['func_obj'].fn_name, flags=re.IGNORECASE) is not None:
                     # evolve tx
                     tx = SwapTx(tx)
-                    self.cached_txs[tx.hash] = tx
-
                     swap_txs.append(tx)
 
         return swap_txs
