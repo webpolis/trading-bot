@@ -22,9 +22,10 @@ class TokensExtractor(Extractor):
         }
         self.coingecko_classifier = CoingeckoTokensClassifier()
         self.ftx_classifier = FTXTokensClassifier()
+        self.settings = Config().get_settings().runtime.extractors.tokens
 
     def run(self):
-        refresh_interval = Config().get_settings().runtime.modifiers.tokens_price.refresh_interval_secs
+        refresh_interval = self.settings.refresh_interval_secs
 
         while True:
             # fetch markets from coingecko
@@ -68,6 +69,7 @@ class TokensExtractor(Extractor):
 
             self.logger.info(
                 f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
-            self.logger.info(list(tokens.symbol))
+            
+            self.logger.info(f'Sleeping for {refresh_interval} seconds.')
 
             sleep(refresh_interval)
