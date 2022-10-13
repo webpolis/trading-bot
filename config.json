@@ -9,13 +9,12 @@
 			"token_holders": {
 				"max_token_addresses": 100,
 				"max_holders_pages": 5
-			}
-		},
-		"modifiers": {
-			"tokens_price": {
+			},
+			"tokens": {
 				"refresh_interval_secs": 30
 			}
-		}
+		},
+		"modifiers": {}
 	},
 	"selenium": {
 		"chromedriverPath": "/home/nico/dev/chromedriver"
