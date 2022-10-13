@@ -53,8 +53,18 @@ class TokenHoldersExtractor(SeleniumExtractor):
                     self.logger.info('Browsing to ' + url)
                     time.sleep(3)
 
-                    self.driver.get(url)
-                    time.sleep(3)
+                    num_try = 1
+
+                    while num_try <= Config().get_settings().runtime.utils.selenium.max_tries:
+                        try:
+                            self.driver.get(url)
+                            break
+                        except Exception as error:
+                            self.logger.error(error)
+
+                            num_try += 1
+                        finally:
+                            time.sleep(3)
 
                     self.logger.info(url + ' loaded')
 
