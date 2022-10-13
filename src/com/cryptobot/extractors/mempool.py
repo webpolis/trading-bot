@@ -20,6 +20,8 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
     def listen(self):
         self.logger.info('Monitoring the mempool...')
 
+        self.swap_classifier.consume()
+
         while (True):
             mempool_txs_orig = fetch_mempool_txs()
             mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
@@ -29,23 +31,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                 self.logger.info(
                     f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{mempool_txs[0].block_number} and we\'ll start classifying them.')
 
-                # classify swap transactions
-                swap_txs: List[SwapTx] = self.swap_classifier.classify(mempool_txs)
-                swaps_count = len(swap_txs)
-
-                if swaps_count > 0:
-                    self.logger.info(f'Detected {swaps_count} swap transactions.')
-
-                    for swap in swap_txs:
-                        try:
-                            self.logger.info(str(swap))
-
-                            # feed event system
-                            self.publish(str(swap))
-                        except Exception as error:
-                            print({'error': error, 'tx': str(swap)})
-                else:
-                    self.logger.info('No swaps detected this time.')
+                self.publish(list(map(lambda tx: str(tx), mempool_txs)))
 
             sleep(1)
 

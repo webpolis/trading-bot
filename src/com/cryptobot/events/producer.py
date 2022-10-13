@@ -14,25 +14,26 @@ class EventsProducerMixin():
         self.trace = True
         self.vt = 30
         self.delay = 0
-        self.ns = __name__
+        self.ns = EventsProducerMixin.__name__
 
-        self.rsmq = RedisSMQ(qname=self.queue, host=self.host,
+        self.rsmq_producer = RedisSMQ(qname=self.queue, host=self.host,
                              port=self.port, ns=self.ns, vt=self.vt,
                              delay=self.delay, trace=self.trace)
 
-        self.rsmq.createQueue(qname=self.queue, quiet=True).exceptions(False).execute()
+        self.rsmq_producer.createQueue(qname=self.queue, quiet=True).exceptions(False).execute()
 
         self._logger.info(f'Created queue {self.queue}')
 
-    def publish(self, msg=None):
+    def publish(self, msg=None, debug=False):
         if msg is None:
             return
 
-        msg_id = self.rsmq.sendMessage(message={
+        msg_id = self.rsmq_producer.sendMessage(message={
             'item': msg,
             'ts': time.time()
         }, encode=True).execute()
 
-        self.logger.info(f'Published new msg #{msg_id}')
+        if debug:
+            self.logger.info(f'Published new msg #{msg_id}')
 
         return msg_id

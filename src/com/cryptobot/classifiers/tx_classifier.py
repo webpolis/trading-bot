@@ -6,6 +6,9 @@ from com.cryptobot.utils.formatters import tx_parse
 
 
 class TXClassifier(Classifier):
+    def __init__(self, cls=__name__):
+        super().__init__(cls)
+
     def parse(self, items) -> List[Tx]:
         if (len(items) > 0 and type(items[0]) == Tx):
             return items
