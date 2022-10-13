@@ -12,10 +12,13 @@ class HttpRequest():
         if try_num > 3:
             return None
 
+        if try_num > 1:
+            print(params)
+
         out = None
-        params = urllib.parse.urlencode(params) if params != None else None
-        url = f'{url}%s' % (('?' + params) if params != None else '')
-        req = Request(url)
+        params_encoded = urllib.parse.urlencode(params) if params != None else None
+        url_encoded = f'{url}%s' % (('?' + params_encoded) if params_encoded != None else '')
+        req = Request(url_encoded)
 
         req.add_header(
             'user-agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36')
