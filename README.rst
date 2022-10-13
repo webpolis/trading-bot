@@ -6,6 +6,12 @@ trading-bot
     A cryptocurrency bot that emits signals when whales buy/sell tokens.
 
 
+Requirements
+============
+
+* Python >=3.10
+* redis
+
 Note
 ====
 

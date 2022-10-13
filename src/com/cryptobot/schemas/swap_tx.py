@@ -30,3 +30,9 @@ class SwapTx(Tx):
             self.token_to = params['singleSwap'][3].lower()
             self.token_from_qty = params['singleSwap'][4]
             self.token_to_qty = params['limit']  # a minimum amount to receive
+
+    def __str__(self):
+        return str({'sender': self.sender, 'receiver': self.receiver,
+                    'token_from': self.token_from, 'token_from_qty': self.token_from_qty,
+                    'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
+                    'hash': self.hash, 'block_number': self.block_number})
