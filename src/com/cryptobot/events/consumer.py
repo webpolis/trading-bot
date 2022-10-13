@@ -1,5 +1,4 @@
 import logging
-from threading import Thread
 
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.utils.logger import PrettyLogger
