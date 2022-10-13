@@ -8,7 +8,7 @@ from com.cryptobot.utils.ethtx import EthTxWrapper
 
 class SwapClassifier(TXClassifier):
     def __init__(self):
-        super()
+        super().__init__()
 
         self.ethtx = EthTxWrapper()
         self.cached_txs = {}
