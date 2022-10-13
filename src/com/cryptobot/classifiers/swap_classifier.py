@@ -7,10 +7,11 @@ from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.ethtx import EthTxWrapper
+from com.cryptobot.utils.tx_queue import TXQueue
 
 
 class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
-    def __init__(self, cached_txs={}):
+    def __init__(self, cached_txs: TXQueue):
         for base_class in SwapClassifier.__bases__:
             if base_class == EventsConsumerMixin:
                 base_class.__init__(self, 'com.cryptobot.extractors.mempool')
@@ -34,10 +35,10 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         swap_txs = []
 
         for tx in items:
-            if tx.hash in self.cached_txs:
+            if self.cached_txs.has_tx(tx):
                 continue
             else:
-                self.cached_txs[tx.hash] = True
+                self.cached_txs.add_tx(tx)
 
             decoded_input = tx.decode_input()
 
