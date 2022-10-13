@@ -6,11 +6,10 @@ from com.cryptobot.config import Config
 
 
 class HttpRequest():
-    def __init__(self) -> None:
-        self.max_tries = Config().get_settings().runtime.utils.request.max_tries
-
     def get(self, url, params: dict = None, try_num=1):
-        if try_num > self.max_tries:
+        max_tries = Config().get_settings().runtime.utils.request.max_tries
+
+        if try_num > max_tries:
             return None
 
         out = None
