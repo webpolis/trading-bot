@@ -20,6 +20,12 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
     def run(self):
         output_path = get_data_path() + 'tokens_holders.csv'
+
+        # truncate
+        f = open(output_path, 'a')
+        f.truncate(0)
+        f.close()
+
         holders_df = pd.DataFrame()
         tokens: pd.DataFrame = pd.read_csv(get_data_path() + 'tokens.csv')
         tokens_addresses = tokens[tokens['address'].notnull()]
