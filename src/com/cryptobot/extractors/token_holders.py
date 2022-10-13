@@ -16,9 +16,9 @@ class TokenHoldersExtractor(SeleniumExtractor):
     def run(self):
         while True:
             runtime_settings = Config().get_settings().runtime
-            refresh_interval = runtime_settings.runtime.extractors.token_holders.refresh_interval_secs
-            max_token_addresses = runtime_settings.runtime.extractors.token_holders.max_token_addresses
-            max_holders_pages = runtime_settings.runtime.extractors.token_holders.max_holders_pages
+            refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
+            max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
+            max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
             output_path = get_data_path() + 'tokens_holders.csv'
 
             # truncate
@@ -33,7 +33,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
             tokens_addresses.reset_index(inplace=True, drop=True)
             tokens_addresses = tokens_addresses[['symbol', 'address']]
             tokens_addresses = tokens_addresses.loc[0:max_token_addresses-1]
-            token_holders_endpoint = runtime_settings.endpoints.etherscan.token_holders
+            token_holders_endpoint = Config().get_settings().endpoints.etherscan.token_holders
 
             self.logger.info(
                 f'Selecting Top #{max_token_addresses} tokens\' ERC20 addresses.')
