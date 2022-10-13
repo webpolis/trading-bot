@@ -17,3 +17,6 @@ class PrettyLogger():
             self.logger.info('\n%s', pformat(msg, indent=1, width=1))
         else:
             self.logger.info(msg)
+
+    def error(self, msg, format=False):
+        self.logger.error(msg)
