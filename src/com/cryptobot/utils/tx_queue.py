@@ -13,6 +13,9 @@ class TXQueue():
     def count(self):
         return self.counter
 
+    def has_tx(self, tx: Tx):
+        return tx.hash in self.entry_finder
+
     def add_tx(self, tx: Tx, priority=0):
         'Add a new tx or update the priority of an existing tx'
         if tx.hash in self.entry_finder:

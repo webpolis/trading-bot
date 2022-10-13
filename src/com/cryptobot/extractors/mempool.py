@@ -5,8 +5,8 @@ from com.cryptobot.classifiers.swap_classifier import SwapClassifier
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.utils.ethereum import fetch_mempool_txs
+from com.cryptobot.utils.tx_queue import TXQueue
 
 
 class MempoolExtractor(Extractor, EventsProducerMixin):
@@ -14,7 +14,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         for base_class in MempoolExtractor.__bases__:
             base_class.__init__(self, __name__)
 
-        self.cached_txs = {}
+        self.cached_txs = TXQueue()
         self.whales_classifier = MempoolWhaleTXClassifier()
         self.swap_classifier_1 = SwapClassifier(self.cached_txs)
         self.swap_classifier_2 = SwapClassifier(self.cached_txs)
