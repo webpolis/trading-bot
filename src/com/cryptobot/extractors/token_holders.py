@@ -13,12 +13,11 @@ class TokenHoldersExtractor(SeleniumExtractor):
     def __init__(self):
         super().__init__(__name__)
 
-        self.max_token_addresses = Config().get_settings(
-        ).runtime.extractors.token_holders.max_token_addresses
-        self.max_holders_pages = Config().get_settings(
-        ).runtime.extractors.token_holders.max_holders_pages
-
     def run(self):
+        max_token_addresses = Config().get_settings(
+        ).runtime.extractors.token_holders.max_token_addresses
+        max_holders_pages = Config().get_settings(
+        ).runtime.extractors.token_holders.max_holders_pages
         output_path = get_data_path() + 'tokens_holders.csv'
 
         # truncate
@@ -31,10 +30,11 @@ class TokenHoldersExtractor(SeleniumExtractor):
         tokens_addresses = tokens[tokens['address'].notnull()]
         tokens_addresses.reset_index(inplace=True, drop=True)
         tokens_addresses = tokens_addresses[['symbol', 'address']]
-        tokens_addresses = tokens_addresses.loc[0:self.max_token_addresses-1]
+        tokens_addresses = tokens_addresses.loc[0:max_token_addresses-1]
+        token_holders_endpoint = Config().get_settings().endpoints.etherscan.token_holders
 
         self.logger.info(
-            f'Selecting Top #{self.max_token_addresses} tokens\' ERC20 addresses.')
+            f'Selecting Top #{max_token_addresses} tokens\' ERC20 addresses.')
 
         for ix, token in tokens_addresses.iterrows():
             page_number = 1
@@ -43,9 +43,9 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
             self.logger.info(f'Retrieving holders for {token_symbol} ({token_address})')
 
-            while page_number <= self.max_holders_pages:
+            while page_number <= max_holders_pages:
                 table_df = None
-                url = Config().get_settings().endpoints.etherscan.token_holders.format(token_address, page_number)
+                url = token_holders_endpoint.format(token_address, page_number)
 
                 self.logger.info('Browsing to ' + url)
                 time.sleep(3)

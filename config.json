@@ -11,7 +11,8 @@
 				"max_holders_pages": 5
 			},
 			"tokens": {
-				"refresh_interval_secs": 30
+				"refresh_interval_secs": 30,
+				"max_pages": 10
 			}
 		},
 		"modifiers": {}

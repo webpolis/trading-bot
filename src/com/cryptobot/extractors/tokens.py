@@ -22,20 +22,23 @@ class TokensExtractor(Extractor):
         }
         self.coingecko_classifier = CoingeckoTokensClassifier()
         self.ftx_classifier = FTXTokensClassifier()
-        self.settings = Config().get_settings().runtime.extractors.tokens
 
     def run(self):
-        refresh_interval = self.settings.refresh_interval_secs
+        cg_markets_endpoint = Config().get_settings().endpoints.coingecko.markets
+        ftx_markets_endpoint = Config().get_settings().endpoints.ftx.markets
 
         while True:
+            refresh_interval = Config().get_settings().runtime.extractors.tokens.refresh_interval_secs
+            max_pages = Config().get_settings().runtime.extractors.tokens.max_pages
+
             # fetch markets from coingecko
             coingecko_markets = []
             page = 1
 
-            while page < 10:
+            while page < max_pages:
                 self.logger.info(f'Collecting markets from Coingecko (page #{page})')
 
-                coingecko_markets = HttpRequest().get(Config().get_settings().endpoints.coingecko.markets, {
+                coingecko_markets = HttpRequest().get(cg_markets_endpoint, {
                     'vs_currency': 'usd',
                     'order': 'market_cap_desc,volume_desc',
                     'per_page': 250,
@@ -52,7 +55,7 @@ class TokensExtractor(Extractor):
 
             # fetch markets from FTX
             self.logger.info(f'Collecting markets from FTX')
-            ftx_markets = HttpRequest().get(Config().get_settings().endpoints.ftx.markets)
+            ftx_markets = HttpRequest().get(ftx_markets_endpoint)
             ftx_markets = ftx_markets['result']
 
             self.logger.info(f'{len(ftx_markets)} markets collected so far')
@@ -69,7 +72,7 @@ class TokensExtractor(Extractor):
 
             self.logger.info(
                 f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
-            
+
             self.logger.info(f'Sleeping for {refresh_interval} seconds.')
 
             sleep(refresh_interval)
