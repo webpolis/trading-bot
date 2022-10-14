@@ -14,7 +14,9 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
     def __init__(self, cached_txs: TXQueue):
         for base_class in SwapClassifier.__bases__:
             if base_class == EventsConsumerMixin:
-                base_class.__init__(self, 'com.cryptobot.extractors.mempool')
+                base_class.__init__(self, TXClassifier.__name__)
+            elif base_class == EventsProducerMixin:
+                base_class.__init__(self, SwapClassifier.__name__)
             else:
                 base_class.__init__(self, __name__)
 
@@ -31,7 +33,9 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
 
         if swap_count > 0:
-            self.logger.info([str(swap) for swap in swap_txs])
+            encoded_swaps = [str(swap) for swap in swap_txs]
+
+            self.publish(encoded_swaps)
 
         return True
 

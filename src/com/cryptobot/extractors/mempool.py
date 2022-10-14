@@ -1,4 +1,5 @@
 from time import sleep
+from tkinter import E
 from typing import List
 
 from com.cryptobot.classifiers.mempool_whales_tx import \
@@ -15,7 +16,10 @@ from com.cryptobot.utils.tx_queue import TXQueue
 class MempoolExtractor(Extractor, EventsProducerMixin):
     def __init__(self):
         for base_class in MempoolExtractor.__bases__:
-            base_class.__init__(self, __name__)
+            if base_class == EventsProducerMixin:
+                base_class.__init__(self, TXClassifier.__name__)
+            else:
+                base_class.__init__(self, __name__)
 
         self.cached_txs = TXQueue()
         self.whales_classifier = MempoolWhaleTXClassifier()
