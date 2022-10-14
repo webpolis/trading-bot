@@ -6,6 +6,10 @@
 			},
 			"selenium": {
 				"max_tries": 5
+			},
+			"pandas": {
+				"tokens_df_refresh_interval": 60,
+				"tokens_holders_df_refresh_interval": 60
 			}
 		},
 		"extractors": {
