@@ -120,21 +120,25 @@ def get_whale_details(address: str):
     whale = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
 
     del whale['percentage']
+    del tokens['address']
 
     whale_tokens = tokens.copy()[tokens['symbol'].isin(list(whale['token_symbol']))]
     whale.reset_index(drop=True, inplace=True)
     whale_tokens.reset_index(drop=True, inplace=True)
 
-    whale.loc[:, ('token_holdings_usd')] = whale.qty.mul(whale_tokens.price_usd)
-    total_usd = whale.token_holdings_usd.sum()
-    whale.loc[:, ('portfolio_percent')] = (whale.token_holdings_usd.mul(100))/total_usd
+    whale.loc[:, ('wallet_holdings_usd')] = whale.qty.mul(whale_tokens.price_usd)
+    total_usd = whale.wallet_holdings_usd.sum()
+    whale.loc[:, ('wallet_portfolio_alloc')] = (
+        whale.wallet_holdings_usd.mul(100))/total_usd
 
     whale = whale.merge(tokens, left_on='token_symbol', right_on='symbol')
-    whale.loc[:, ('market_cap_percent')] = (
-        whale.token_holdings_usd.mul(100))/whale.market_cap
-    whale.rename(columns={'address_x': 'address',
-                 'address_y': 'token_address'}, inplace=True)
-    whale.sort_values(by=['portfolio_percent', 'market_cap_percent'],
+    whale.loc[:, ('wallet_market_percent')] = (
+        whale.wallet_holdings_usd.mul(100))/whale.market_cap
+    whale.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
+                          'name': 'token_name', 'price_usd': 'token_price_usd', 'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
+    whale.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
                       ascending=False, inplace=True)
+
+    del whale['symbol']
 
     return whale.copy()
