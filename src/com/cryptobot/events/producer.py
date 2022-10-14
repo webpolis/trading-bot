@@ -37,6 +37,6 @@ class EventsProducerMixin():
         }, encode=True).execute()
 
         if debug:
-            self.logger.info(f'Published new msg #{msg_id}')
+            self.logger.info(f'Published new msg #{msg_id} in queue {self.queue}')
 
         return msg_id
