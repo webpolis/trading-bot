@@ -14,13 +14,16 @@ class EventsConsumerMixin():
         self.vt = 30
         self.delay = 0
         self.ns = EventsProducerMixin.__name__
-        self.queue = args[0]
+        self.queues = [args[0]] if type(args[0]) != type([]) else args[0]
+        self.consumers = {}
 
-        self.rsmq_consumer = RedisSMQConsumerThread(
-            qname=self.queue, processor=self.process, host=self.host, port=self.port,
-            ns=self.ns, vt=self.vt, empty_queue_delay=2, trace=self.trace, decode=True)
+        for queue in self.queues:
+            self.consumers[queue] = RedisSMQConsumerThread(
+                qname=queue, processor=self.process, host=self.host, port=self.port,
+                ns=self.ns, vt=self.vt, empty_queue_delay=2, trace=self.trace, decode=True)
 
     def consume(self):
-        self.logger.info(f'Listening to {self.queue} queue')
+        for queue in self.queues:
+            self.logger.info(f'Listening to {queue} queue')
 
-        self.rsmq_consumer.start()
+            self.consumers[queue].start()

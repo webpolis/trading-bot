@@ -14,6 +14,7 @@ from com.cryptobot.extractors.accounts import AccountsExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.extractors.token_holders import TokenHoldersExtractor
 from com.cryptobot.extractors.tokens import TokensExtractor
+from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import PrettyLogger
 
 __author__ = 'Nicolas Iglesias'
