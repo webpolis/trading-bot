@@ -26,8 +26,12 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
 
         txs = list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item']))
         swap_txs = self.classify(txs)
+        swap_count = len(swap_txs)
 
-        self.logger.info(f'Found {len(swap_txs)} swap transaction(s) this time.')
+        self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
+
+        if swap_count > 0:
+            self.logger.info([str(swap) for swap in swap_txs])
 
         return True
 
