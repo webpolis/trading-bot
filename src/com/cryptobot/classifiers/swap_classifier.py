@@ -39,6 +39,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         swap_txs = []
 
         for tx in items:
+            # make sure the transaction is processed only once
             if self.cached_txs.has_tx(tx):
                 continue
             else:
