@@ -19,7 +19,11 @@
 				"max_pages": 10
 			}
 		},
-		"modifiers": {}
+		"classifiers": {
+			"swap": {
+				"max_concurrent_threads": 5
+			}
+		}
 	},
 	"selenium": {
 		"chromedriverPath": "/home/nico/dev/chromedriver"

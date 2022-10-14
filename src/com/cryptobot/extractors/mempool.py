@@ -1,8 +1,11 @@
 from time import sleep
 from typing import List
-from com.cryptobot.classifiers.mempool_whales_tx import MempoolWhaleTXClassifier
+
+from com.cryptobot.classifiers.mempool_whales_tx import \
+    MempoolWhaleTXClassifier
 from com.cryptobot.classifiers.swap_classifier import SwapClassifier
 from com.cryptobot.classifiers.tx_classifier import TXClassifier
+from com.cryptobot.config import Config
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.ethereum import fetch_mempool_txs
@@ -16,16 +19,14 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
 
         self.cached_txs = TXQueue()
         self.whales_classifier = MempoolWhaleTXClassifier()
-        self.swap_classifier_1 = SwapClassifier(self.cached_txs)
-        self.swap_classifier_2 = SwapClassifier(self.cached_txs)
-        self.swap_classifier_3 = SwapClassifier(self.cached_txs)
 
     def listen(self):
         self.logger.info('Monitoring the mempool...')
+        max_concurrent_threads = Config().get_settings(
+        ).runtime.classifiers.swap.max_concurrent_threads
 
-        self.swap_classifier_1.consume()
-        self.swap_classifier_2.consume()
-        self.swap_classifier_3.consume()
+        for i in range(0, max_concurrent_threads):
+            SwapClassifier(self.cached_txs).consume()
 
         while (True):
             try:
