@@ -28,19 +28,22 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.swap_classifier_3.consume()
 
         while (True):
-            mempool_txs_orig = fetch_mempool_txs()
-            mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
-            # mempool_txs = TXClassifier().classify(mempool_txs_orig)  # for devs only
+            try:
+                mempool_txs_orig = fetch_mempool_txs()
+                mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
+                # mempool_txs = TXClassifier().classify(mempool_txs_orig)  # for devs only
 
-            if len(mempool_txs) > 0:
-                current_block = mempool_txs[0].block_number
+                if len(mempool_txs) > 0:
+                    current_block = mempool_txs[0].block_number
 
-                self.logger.info(
-                    f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{current_block} and we\'ll start classifying them.')
+                    self.logger.info(
+                        f'{len(mempool_txs)} transactions coming from whales have caught our attention at block #{current_block} and we\'ll start classifying them.')
 
-                self.publish(list(map(lambda tx: str(tx), mempool_txs)))
-
-            sleep(1)
+                    self.publish(list(map(lambda tx: str(tx), mempool_txs)))
+            except Exception as error:
+                self.logger.error(error)
+            finally:
+                sleep(1)
 
     def run(self):
         self.listen()
