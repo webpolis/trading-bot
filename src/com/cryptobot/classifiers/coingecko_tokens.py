@@ -7,7 +7,7 @@ from com.cryptobot.utils.formatters import token_parse
 
 class CoingeckoTokensClassifier(TokenClassifier):
     def __init__(self):
-        super().__init__()
+        super().__init__(__name__)
 
     def filter(self, items):
         return items
