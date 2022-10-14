@@ -82,23 +82,23 @@ def main(args):
     # init extractors
     # ae_thread = threading.Thread(name='AccountsExtractor',
     #                              daemon=True, target=AccountsExtractor().run)
-    te_thread = threading.Thread(name='TokensExtractor',
-                                 daemon=True, target=TokensExtractor().run)
-    th_thread = threading.Thread(name='TokenHolders',
-                                 daemon=True, target=TokenHoldersExtractor().run)
+    # te_thread = threading.Thread(name='TokensExtractor',
+    #                              daemon=True, target=TokensExtractor().run)
+    # th_thread = threading.Thread(name='TokenHolders',
+    #                              daemon=True, target=TokenHoldersExtractor().run)
     mpe_thread = threading.Thread(name='MempoolExtractor',
                                   daemon=True, target=MempoolExtractor().run)
 
     # run extractors
     # ae_thread.start()
     mpe_thread.start()
-    te_thread.start()
-    th_thread.start()
+    # te_thread.start()
+    # th_thread.start()
 
     # ae_thread.join()
     mpe_thread.join()
-    te_thread.join()
-    th_thread.join()
+    # te_thread.join()
+    # th_thread.join()
 
 
 def run():
