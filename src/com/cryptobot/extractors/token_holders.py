@@ -5,7 +5,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
-from com.cryptobot.utils.pandas import holders_table_to_df
+from com.cryptobot.utils.pandas import get_tokens_df, holders_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
 
@@ -28,7 +28,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
             f.close()
 
             holders_df = pd.DataFrame()
-            tokens: pd.DataFrame = pd.read_csv(get_data_path() + 'tokens.csv')
+            tokens: pd.DataFrame = get_tokens_df()
             tokens_addresses = tokens[tokens['address'].notnull()]
             tokens_addresses.reset_index(inplace=True, drop=True)
             tokens_addresses = tokens_addresses[['symbol', 'address']]
