@@ -25,12 +25,15 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         max_concurrent_threads = Config().get_settings(
         ).runtime.classifiers.swap.max_concurrent_threads
 
+        # initialize event based classifiers
         for i in range(0, max_concurrent_threads):
             SwapClassifier(self.cached_txs).consume()
 
         while (True):
             try:
                 mempool_txs_orig = fetch_mempool_txs()
+
+                # initialize on demand classifiers
                 mempool_txs = self.whales_classifier.classify(mempool_txs_orig)
                 # mempool_txs = TXClassifier().classify(mempool_txs_orig)  # for devs only
 
