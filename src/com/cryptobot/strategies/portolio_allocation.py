@@ -12,6 +12,7 @@ class PortfolioAllocationStrategy(Strategy):
         self.settings = Config().get_settings().runtime.strategies.portfolio_allocation
 
     def apply(self, tx: Tx | SwapTx) -> StrategyResponse:
+        # collect metadata from transaction
         metadata: dict = tx.metadata()
         token_from_stats = metadata.get('token_from')
         token_to_stats = metadata.get('token_to')
@@ -19,14 +20,14 @@ class PortfolioAllocationStrategy(Strategy):
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
 
         # we don't have enough stats to proceed
-        if token_from_stats is None or len(token_from_stats) or sender_stats is None:
+        if token_from_stats is None or len(token_from_stats) == 0 or sender_stats is None:
             self.logger.info(
                 f'Ignoring transaction since we have not collected enough data for it: {str(tx)}')
 
             return super().apply(tx)
 
         wallet_token_stats = sender_stats[sender_stats['token_symbol']
-                                          == token_from_stats['symbol']]
+                                          == str(token_from_stats.symbol.item())]
 
         if len(wallet_token_stats) > 0:
             if wallet_token_stats['wallet_portfolio_alloc'] >= self.settings.min_wallet_portfolio_alloc:

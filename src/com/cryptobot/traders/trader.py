@@ -7,6 +7,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.strategies.strategy import StrategyResponse
 from com.cryptobot.strategies.portolio_allocation import \
     PortfolioAllocationStrategy
 from com.cryptobot.utils.formatters import tx_parse
