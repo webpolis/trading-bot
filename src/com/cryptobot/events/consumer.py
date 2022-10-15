@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import List
 
@@ -30,3 +31,6 @@ class EventsConsumerMixin():
             self.logger.info(f'Listening to {queue} queue')
 
             self.consumers[queue].start()
+
+    def process(self, message=None, id=None, rc=None, ts=None):
+        pass

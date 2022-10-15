@@ -1,9 +1,14 @@
 import logging
+from typing import List
+
 from com.cryptobot.classifiers.swap import SwapClassifier
 from com.cryptobot.classifiers.tx import TXClassifier
-
+from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
+from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
+from jsonpickle import decode
 
 
 class Trader(EventsConsumerMixin):
@@ -16,12 +21,17 @@ class Trader(EventsConsumerMixin):
             else:
                 base_class.__init__(self, __name__)
 
+        self.etherscan_tx_endpoint = Config().get_settings().endpoints.etherscan.tx
         self.logger = PrettyLogger(cls, logging.INFO)
 
         self.logger.info('Initialized.')
 
     def process(self, message=None, id=None, rc=None, ts=None):
-        self.logger.info(message)
+        txs: List[Tx] = [decode(item) for item in message['item']]
+
+        for tx in txs:
+            self.logger.info(
+                f'A tx is ready for me to trade: {self.etherscan_tx_endpoint.format(tx.hash)}')
 
         return True
 

@@ -1,11 +1,13 @@
 import json
 import re
 from typing import List
+
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
+from jsonpickle import encode, decode
 
 
 class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
@@ -19,7 +21,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
                 base_class.__init__(self, __name__, **args)
 
     def process(self, message=None, id=None, rc=None, ts=None):
-        txs = list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item']))
+        txs = list(map(lambda tx: decode(tx), message['item']))
 
         self.logger.info(f"Processing {len(txs)} transactions...")
 
@@ -29,7 +31,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
 
         if swap_count > 0:
-            encoded_swaps = [str(swap) for swap in swap_txs]
+            encoded_swaps = [encode(swap) for swap in swap_txs]
 
             self.publish(encoded_swaps)
 

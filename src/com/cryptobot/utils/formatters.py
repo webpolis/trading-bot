@@ -16,14 +16,14 @@ def format_str_as_number(number):
     return float(re.sub(r'[^\d\.]+', '', str(number)))
 
 
-def tx_parse(tx):
+def tx_parse(tx: dict):
     parsed_tx = {}
 
     try:
         parsed_tx = {key: tx[key] for key in tx.keys()
                      & {'blockNumber', 'hash', 'from', 'to', 'gas', 'gasPrice', 'value', 'input'}}
-    except:
-        print(tx)
+    except Exception as error:
+        print({'tx_parse_error': error, 'tx': tx})
 
         return None
 

@@ -1,6 +1,7 @@
 import asyncio
 import json
 from time import sleep
+from typing import List
 
 from com.cryptobot.classifiers.mempool_whale_tx import MempoolWhaleTXClassifier
 from com.cryptobot.classifiers.swap import SwapClassifier
@@ -9,9 +10,11 @@ from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.extractors.extractor import Extractor
+from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.ethereum import fetch_mempool_txs
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
+from jsonpickle import encode
 from websockets import connect
 from websockets.connection import ConnectionClosed
 
@@ -27,7 +30,10 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.cached_txs = TXQueue()
         self.classifiers = []
 
-        for clf in Config().get_settings().runtime.extractors.mempool.classifiers:
+        classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
+            Config().get_settings().runtime.extractors.mempool.classifiers
+
+        for clf in classifiers_paths:
             cls = get_class_by_fullname(clf)
 
             self.classifiers.append(cls)
@@ -66,15 +72,13 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
 
                     # initialize on demand classifiers
                     for ondemand in self.ondemand_classifiers:
-                        mempool_txs = ondemand.classify(mempool_txs)
+                        mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
 
                     if len(mempool_txs) > 0:
-                        current_block = mempool_txs[0].block_number
-
                         self.logger.info(
                             f'{len(mempool_txs)} transaction(s) have caught our attention and we\'ll start classifying them.')
 
-                        self.publish(list(map(lambda tx: str(tx), mempool_txs)))
+                        self.publish(list(map(lambda tx: encode(tx), mempool_txs)))
                 except ConnectionClosed:
                     continue
                 except Exception as error:
