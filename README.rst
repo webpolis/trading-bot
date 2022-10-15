@@ -3,7 +3,7 @@ trading-bot
 ===========
 
 
-    A multithreaded cryptocurrency bot that emits signals when whales transact.
+    A multithreaded cryptocurrency bot that reacts to mempool transactions.
 
 
 Requirements

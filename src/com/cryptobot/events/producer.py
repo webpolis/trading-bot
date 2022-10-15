@@ -6,9 +6,9 @@ from com.cryptobot.utils.logger import PrettyLogger
 
 
 class EventsProducerMixin():
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, queue=str, *args, **kwargs) -> None:
         self._logger = PrettyLogger(__name__, logging.INFO)
-        self.queue = args[0]
+        self.queue = queue
         self.host = '127.0.0.1'
         self.port = 6379
         self.trace = True
@@ -25,7 +25,7 @@ class EventsProducerMixin():
         self.rsmq_producer.createQueue(
             qname=self.queue, quiet=True).exceptions(False).execute()
 
-        self._logger.info(f'Created queue {self.queue}')
+        self._logger.info(f'Publishing on queue {self.queue}')
 
     def publish(self, msg=None, debug=False):
         if msg is None:
