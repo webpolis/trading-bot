@@ -43,7 +43,7 @@ class Trader(EventsConsumerMixin):
                 strategy_response: StrategyResponse = strategy.apply(tx)
 
                 self.logger.info(
-                    f'We got the strategy\'s verdict: {encode(strategy_response)}')
+                    f'We got the strategy\'s verdict: {str(strategy_response)}')
 
         return True
 
