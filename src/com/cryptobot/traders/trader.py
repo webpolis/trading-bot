@@ -6,6 +6,7 @@ from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
 from jsonpickle import decode
@@ -27,7 +28,7 @@ class Trader(EventsConsumerMixin):
         self.logger.info('Initialized.')
 
     def process(self, message=None, id=None, rc=None, ts=None):
-        txs: List[Tx] = [decode(item) for item in message['item']]
+        txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
         for tx in txs:
             self.logger.info(

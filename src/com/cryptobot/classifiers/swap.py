@@ -25,7 +25,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
 
         self.logger.info(f"Processing {len(txs)} transactions...")
 
-        swap_txs = self.classify(txs)
+        swap_txs: List[SwapTx] = self.classify(txs)
         swap_count = len(swap_txs)
 
         self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
@@ -59,4 +59,4 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         return swap_txs
 
     def filter(self, items: List[SwapTx]) -> List[SwapTx]:
-        return super().filter(items)
+        return items
