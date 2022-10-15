@@ -18,6 +18,7 @@ class PortfolioAllocationStrategy(Strategy):
         sender_stats = metadata['sender'] if len(metadata['sender']) > 0 else None
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
 
+        # we don't have enough stats to proceed
         if token_from_stats is None or sender_stats is None:
             self.logger.info(
                 f'This is not an interesting transaction since we have not collected any data for it: {str(tx)}')
