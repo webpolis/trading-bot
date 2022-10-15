@@ -1,49 +1,50 @@
 import json
 import re
 from typing import List
-from com.cryptobot.classifiers.tx_classifier import TXClassifier
+from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.utils.ethtx import EthTxWrapper
-from com.cryptobot.utils.tx_queue import TXQueue
 
 
 class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
-    def __init__(self, cached_txs: TXQueue):
+    def __init__(self, **args):
         for base_class in SwapClassifier.__bases__:
             if base_class == EventsConsumerMixin:
-                base_class.__init__(self, 'com.cryptobot.extractors.mempool')
+                base_class.__init__(self, queues=[TXClassifier.__name__])
+            elif base_class == EventsProducerMixin:
+                base_class.__init__(self, queue=SwapClassifier.__name__)
             else:
-                base_class.__init__(self, __name__)
-
-        self.ethtx = EthTxWrapper()
-        self.cached_txs = cached_txs
+                base_class.__init__(self, __name__, **args)
 
     def process(self, message=None, id=None, rc=None, ts=None):
-        self.logger.info(f"Processing {len(message['item'])} transactions...")
-
         txs = list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item']))
+
+        self.logger.info(f"Processing {len(txs)} transactions...")
+
         swap_txs = self.classify(txs)
         swap_count = len(swap_txs)
 
         self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
 
         if swap_count > 0:
-            self.logger.info([str(swap) for swap in swap_txs])
+            encoded_swaps = [str(swap) for swap in swap_txs]
+
+            self.publish(encoded_swaps)
 
         return True
 
-    def parse(self, items: List[Tx]) -> List[SwapTx]:
+    def parse(self, items) -> List[SwapTx]:
+        items: List[Tx] = super().parse(items)
         swap_txs = []
 
         for tx in items:
             # make sure the transaction is processed only once
-            if self.cached_txs.has_tx(tx):
+            if self.cache.has_tx(tx):
                 continue
             else:
-                self.cached_txs.add_tx(tx)
+                self.cache.add_tx(tx)
 
             decoded_input = tx.decode_input()
 
@@ -56,4 +57,4 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         return swap_txs
 
     def filter(self, items: List[SwapTx]) -> List[SwapTx]:
-        return items
+        return super().filter(items)
