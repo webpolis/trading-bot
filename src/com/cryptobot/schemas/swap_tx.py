@@ -14,23 +14,26 @@ class SwapTx(Tx):
             # Uniswap based contract
             self.token_from = params['path'][0].lower()
             self.token_to = params['path'][-1].lower()
-            self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
+            self.token_from_qty = float(
+                params['amountIn'] if 'amountIn' in params else self.value)
 
             # output qty's key may vary
-            self.token_to_qty = params['amountOutMin'] if 'amountOutMin' in params else None
-            self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
+            self.token_to_qty = float(
+                params['amountOutMin'] if 'amountOutMin' in params else None)
+            self.token_to_qty = float(
+                params['amountOut'] if 'amountOut' in params else self.token_to_qty)
         elif 'desc' in params:
             # 1inch based contract
             self.token_from = params['desc'][0].lower()
             self.token_to = params['desc'][1].lower()
-            self.token_from_qty = params['desc'][-4]
-            self.token_to_qty = params['desc'][-3]
+            self.token_from_qty = float(params['desc'][-4])
+            self.token_to_qty = float(params['desc'][-3])
         elif 'singleSwap' in params:
             # Balancer vault based contract
             self.token_from = params['singleSwap'][2].lower()
             self.token_to = params['singleSwap'][3].lower()
-            self.token_from_qty = params['singleSwap'][4]
-            self.token_to_qty = params['limit']  # a minimum amount to receive
+            self.token_from_qty = float(params['singleSwap'][4])
+            self.token_to_qty = float(params['limit'])  # a minimum amount to receive
 
     def __str__(self):
         return str({'sender': self.sender, 'receiver': self.receiver,
