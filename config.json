@@ -21,10 +21,16 @@
 			"tokens": {
 				"refresh_interval_secs": 30,
 				"max_pages": 10
+			},
+			"mempool": {
+				"classifiers": [
+					"com.cryptobot.classifiers.mempool_whale_tx.MempoolWhaleTXClassifier",
+					"com.cryptobot.classifiers.swap.SwapClassifier"
+				]
 			}
 		},
 		"classifiers": {
-			"swap": {
+			"SwapClassifier": {
 				"max_concurrent_threads": 5
 			}
 		}

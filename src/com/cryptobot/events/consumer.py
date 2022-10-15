@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.utils.logger import PrettyLogger
@@ -6,7 +7,7 @@ from rsmq.consumer import RedisSMQConsumerThread
 
 
 class EventsConsumerMixin():
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, queues: List[str] | str, *args, **kwargs) -> None:
         self._logger = PrettyLogger(__name__, logging.INFO)
         self.host = '127.0.0.1'
         self.port = 6379
@@ -14,7 +15,7 @@ class EventsConsumerMixin():
         self.vt = 30
         self.delay = 0
         self.ns = EventsProducerMixin.__name__
-        self.queues = [args[0]] if type(args[0]) != type([]) else args[0]
+        self.queues = [queues] if type(queues) != type([]) else queues
         self.consumers = {}
 
         for queue in self.queues:
