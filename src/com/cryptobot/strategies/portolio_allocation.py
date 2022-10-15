@@ -20,7 +20,7 @@ class PortfolioAllocationStrategy(Strategy):
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
 
         # we don't have enough stats to proceed
-        if token_from_stats is None or len(token_from_stats) == 0 or sender_stats is None:
+        if (token_from_stats is None or len(token_from_stats) == 0) or sender_stats is None:
             self.logger.info(
                 f'Ignoring transaction since we have not collected enough data for it: {str(tx)}')
 
@@ -30,6 +30,9 @@ class PortfolioAllocationStrategy(Strategy):
                                           == str(token_from_stats.symbol.item())]
 
         if len(wallet_token_stats) > 0:
+            self.logger.info(
+                f'We have some token stats for this wallet\'s portfolio: {wallet_token_stats.to_json(index=False, orient="table")}')
+
             if wallet_token_stats['wallet_portfolio_alloc'] >= self.settings.min_wallet_portfolio_alloc:
                 if wallet_token_stats['wallet_market_percent'] >= self.settings.min_wallet_market_percent:
                     # we are interested in trading this signal
@@ -42,5 +45,8 @@ class PortfolioAllocationStrategy(Strategy):
                                                 token_from_stats['address']
                                             )
                                             )
+        else:
+            self.logger.info(
+                f'Not enough token stats for wallet: {wallet_token_stats.to_json(index=False, orient="table")}')
 
         return super().apply(tx)

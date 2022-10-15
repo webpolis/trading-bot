@@ -32,10 +32,10 @@ class SwapTx(Tx):
             self.token_from_qty = params['singleSwap'][4]
             self.token_to_qty = params['limit']  # a minimum amount to receive
 
-        if type(self.token_from_qty) == str:
+        if hasattr(self, 'token_from_qty') and type(self.token_from_qty) == str:
             self.token_from_qty = int(self.token_from_qty, 0)
 
-        if type(self.token_to_qty) == str:
+        if hasattr(self, 'token_to_qty') and type(self.token_to_qty) == str:
             self.token_to_qty = int(self.token_to_qty, 0)
 
     def __str__(self):
