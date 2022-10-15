@@ -1,5 +1,8 @@
 import logging
 from com.cryptobot.utils.logger import PrettyLogger
+from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.schemas.token import Token
+from enum import Enum
 
 
 class StrategyAction(Enum):
@@ -9,8 +12,12 @@ class StrategyAction(Enum):
 
 
 class StrategyResponse:
-    action: StrategyAction = StrategyAction.NONE
-    token: Token
+    action: StrategyAction
+    token: Token | None
+
+    def __init__(self, action: StrategyAction = StrategyAction.NONE, token: Token = None):
+        self.action = action
+        self.token = token
 
 
 class Strategy:

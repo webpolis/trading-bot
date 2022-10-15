@@ -5,8 +5,10 @@ from com.cryptobot.classifiers.swap import SwapClassifier
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
-from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.schemas.swap_tx import SwapTx
+from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.strategies.portolio_allocation import \
+    PortfolioAllocationStrategy
 from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
 from jsonpickle import decode
@@ -22,6 +24,9 @@ class Trader(EventsConsumerMixin):
             else:
                 base_class.__init__(self, __name__)
 
+        self.strategies = [
+            PortfolioAllocationStrategy()
+        ]
         self.etherscan_tx_endpoint = Config().get_settings().endpoints.etherscan.tx
         self.logger = PrettyLogger(cls, logging.INFO)
 
@@ -31,10 +36,11 @@ class Trader(EventsConsumerMixin):
         txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
         for tx in txs:
-            print(tx.metadata())
-
             self.logger.info(
-                f'A tx is ready for me to trade: {self.etherscan_tx_endpoint.format(tx.hash)}')
+                f'Probing strategies for tx: {self.etherscan_tx_endpoint.format(tx.hash)}')
+
+            for strategy in self.strategies:
+                strategy_response: StrategyResponse = strategy.apply(tx)
 
         return True
 

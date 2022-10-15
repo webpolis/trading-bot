@@ -75,9 +75,6 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                         mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
 
                     if len(mempool_txs) > 0:
-                        self.logger.info(
-                            f'{len(mempool_txs)} transaction(s) have caught our attention and we\'ll start classifying them.')
-
                         self.publish(list(map(lambda tx: encode(tx), mempool_txs)))
                 except ConnectionClosed:
                     continue
