@@ -44,7 +44,7 @@ class SwapTx(Tx):
                     'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
                     'hash': self.hash, 'block_number': self.block_number})
 
-    def metadata(self):
+    def metadata(self) -> dict:
         metadata = super().metadata()
         token_from_df = get_token_by_address(self.token_from)
         token_to_df = get_token_by_address(self.token_to)
