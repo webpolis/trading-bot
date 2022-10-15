@@ -31,6 +31,8 @@ class Trader(EventsConsumerMixin):
         txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
         for tx in txs:
+            print(tx.metadata())
+
             self.logger.info(
                 f'A tx is ready for me to trade: {self.etherscan_tx_endpoint.format(tx.hash)}')
 

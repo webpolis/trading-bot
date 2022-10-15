@@ -12,10 +12,6 @@ def parse_token_symbol(address_str: str):
     return re.sub(r'[^a-z]', '', address_str, flags=re.IGNORECASE)
 
 
-def format_str_as_number(number):
-    return float(re.sub(r'[^\d\.]+', '', str(number)))
-
-
 def tx_parse(tx: dict):
     parsed_tx = {}
 

@@ -1,4 +1,5 @@
 from com.cryptobot.schemas.tx import Tx, TxType
+from com.cryptobot.utils.pandas import get_token_by_address
 
 
 class SwapTx(Tx):
@@ -36,3 +37,10 @@ class SwapTx(Tx):
                     'token_from': self.token_from, 'token_from_qty': self.token_from_qty,
                     'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
                     'hash': self.hash, 'block_number': self.block_number})
+
+    def metadata(self):
+        metadata = super().metadata()
+        token_from_df = get_token_by_address(self.token_from)
+        token_to_df = get_token_by_address(self.token_to)
+
+        return {**metadata, 'token_from': token_from_df, 'token_to': token_to_df}

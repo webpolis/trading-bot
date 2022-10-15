@@ -1,8 +1,9 @@
 from enum import Enum
-from com.cryptobot.schemas.schema import Schema
-from ethtx.models.objects_model import Transaction
 
+from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.ethereum import get_contract
+from com.cryptobot.utils.pandas import get_address_details
+from ethtx.models.objects_model import Transaction
 
 
 class TxType(Enum):
@@ -50,3 +51,9 @@ class Tx(Schema):
     def from_dict(dict_obj):
         return Tx(dict_obj['block_number'], dict_obj['hash'], dict_obj['sender'], dict_obj['receiver'],
                   dict_obj['gas'], dict_obj['gas_price'], dict_obj['value'], dict_obj['input'])
+
+    def metadata(self):
+        sender_df = get_address_details(self.sender)
+        receiver_df = get_address_details(self.receiver)
+
+        return {'sender': sender_df, 'receiver': receiver_df}

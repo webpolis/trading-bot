@@ -4,7 +4,6 @@ import time
 from com.cryptobot.config import Config
 
 from com.cryptobot.utils.ethereum import is_contract
-from com.cryptobot.utils.formatters import format_str_as_number
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
@@ -15,6 +14,10 @@ tokens_df = None
 tokens_df_last_update = None
 tokens_holders_df = None
 tokens_holders_df_last_update = None
+
+
+def format_str_as_number(number):
+    return float(re.sub(r'[^\d\.]+', '', str(number)))
 
 
 def get_tokens_df():
@@ -109,14 +112,13 @@ def merge_tokens_dicts_into_df(dict1, dict2, key):
     return df
 
 
-def get_whale_details(address: str):
-    tokens = get_tokens_df()
-    tokens_holders_df = get_tokens_holders_df()
+def get_address_details(address: str):
+    tokens = (get_tokens_df()).copy()
+    tokens_holders_df = (get_tokens_holders_df()).copy()
 
     # sort them by symbol
     tokens.sort_values(by=['symbol'], inplace=True)
     tokens_holders_df.sort_values(by=['token_symbol'], inplace=True)
-
     whale = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
 
     del whale['percentage']
@@ -142,3 +144,15 @@ def get_whale_details(address: str):
     del whale['symbol']
 
     return whale.copy()
+
+
+def get_token_by_symbol(symbol: str):
+    tokens = get_tokens_df()
+
+    return tokens[tokens['symbol'] == symbol.lower()]
+
+
+def get_token_by_address(address: str):
+    tokens = get_tokens_df()
+
+    return tokens[tokens['address'] == address.lower()]
