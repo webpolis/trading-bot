@@ -1,6 +1,4 @@
 from time import sleep
-from tkinter import E
-from typing import List
 
 from com.cryptobot.classifiers.mempool_whale_tx import \
     MempoolWhaleTXClassifier

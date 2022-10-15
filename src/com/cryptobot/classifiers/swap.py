@@ -19,9 +19,10 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
                 base_class.__init__(self, __name__, **args)
 
     def process(self, message=None, id=None, rc=None, ts=None):
-        self.logger.info(f"Processing {len(message['item'])} transactions...")
-
         txs = list(map(lambda tx: Tx.from_dict(json.loads(tx)), message['item']))
+
+        self.logger.info(f"Processing {len(txs)} transactions...")
+
         swap_txs = self.classify(txs)
         swap_count = len(swap_txs)
 
