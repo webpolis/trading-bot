@@ -1,8 +1,5 @@
 from time import sleep
 
-from com.cryptobot.classifiers.mempool_whale_tx import \
-    MempoolWhaleTXClassifier
-from com.cryptobot.classifiers.swap import SwapClassifier
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
