@@ -1,7 +1,8 @@
+import asyncio
+import json
 from time import sleep
 
-from com.cryptobot.classifiers.mempool_whale_tx import \
-    MempoolWhaleTXClassifier
+from com.cryptobot.classifiers.mempool_whale_tx import MempoolWhaleTXClassifier
 from com.cryptobot.classifiers.swap import SwapClassifier
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
@@ -11,6 +12,8 @@ from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.utils.ethereum import fetch_mempool_txs
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
+from websockets import connect
+from websockets.connection import ConnectionClosed
 
 
 class MempoolExtractor(Extractor, EventsProducerMixin):
@@ -32,12 +35,13 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
     def listen(self):
         self.logger.info('Monitoring the mempool...')
 
-        ondemand_classifiers = [
+        # setup classifiers
+        self.ondemand_classifiers = [
             cls(cache=self.cached_txs) for cls in self.classifiers if not issubclass(cls, EventsConsumerMixin)]
-        consumers_classifiers = [
+        self.consumers_classifiers = [
             cls for cls in self.classifiers if issubclass(cls, EventsConsumerMixin)]
 
-        for consumer in consumers_classifiers:
+        for consumer in self.consumers_classifiers:
             settings = getattr(Config().get_settings(
             ).runtime.classifiers, consumer.__name__)
             max_concurrent_threads = getattr(
@@ -46,26 +50,35 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
             for i in range(0, max_concurrent_threads):
                 consumer(cache=self.cached_txs).consume()
 
-        while (True):
-            try:
-                mempool_txs_orig = fetch_mempool_txs()
-                mempool_txs = mempool_txs_orig
+        # start listening
+        asyncio.run(self.get_pending_txs())
 
-                # initialize on demand classifiers
-                for ondemand in ondemand_classifiers:
-                    mempool_txs = ondemand.classify(mempool_txs)
+    async def get_pending_txs(self):
+        async with connect(Config().get_settings().web3.providers.alchemy.wss) as wss:
+            await wss.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}')
 
-                if len(mempool_txs) > 0:
-                    current_block = mempool_txs[0].block_number
+            subscription_response = await wss.recv()
 
-                    self.logger.info(
-                        f'{len(mempool_txs)} transactions out of {len(mempool_txs_orig)} have caught our attention at block #{current_block} and we\'ll start classifying them.')
+            while True:
+                try:
+                    response = json.loads(await asyncio.wait_for(wss.recv(), timeout=15))
+                    mempool_txs = [response['params']['result']]
 
-                    self.publish(list(map(lambda tx: str(tx), mempool_txs)))
-            except Exception as error:
-                self.logger.error(error)
-            finally:
-                sleep(1)
+                    # initialize on demand classifiers
+                    for ondemand in self.ondemand_classifiers:
+                        mempool_txs = ondemand.classify(mempool_txs)
+
+                    if len(mempool_txs) > 0:
+                        current_block = mempool_txs[0].block_number
+
+                        self.logger.info(
+                            f'{len(mempool_txs)} transaction(s) have caught our attention and we\'ll start classifying them.')
+
+                        self.publish(list(map(lambda tx: str(tx), mempool_txs)))
+                except ConnectionClosed:
+                    continue
+                except Exception as error:
+                    self.logger.error(error)
 
     def run(self):
         self.listen()

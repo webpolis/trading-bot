@@ -29,7 +29,7 @@ def tx_parse(tx):
 
     return Tx(
         parsed_tx['blockNumber'],
-        parsed_tx['hash'].hex().lower(),
+        parsed_tx['hash'].lower(),
         parsed_tx['from'].lower(
         ) if 'from' in parsed_tx and parsed_tx['from'] != None else None,
         parsed_tx['to'].lower() if 'to' in parsed_tx and parsed_tx['to'] != None else None,
