@@ -11,7 +11,7 @@ from com.cryptobot.strategies.portolio_allocation import \
     PortfolioAllocationStrategy
 from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
-from jsonpickle import decode
+from jsonpickle import decode, encode
 
 
 class Trader(EventsConsumerMixin):
@@ -41,6 +41,9 @@ class Trader(EventsConsumerMixin):
 
             for strategy in self.strategies:
                 strategy_response: StrategyResponse = strategy.apply(tx)
+
+                self.logger.info(
+                    f'We got the strategy\'s verdict: {encode(strategy_response)}')
 
         return True
 
