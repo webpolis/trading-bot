@@ -14,6 +14,7 @@ from com.cryptobot.extractors.accounts import AccountsExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.extractors.token_holders import TokenHoldersExtractor
 from com.cryptobot.extractors.tokens import TokensExtractor
+from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import PrettyLogger
 
 __author__ = 'Nicolas Iglesias'
@@ -82,23 +83,29 @@ def main(args):
     # init extractors
     # ae_thread = threading.Thread(name='AccountsExtractor',
     #                              daemon=True, target=AccountsExtractor().run)
-    te_thread = threading.Thread(name='TokensExtractor',
-                                 daemon=True, target=TokensExtractor().run)
-    th_thread = threading.Thread(name='TokenHolders',
-                                 daemon=True, target=TokenHoldersExtractor().run)
+    # te_thread = threading.Thread(name='TokensExtractor',
+    #                              daemon=True, target=TokensExtractor().run)
+    # th_thread = threading.Thread(name='TokenHolders',
+    #                              daemon=True, target=TokenHoldersExtractor().run)
     mpe_thread = threading.Thread(name='MempoolExtractor',
                                   daemon=True, target=MempoolExtractor().run)
+    trader_thread = threading.Thread(name='Trader',
+                                     daemon=True, target=Trader().run)
+
+    # spawn traders
+    trader_thread.start()
 
     # run extractors
     # ae_thread.start()
     mpe_thread.start()
-    te_thread.start()
-    th_thread.start()
+    # te_thread.start()
+    # th_thread.start()
 
     # ae_thread.join()
     mpe_thread.join()
-    te_thread.join()
-    th_thread.join()
+    # te_thread.join()
+    # th_thread.join()
+    trader_thread.join()
 
 
 def run():

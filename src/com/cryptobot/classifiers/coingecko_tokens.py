@@ -1,6 +1,6 @@
 from typing import List
 
-from com.cryptobot.classifiers.token_classifier import TokenClassifier
+from com.cryptobot.classifiers.token import TokenClassifier
 from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.utils.formatters import token_parse
 
