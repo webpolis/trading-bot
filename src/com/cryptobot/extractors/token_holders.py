@@ -40,6 +40,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
             for ix, token in tokens_addresses.iterrows():
                 page_number = 1
+                num_try_table_extract = 1
                 token_symbol = token['symbol']
                 token_address = token['address']
 
@@ -68,8 +69,15 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
                     self.logger.info(url + ' loaded')
 
-                    soup_data = soup(self.driver.page_source, 'html.parser')
-                    table_addresses_html = soup_data.findAll('table')[0]
+                    try:
+                        soup_data = soup(self.driver.page_source, 'html.parser')
+                        table_addresses_html = soup_data.findAll('table')[0]
+                    except Exception as error:
+                        self.logger.error(error)
+
+                        if num_try_table_extract <= Config().get_settings().runtime.utils.selenium.max_tries:
+                            num_try_table_extract += 1
+                            continue
 
                     try:
                         table_df = holders_table_to_df(table_addresses_html)
