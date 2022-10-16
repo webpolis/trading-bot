@@ -118,31 +118,31 @@ def get_address_details(address: str):
     # sort them by symbol
     tokens.sort_values(by=['symbol'], inplace=True)
     tokens_holders_df.sort_values(by=['token_symbol'], inplace=True)
-    whale = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
+    wallet = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
 
-    del whale['percentage']
+    del wallet['percentage']
     del tokens['address']
 
-    whale_tokens = tokens.copy()[tokens['symbol'].isin(list(whale['token_symbol']))]
-    whale.reset_index(drop=True, inplace=True)
-    whale_tokens.reset_index(drop=True, inplace=True)
+    wallet_tokens = tokens.copy()[tokens['symbol'].isin(list(wallet['token_symbol']))]
+    wallet.reset_index(drop=True, inplace=True)
+    wallet_tokens.reset_index(drop=True, inplace=True)
 
-    whale.loc[:, ('wallet_holdings_usd')] = whale.qty.mul(whale_tokens.price_usd)
-    total_usd = whale.wallet_holdings_usd.sum()
-    whale.loc[:, ('wallet_portfolio_alloc')] = (
-        whale.wallet_holdings_usd.mul(100))/total_usd
+    wallet.loc[:, ('wallet_holdings_usd')] = wallet.qty.mul(wallet_tokens.price_usd)
+    total_usd = wallet.wallet_holdings_usd.sum()
+    wallet.loc[:, ('wallet_portfolio_alloc')] = (
+        wallet.wallet_holdings_usd.mul(100))/total_usd
 
-    whale = whale.merge(tokens, left_on='token_symbol', right_on='symbol')
-    whale.loc[:, ('wallet_market_percent')] = (
-        whale.wallet_holdings_usd.mul(100))/whale.market_cap
-    whale.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
+    wallet = wallet.merge(tokens, left_on='token_symbol', right_on='symbol')
+    wallet.loc[:, ('wallet_market_percent')] = (
+        wallet.wallet_holdings_usd.mul(100))/wallet.market_cap
+    wallet.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
                           'name': 'token_name', 'price_usd': 'token_price_usd', 'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
-    whale.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
+    wallet.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
                       ascending=False, inplace=True)
 
-    del whale['symbol']
+    del wallet['symbol']
 
-    return whale.copy()
+    return wallet.copy()
 
 
 def get_token_by_symbol(symbol: str):
