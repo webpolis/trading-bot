@@ -66,21 +66,23 @@ class TokensExtractor(Extractor):
             ftx_lending = ftx_lending['result']
             ftx_lending_tokens = self.ftx_classifier.classify(
                 ftx_lending, TokenSource.FTX_LENDING)
-            ftx_lending_tokens = [
-                token.__dict__ for token in ftx_lending_tokens if token is not None]
+            ftx_lending_tokens = pd.DataFrame([
+                token.__dict__ for token in ftx_lending_tokens if token is not None])
 
             # fetch markets from FTX
             ftx_markets = HttpRequest().get(ftx_markets_endpoint)
             ftx_markets = ftx_markets['result']
             ftx_markets_tokens = self.ftx_classifier.classify(
                 ftx_markets, TokenSource.FTX)
-            ftx_markets_tokens = [
-                token.__dict__ for token in ftx_markets_tokens if token is not None]
+            ftx_markets_tokens = pd.DataFrame([
+                token.__dict__ for token in ftx_markets_tokens if token is not None])
+
+            ftx_tokens = ftx_lending_tokens.merge(
+                ftx_markets_tokens, how='left', on='symbol')
+            ftx_tokens.drop_duplicates(inplace=True, subset=['symbol'])
 
             self.logger.info(
-                f'{len(ftx_lending_tokens)} tokens available for lending collected so far')
-            self.logger.info(
-                f'{len(ftx_markets_tokens)} markets collected so far')
+                f'{len(ftx_tokens)} tokens collected from markets/lending in FTX')
 
             pd.DataFrame(ftx_lending_tokens).to_csv(
                 get_data_path() + 'ftx_lending_tokens.csv', index=False)
