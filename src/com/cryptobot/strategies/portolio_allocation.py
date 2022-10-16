@@ -22,7 +22,7 @@ class PortfolioAllocationStrategy(Strategy):
         # we don't have enough stats to proceed
         if (token_from_stats is None or len(token_from_stats) == 0) or sender_stats is None:
             self.logger.info(
-                f'Ignoring transaction since we have not collected enough data for it: {str(tx)}')
+                f'Ignoring transaction since we have not collected enough data for strategy analysis: {str(tx)}')
 
             return super().apply(tx)
 
