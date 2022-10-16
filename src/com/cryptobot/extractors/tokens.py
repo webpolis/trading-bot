@@ -82,7 +82,7 @@ class TokensExtractor(Extractor):
             ftx_tokens.drop_duplicates(inplace=True, subset=['symbol'])
 
             self.logger.info(
-                f'{len(ftx_tokens)} tokens collected from markets/lending in FTX')
+                f'{len(ftx_tokens)} tokens collected for lending in FTX')
 
             pd.DataFrame(ftx_lending_tokens).to_csv(
                 get_data_path() + 'ftx_lending_tokens.csv', index=False)
