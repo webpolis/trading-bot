@@ -1,15 +1,16 @@
 import locale
 import re
 import time
-from com.cryptobot.config import Config
+from threading import Lock
 
+from com.cryptobot.config import Config
 from com.cryptobot.utils.ethereum import is_contract
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
 
 settings = Config().get_settings()
-
+lock = Lock()
 tokens_df = None
 tokens_df_last_update = None
 tokens_holders_df = None
@@ -21,30 +22,34 @@ def format_str_as_number(number):
 
 
 def get_tokens_df():
+    global lock
     global tokens_df
     global tokens_df_last_update
 
-    elapsed_time = time.time() - tokens_df_last_update if tokens_df_last_update is not None else None
+    with lock:
+        elapsed_time = time.time() - tokens_df_last_update if tokens_df_last_update is not None else None
 
-    if tokens_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_df_refresh_interval:
-        tokens_df = pd.read_csv(get_data_path() + 'tokens.csv')
-        tokens_df_last_update = time.time()
+        if tokens_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_df_refresh_interval:
+            tokens_df = pd.read_csv(get_data_path() + 'tokens.csv')
+            tokens_df_last_update = time.time()
 
-    return tokens_df
+        return tokens_df
 
 
 def get_tokens_holders_df():
+    global lock
     global tokens_holders_df
     global tokens_holders_df_last_update
 
-    elapsed_time = time.time() - \
-        tokens_holders_df_last_update if tokens_holders_df_last_update is not None else None
+    with lock:
+        elapsed_time = time.time() - \
+            tokens_holders_df_last_update if tokens_holders_df_last_update is not None else None
 
-    if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
-        tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
-        tokens_holders_df_last_update = time.time()
+        if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
+            tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
+            tokens_holders_df_last_update = time.time()
 
-    return tokens_holders_df
+        return tokens_holders_df
 
 
 def accounts_table_to_df(table_html):
@@ -113,46 +118,49 @@ def merge_tokens_dicts_into_df(dict1, dict2, key):
 
 
 def get_address_details(address: str):
-    tokens = (get_tokens_df()).copy()
-    tokens_holders_df = (get_tokens_holders_df()).copy()
+    with lock:
+        tokens = (get_tokens_df()).copy()
+        tokens_holders_df = (get_tokens_holders_df()).copy()
 
-    # sort them by symbol
-    tokens.sort_values(by=['symbol'], inplace=True)
-    tokens_holders_df.sort_values(by=['token_symbol'], inplace=True)
-    whale = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
+        # sort them by symbol
+        tokens.sort_values(by=['symbol'], inplace=True)
+        tokens_holders_df.sort_values(by=['token_symbol'], inplace=True)
+        whale = tokens_holders_df.copy()[tokens_holders_df['address'] == address]
 
-    del whale['percentage']
-    del tokens['address']
+        del whale['percentage']
+        del tokens['address']
 
-    whale_tokens = tokens.copy()[tokens['symbol'].isin(list(whale['token_symbol']))]
-    whale.reset_index(drop=True, inplace=True)
-    whale_tokens.reset_index(drop=True, inplace=True)
+        whale_tokens = tokens.copy()[tokens['symbol'].isin(list(whale['token_symbol']))]
+        whale.reset_index(drop=True, inplace=True)
+        whale_tokens.reset_index(drop=True, inplace=True)
 
-    whale.loc[:, ('wallet_holdings_usd')] = whale.qty.mul(whale_tokens.price_usd)
-    total_usd = whale.wallet_holdings_usd.sum()
-    whale.loc[:, ('wallet_portfolio_alloc')] = (
-        whale.wallet_holdings_usd.mul(100))/total_usd
+        whale.loc[:, ('wallet_holdings_usd')] = whale.qty.mul(whale_tokens.price_usd)
+        total_usd = whale.wallet_holdings_usd.sum()
+        whale.loc[:, ('wallet_portfolio_alloc')] = (
+            whale.wallet_holdings_usd.mul(100))/total_usd
 
-    whale = whale.merge(tokens, left_on='token_symbol', right_on='symbol')
-    whale.loc[:, ('wallet_market_percent')] = (
-        whale.wallet_holdings_usd.mul(100))/whale.market_cap
-    whale.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
-                          'name': 'token_name', 'price_usd': 'token_price_usd', 'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
-    whale.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
-                      ascending=False, inplace=True)
+        whale = whale.merge(tokens, left_on='token_symbol', right_on='symbol')
+        whale.loc[:, ('wallet_market_percent')] = (
+            whale.wallet_holdings_usd.mul(100))/whale.market_cap
+        whale.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
+                              'name': 'token_name', 'price_usd': 'token_price_usd', 'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
+        whale.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
+                          ascending=False, inplace=True)
 
-    del whale['symbol']
+        del whale['symbol']
 
-    return whale.copy()
+        return whale.copy()
 
 
 def get_token_by_symbol(symbol: str):
-    tokens = get_tokens_df()
+    with lock:
+        tokens = get_tokens_df()
 
-    return tokens[tokens['symbol'] == symbol.lower()]
+        return tokens[tokens['symbol'] == symbol.lower()]
 
 
 def get_token_by_address(address: str):
-    tokens = get_tokens_df()
+    with lock:
+        tokens = get_tokens_df()
 
-    return tokens[tokens['address'] == address.lower()]
+        return tokens[tokens['address'] == address.lower()]
