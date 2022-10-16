@@ -27,7 +27,6 @@ class TokenHoldersExtractor(SeleniumExtractor):
             f.truncate(0)
             f.close()
 
-            holders_df = pd.DataFrame()
             tokens: pd.DataFrame = get_tokens_df()
             tokens_addresses = tokens[tokens['address'].notnull()]
             tokens_addresses.reset_index(inplace=True, drop=True)
@@ -48,7 +47,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
                     f'Retrieving holders for {token_symbol} ({token_address})')
 
                 while page_number <= max_holders_pages:
-                    table_df = None
+                    holders_table_df = None
                     url = token_holders_endpoint.format(token_address, page_number)
 
                     self.logger.info('Browsing to ' + url)
@@ -80,16 +79,15 @@ class TokenHoldersExtractor(SeleniumExtractor):
                             continue
 
                     try:
-                        table_df = holders_table_to_df(table_addresses_html)
+                        holders_table_df = holders_table_to_df(table_addresses_html)
                     except:
                         break
 
-                    table_df['token_address'] = token_address
-                    table_df['token_symbol'] = token_symbol
-                    holders_df = pd.concat([holders_df, table_df])
+                    holders_table_df['token_address'] = token_address
+                    holders_table_df['token_symbol'] = token_symbol
 
                     # store locally just for reference
-                    table_df.to_csv(output_path, index=False, mode='a',
+                    holders_table_df.to_csv(output_path, index=False, mode='a',
                                     header=initial)
                     initial = False
 
