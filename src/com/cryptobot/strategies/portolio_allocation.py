@@ -33,8 +33,8 @@ class PortfolioAllocationStrategy(Strategy):
             self.logger.info(
                 f'We have some token stats for this wallet\'s portfolio: {wallet_token_stats.to_json(index=False, orient="table")}')
 
-            if wallet_token_stats['wallet_portfolio_alloc'] >= self.settings.min_wallet_portfolio_alloc:
-                if wallet_token_stats['wallet_market_percent'] >= self.settings.min_wallet_market_percent:
+            if wallet_token_stats['wallet_portfolio_alloc'].item() >= self.settings.min_wallet_portfolio_alloc:
+                if wallet_token_stats['wallet_market_percent'].item() >= self.settings.min_wallet_market_percent:
                     # we are interested in trading this signal
                     return StrategyResponse(action=StrategyAction.SELL,
                                             token=Token(
