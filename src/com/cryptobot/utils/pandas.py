@@ -2,7 +2,6 @@ import locale
 import re
 import time
 
-from threading import Lock
 from com.cryptobot.config import Config
 from com.cryptobot.utils.ethereum import is_contract
 from com.cryptobot.utils.path import get_data_path
@@ -10,7 +9,6 @@ from com.cryptobot.utils.path import get_data_path
 import pandas as pd
 
 settings = Config().get_settings()
-lock = Lock()
 tokens_df = None
 tokens_df_last_update = None
 tokens_holders_df = None
@@ -22,8 +20,6 @@ def format_str_as_number(number):
 
 
 def get_tokens_df():
-    lock.acquire()
-
     global tokens_df
     global tokens_df_last_update
 
@@ -33,14 +29,10 @@ def get_tokens_df():
         tokens_df = pd.read_csv(get_data_path() + 'tokens.csv')
         tokens_df_last_update = time.time()
 
-    lock.release()
-
     return tokens_df
 
 
 def get_tokens_holders_df():
-    lock.acquire()
-
     global tokens_holders_df
     global tokens_holders_df_last_update
 
@@ -50,8 +42,6 @@ def get_tokens_holders_df():
     if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
         tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
         tokens_holders_df_last_update = time.time()
-
-    lock.release()
 
     return tokens_holders_df
 
