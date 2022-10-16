@@ -13,40 +13,47 @@ class TXQueue():
     counter = itertools.count()     # unique sequence count
 
     def count(self):
-        with self.lock:
-            return self.counter
+        count = self.counter
+
+        return count
 
     def has_tx(self, tx: Tx):
-        with self.lock:
-            return tx.hash in self.entry_finder
+        self.lock.acquire()
+
+        has_hash = tx.hash in self.entry_finder
+
+        self.lock.release()
+
+        return has_hash
 
     def add_tx(self, tx: Tx, priority=0):
-        with self.lock:
-            'Add a new tx or update the priority of an existing tx'
-            if tx.hash in self.entry_finder:
-                self.remove_tx(tx)
+        self.lock.acquire()
 
-            count = next(self.counter)
-            entry = [priority, count, tx]
-            self.entry_finder[tx.hash] = entry
+        'Add a new tx or update the priority of an existing tx'
+        if tx.hash in self.entry_finder:
+            self.remove_tx(tx)
 
-            heappush(self.pq, entry)
+        count = next(self.counter)
+        entry = [priority, count, tx]
+        self.entry_finder[tx.hash] = entry
+
+        heappush(self.pq, entry)
+
+        self.lock.release()
 
     def remove_tx(self, tx: Tx):
-        with self.lock:
-            'Mark an existing tx as REMOVED.  Raise KeyError if not found.'
-            entry = self.entry_finder.pop(tx.hash)
-            entry[-1] = self.REMOVED
+        'Mark an existing tx as REMOVED.  Raise KeyError if not found.'
+        entry = self.entry_finder.pop(tx.hash)
+        entry[-1] = self.REMOVED
 
     def pop_tx(self):
-        with self.lock:
-            'Remove and return the lowest priority tx. Raise KeyError if empty.'
-            while self.pq:
-                priority, count, tx = heappop(self.pq)
+        'Remove and return the lowest priority tx. Raise KeyError if empty.'
+        while self.pq:
+            priority, count, tx = heappop(self.pq)
 
-                if tx is not self.REMOVED:
-                    del self.entry_finder[tx.hash]
+            if tx is not self.REMOVED:
+                del self.entry_finder[tx.hash]
 
-                    return tx
+                return tx
 
-            raise KeyError('pop from an empty priority queue')
+        raise KeyError('pop from an empty priority queue')
