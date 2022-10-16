@@ -1,12 +1,12 @@
 from time import sleep
 from typing import List
-
+import pandas as pd
 from com.cryptobot.classifiers.coingecko_tokens import \
     CoingeckoTokensClassifier
 from com.cryptobot.classifiers.ftx_tokens import FTXTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.schemas.token import Token
+from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.utils.pandas import merge_tokens_dicts_into_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
@@ -27,6 +27,7 @@ class TokensExtractor(Extractor):
         settings = Config().get_settings()
         cg_markets_endpoint = settings.endpoints.coingecko.markets
         ftx_markets_endpoint = settings.endpoints.ftx.markets
+        ftx_lending_endpoint = settings.endpoints.ftx.lending
 
         while True:
             runtime_settings = Config().get_settings().runtime
@@ -54,20 +55,41 @@ class TokensExtractor(Extractor):
                 sleep(1)
 
             coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
+            coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
+            pd.DataFrame(coingecko_tokens).to_csv(
+                get_data_path() + 'coingecko_tokens.csv', index=False)
+
+            # fetch tokens for lend in FTX
+            self.logger.info(f'Collecting tokens from FTX')
+
+            ftx_lending = HttpRequest().get(ftx_lending_endpoint)
+            ftx_lending = ftx_lending['result']
+            ftx_lending_tokens = self.ftx_classifier.classify(
+                ftx_lending, TokenSource.FTX_LENDING)
+            ftx_lending_tokens = [
+                token.__dict__ for token in ftx_lending_tokens if token is not None]
 
             # fetch markets from FTX
-            self.logger.info(f'Collecting markets from FTX')
             ftx_markets = HttpRequest().get(ftx_markets_endpoint)
             ftx_markets = ftx_markets['result']
+            ftx_markets_tokens = self.ftx_classifier.classify(
+                ftx_markets, TokenSource.FTX)
+            ftx_markets_tokens = [
+                token.__dict__ for token in ftx_markets_tokens if token is not None]
 
-            self.logger.info(f'{len(ftx_markets)} markets collected so far')
-            ftx_tokens = self.ftx_classifier.classify(ftx_markets)
+            self.logger.info(
+                f'{len(ftx_lending_tokens)} tokens available for lending collected so far')
+            self.logger.info(
+                f'{len(ftx_markets_tokens)} markets collected so far')
+
+            pd.DataFrame(ftx_lending_tokens).to_csv(
+                get_data_path() + 'ftx_lending_tokens.csv', index=False)
+            pd.DataFrame(ftx_markets_tokens).to_csv(
+                get_data_path() + 'ftx_markets_tokens.csv', index=False)
 
             # convert and merge
             self.logger.info('Produce tokens union list...')
-            tokens = merge_tokens_dicts_into_df([token.__dict__
-                                                 for token in coingecko_tokens], [token.__dict__
-                                                                                  for token in ftx_tokens], 'symbol')
+            tokens = merge_tokens_dicts_into_df(coingecko_tokens, ftx_tokens, 'symbol')
 
             # store locally just for reference
             tokens.to_csv(get_data_path() + 'tokens.csv', index=False)

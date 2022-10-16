@@ -19,6 +19,7 @@ with open(get_data_path() + 'ftx_coins.json') as f:
 class TokenSource(Enum):
     COINGECKO = 1
     FTX = 2
+    FTX_LENDING = 3
 
 
 class Token(Schema):

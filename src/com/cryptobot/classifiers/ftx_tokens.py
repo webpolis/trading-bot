@@ -9,13 +9,14 @@ class FTXTokensClassifier(TokenClassifier):
     def __init__(self):
         super().__init__(__name__)
 
-    def filter(self, items):
-        return [token for token in items if token['baseCurrency'] != None and token['type'] == 'spot']
-
-    def parse(self, items):
-        items.sort(key=lambda item: item['volumeUsd24h'], reverse=True)
-
+    def parse(self, items, token_source: TokenSource):
         tokens: List[Token] = [token_parse(
-            token, TokenSource.FTX) for token in items]
+            token, token_source) for token in items]
 
         return tokens
+
+    def classify(self, items, token_source: TokenSource):
+        items = self.parse(items, token_source)
+        items = self.filter(items)
+
+        return items

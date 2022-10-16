@@ -50,9 +50,17 @@ def token_parse(token, token_source: TokenSource):
                         & {'name', 'baseCurrency'}}
         parsed_token['symbol'] = parsed_token['baseCurrency']
 
+    if token_source == TokenSource.FTX_LENDING:
+        parsed_token = {key: token[key] for key in token.keys()
+                        & {'coin'}}
+        parsed_token['symbol'] = parsed_token['coin'].upper()
+
+    if parsed_token.get('symbol') is None:
+        return None
+
     return Token(
         parsed_token['symbol'].upper(),
-        parsed_token['name'].upper(),
+        parsed_token['name'].upper() if 'name' in parsed_token else None,
         parsed_token.get('market_cap', None),
         float(price_usd) if price_usd is not None else None,
         None
