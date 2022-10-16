@@ -45,6 +45,7 @@ class Trader(EventsConsumerMixin):
 
                 self.logger.info(
                     f'We got the strategy\'s verdict: {str(strategy_response)}')
+                    
 
         return True
 

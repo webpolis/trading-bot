@@ -18,6 +18,7 @@ class PortfolioAllocationStrategy(Strategy):
         token_to_stats = metadata.get('token_to')
         sender_stats = metadata['sender'] if len(metadata['sender']) > 0 else None
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
+        
 
         # we don't have enough stats to proceed
         if (token_from_stats is None or len(token_from_stats) == 0) or sender_stats is None:
