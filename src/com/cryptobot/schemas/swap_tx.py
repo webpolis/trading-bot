@@ -42,7 +42,7 @@ class SwapTx(Tx):
         return str({'sender': self.sender, 'receiver': self.receiver,
                     'token_from': self.token_from, 'token_from_qty': self.token_from_qty,
                     'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
-                    'hash': self.hash, 'block_number': self.block_number})
+                    'hash': self.hash, 'block_number': self.block_number, 'value': self.value})
 
     def metadata(self) -> dict:
         metadata = super().metadata()

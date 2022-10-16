@@ -12,7 +12,7 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, type=TxType.UNCLASSIFIED, raw: Transaction = None):
+    def __init__(self, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw: Transaction = None):
         super().__init__()
 
         self.block_number = block_number
@@ -22,8 +22,8 @@ class Tx(Schema):
         self.receiver = to
         self.gas = gas
         self.gas_price = gas_price
-        self.value = value
-        self.type = type
+        self.value = int(value, 0) if type(value) == str else value
+        self.type = _type
         self.raw = raw
         self.input = input
         self.decoded_input = decoded_input
