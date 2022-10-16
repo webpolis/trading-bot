@@ -23,16 +23,17 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
     def process(self, message=None, id=None, rc=None, ts=None):
         txs = list(map(lambda tx: decode(tx), message['item']))
 
-        self.logger.info(f"Processing {len(txs)} transactions...")
+        # self.logger.info(f"Processing {len(txs)} transactions...")
 
         swap_txs: List[SwapTx] = self.classify(txs)
         swap_count = len(swap_txs)
 
-        self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
-
         if swap_count > 0:
+            self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
+
             encoded_swaps = [encode(swap) for swap in swap_txs]
 
+            self.logger.info('Publishing swaps...')
             self.publish(encoded_swaps)
 
         return True

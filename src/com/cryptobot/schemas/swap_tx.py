@@ -10,6 +10,11 @@ class SwapTx(Tx):
         # handle multiple signatures while extracting the swap details
         params = self.decoded_input['func_params']
 
+        self.token_from = None
+        self.token_from_qty = None
+        self.token_to = None
+        self.token_to_qty = None
+
         if 'path' in params:
             # Uniswap based contract
             self.token_from = params['path'][0].lower()
@@ -46,7 +51,9 @@ class SwapTx(Tx):
 
     def metadata(self) -> dict:
         metadata = super().metadata()
-        token_from_df = get_token_by_address(self.token_from)
-        token_to_df = get_token_by_address(self.token_to)
+        token_from_df = get_token_by_address(
+            self.token_from) if self.token_from is not None else None
+        token_to_df = get_token_by_address(
+            self.token_to) if self.token_to is not None else None
 
         return {**metadata, 'token_from': token_from_df, 'token_to': token_to_df}
