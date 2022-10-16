@@ -15,4 +15,7 @@ class Classifier():
         return items
 
     def classify(self, items):
+        items = self.parse(items)
+        items = self.filter(items)
+
         return items

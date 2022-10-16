@@ -20,12 +20,3 @@ class TXClassifier(Classifier):
         txs: List[Tx] = list(map(lambda item: tx_parse(item), items))
 
         return txs
-
-    def filter(self, items: List[Tx]) -> List[Tx]:
-        return super().filter(items)
-
-    def classify(self, items) -> List[Tx]:
-        items = self.parse(items)
-        items = self.filter(items)
-
-        return items
