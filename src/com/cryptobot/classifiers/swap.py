@@ -34,7 +34,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
             encoded_swaps = [encode(swap) for swap in swap_txs]
 
             self.logger.info('Publishing swaps...')
-            self.publish(encoded_swaps)
+            self.publish(encoded_swaps, True)
 
         return True
 

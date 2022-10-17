@@ -36,7 +36,7 @@ class Trader(EventsConsumerMixin):
     def process(self, message=None, id=None, rc=None, ts=None):
         txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
-        self.logger.info(f'Got {len(txs)} transactions to analyze.')
+        self.logger.info(f'Got {len(txs)} transactions to analyze (msg_id: {id}).')
 
         for tx in txs:
             self.logger.info(
@@ -47,7 +47,6 @@ class Trader(EventsConsumerMixin):
 
                 self.logger.info(
                     f'We got the strategy\'s verdict: {str(strategy_response)}')
-                    
 
         return True
 
