@@ -12,9 +12,10 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw: Transaction = None):
+    def __init__(self, timestamp, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw: Transaction = None):
         super().__init__()
 
+        self.timestamp = timestamp
         self.block_number = block_number
         self.hash = hash
         # underscore (reserved keyword)
@@ -49,7 +50,7 @@ class Tx(Schema):
         return vars(self).iteritems()
 
     def from_dict(dict_obj):
-        return Tx(dict_obj['block_number'], dict_obj['hash'], dict_obj['sender'], dict_obj['receiver'],
+        return Tx(dict_obj['timestamp'], dict_obj['block_number'], dict_obj['hash'], dict_obj['sender'], dict_obj['receiver'],
                   dict_obj['gas'], dict_obj['gas_price'], dict_obj['value'], dict_obj['input'])
 
     def metadata(self) -> dict:

@@ -22,6 +22,7 @@ class PortfolioAllocationStrategy(Strategy):
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
 
         publish_to_table(self.__class__.__name__, {
+            'tx_timestamp': tx.timestamp,
             'sender': [tx.sender],
             'receiver': [tx.receiver],
             'token_from': [tx.token_from if hasattr(tx, 'token_from') else None],

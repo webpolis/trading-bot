@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.schemas.tx import Tx
@@ -24,6 +25,7 @@ def tx_parse(tx: dict):
         return None
 
     return Tx(
+        datetime.utcnow(),
         parsed_tx['blockNumber'],
         parsed_tx['hash'].lower(),
         parsed_tx['from'].lower(

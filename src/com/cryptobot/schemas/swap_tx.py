@@ -4,7 +4,7 @@ from com.cryptobot.utils.pandas import get_token_by_address
 
 class SwapTx(Tx):
     def __init__(self, tx: Tx):
-        super().__init__(tx.block_number, tx.hash, tx.sender, tx.receiver,
+        super().__init__(tx.timestamp, tx.block_number, tx.hash, tx.sender, tx.receiver,
                          tx.gas, tx.gas_price, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
 
         # handle multiple signatures while extracting the swap details
@@ -44,7 +44,7 @@ class SwapTx(Tx):
             self.token_to_qty = int(self.token_to_qty, 0)
 
     def __str__(self):
-        return str({'sender': self.sender, 'receiver': self.receiver,
+        return str({'timestamp': str(self.timestamp), 'sender': self.sender, 'receiver': self.receiver,
                     'token_from': self.token_from, 'token_from_qty': self.token_from_qty,
                     'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
                     'hash': self.hash, 'block_number': self.block_number, 'value': self.value})
