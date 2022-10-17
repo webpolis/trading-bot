@@ -14,7 +14,7 @@ class EventsProducerMixin():
         self.trace = True
         self.vt = 30
         self.delay = 0
-        self.ns = EventsProducerMixin.__name__
+        self.ns = EventsProducerMixin.__class__.__name__
 
         self.rsmq_producer = RedisSMQ(qname=self.queue, host=self.host,
                                       port=self.port, ns=self.ns, vt=self.vt,

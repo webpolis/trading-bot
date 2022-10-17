@@ -9,6 +9,7 @@ import locale
 import logging
 import sys
 import threading
+import asyncio
 
 from com.cryptobot.extractors.accounts import AccountsExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
@@ -89,11 +90,13 @@ def main(args):
     #                              daemon=True, target=TokenHoldersExtractor().run)
     mpe_thread = threading.Thread(name='MempoolExtractor',
                                   daemon=True, target=MempoolExtractor().run)
-    trader_thread = threading.Thread(name='Trader',
-                                     daemon=True, target=Trader().run)
+    # trader_thread = threading.Thread(name='Trader',
+    #                                  daemon=True, target=Trader().run)
 
     # spawn traders
-    trader_thread.start()
+    # trader_thread.start()
+    for i in range(1, 5):
+        asyncio.run(Trader().run())
 
     # run extractors
     # ae_thread.start()
@@ -105,7 +108,7 @@ def main(args):
     mpe_thread.join()
     # te_thread.join()
     # th_thread.join()
-    trader_thread.join()
+    # trader_thread.join()
 
 
 def run():

@@ -36,7 +36,7 @@ class Trader(EventsConsumerMixin):
     def process(self, message=None, id=None, rc=None, ts=None):
         txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
-        self.logger.info(f'Got {len(txs)} transactions to analyze (msg_id: {id}).')
+        self.logger.info(f'Got {len(txs)} transaction(s) to analyze (msg_id: {id}).')
 
         for tx in txs:
             self.logger.info(
@@ -50,5 +50,5 @@ class Trader(EventsConsumerMixin):
 
         return True
 
-    def run(self):
+    async def run(self):
         self.consume()

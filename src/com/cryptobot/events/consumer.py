@@ -17,7 +17,7 @@ class EventsConsumerMixin():
         self.trace = True
         self.vt = 30
         self.delay = 0
-        self.ns = EventsProducerMixin.__name__
+        self.ns = EventsProducerMixin.__class__.__name__
         self.queues = [queues] if type(queues) != type([]) else queues
         self.consumers = {}
 
