@@ -81,5 +81,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                 except Exception as error:
                     self.logger.error(error)
 
+                    break
+
     def run(self):
         self.listen()
