@@ -13,4 +13,4 @@ def get_driver():
     chrome_options.add_argument("--disable-infobars")
 
     return webdriver.Chrome(
-        Config().get_settings().selenium.chromedriverPath, chrome_options=chrome_options)
+        Config().get_settings().selenium.chromedriver_path, chrome_options=chrome_options)

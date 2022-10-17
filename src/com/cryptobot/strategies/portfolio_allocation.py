@@ -46,7 +46,7 @@ class PortfolioAllocationStrategy(Strategy):
 
         if len(wallet_token_stats) > 0:
             self.logger.info(
-                f'We have some token stats for this wallet\'s portfolio: {wallet_token_stats.to_json(index=False, orient="table")}')
+                f'We have some token stats for this wallet\'s portfolio: {wallet_token_stats.to_json(orient="records")}')
 
             if wallet_token_stats['wallet_portfolio_alloc'].item() >= self.settings.min_wallet_portfolio_alloc:
                 if wallet_token_stats['wallet_market_percent'].item() >= self.settings.min_wallet_market_percent:
@@ -62,6 +62,6 @@ class PortfolioAllocationStrategy(Strategy):
                                             )
         else:
             self.logger.info(
-                f'Not enough token stats for wallet: {wallet_token_stats.to_json(index=False, orient="table")}')
+                f'Not enough token stats for wallet: {wallet_token_stats.to_json(orient="records")}')
 
         return super().apply(tx)
