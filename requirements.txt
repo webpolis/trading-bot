@@ -12,3 +12,5 @@ pandas==1.5.0rc0
 eth-abi
 websockets==10.3
 jsonpickle==2.2.0
+pandas_gbq==0.17.9
+protobuf==4.21.7
