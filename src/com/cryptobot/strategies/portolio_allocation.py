@@ -1,8 +1,10 @@
-from com.cryptobot.strategies.strategy import Strategy, StrategyResponse, StrategyAction
-from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.schemas.token import Token
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.swap_tx import SwapTx
+from com.cryptobot.schemas.token import Token
+from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
+                                               StrategyResponse)
+from com.cryptobot.utils.gbq import publish_to_table
 
 
 class PortfolioAllocationStrategy(Strategy):
@@ -18,7 +20,17 @@ class PortfolioAllocationStrategy(Strategy):
         token_to_stats = metadata.get('token_to')
         sender_stats = metadata['sender'] if len(metadata['sender']) > 0 else None
         receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
-        
+
+        publish_to_table(self.__class__.__name__, {
+            'sender': [tx.sender],
+            'receiver': [tx.receiver],
+            'token_from': [tx.token_from if hasattr(tx, 'token_from') else None],
+            'token_from_qty': [tx.token_from_qty if hasattr(tx, 'token_from_qty') else None],
+            'token_to': [tx.token_to if hasattr(tx, 'token_to') else None],
+            'token_to_qty': [tx.token_to_qty if hasattr(tx, 'token_to_qty') else None],
+            # 'token_from_stats': [token_from_stats.to_json(index=False, orient='table') if token_from_stats != None else None],
+            # 'token_to_stats': [token_to_stats.to_json(index=False, orient='table') if token_to_stats != None else None]
+        }, [{'name': 'token_from_qty', 'type': 'BIGNUMERIC'}, {'name': 'token_to_qty', 'type': 'BIGNUMERIC'}])
 
         # we don't have enough stats to proceed
         if (token_from_stats is None or len(token_from_stats) == 0) or sender_stats is None:

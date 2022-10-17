@@ -7,3 +7,7 @@ def get_project_root() -> str:
 
 def get_data_path() -> str:
     return get_project_root() + '/data/'
+
+
+def get_dev_path() -> str:
+    return get_project_root() + '/dev/'

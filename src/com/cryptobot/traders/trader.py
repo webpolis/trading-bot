@@ -36,6 +36,8 @@ class Trader(EventsConsumerMixin):
     def process(self, message=None, id=None, rc=None, ts=None):
         txs: List[Tx | SwapTx] = [decode(item) for item in message['item']]
 
+        self.logger.info(f'Got {len(txs)} transactions to analyze.')
+
         for tx in txs:
             self.logger.info(
                 f'Probing strategies for tx: {self.etherscan_tx_endpoint.format(tx.hash)}')

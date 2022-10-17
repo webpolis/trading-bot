@@ -136,9 +136,10 @@ def get_address_details(address: str):
     wallet.loc[:, ('wallet_market_percent')] = (
         wallet.wallet_holdings_usd.mul(100))/wallet.market_cap
     wallet.rename(columns={'address_x': 'wallet_address', 'address_y': 'token_address',
-                          'name': 'token_name', 'price_usd': 'token_price_usd', 'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
+                           'name': 'token_name', 'price_usd': 'token_price_usd',
+                           'qty': 'wallet_holdings_qty', 'market_cap': 'token_market_cap'}, inplace=True)
     wallet.sort_values(by=['wallet_portfolio_alloc', 'wallet_market_percent'],
-                      ascending=False, inplace=True)
+                       ascending=False, inplace=True)
 
     del wallet['symbol']
 
