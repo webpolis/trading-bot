@@ -3,6 +3,21 @@ import sys
 from pprint import pformat
 
 
+class DebugModuleFilter(logging.Filter):
+    def __init__(self, debug_modules):
+        logging.Filter.__init__(self)
+        self.debug_modules = set(debug_modules)
+
+    def filter(self, record):
+        # This filter assumes that we want INFO logging from all
+        # modules and DEBUG logging from only selected ones, but
+        # easily could be adapted for other policies.
+        if record.levelno == logging.DEBUG:
+            return record.module in self.debug_modules
+
+        return True
+
+
 class PrettyLogger():
     def __init__(self, name: str, loglevel=logging.DEBUG):
         self.logger = logging.getLogger(name)
@@ -20,3 +35,6 @@ class PrettyLogger():
 
     def error(self, msg, format=False):
         self.logger.error(msg)
+
+    def debug(self, msg, format=False):
+        self.logger.debug(msg)

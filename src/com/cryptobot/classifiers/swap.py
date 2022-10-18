@@ -52,10 +52,15 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
             decoded_input = tx.decode_input()
 
             if decoded_input != None:
-                if re.match(r'^swap.*$', decoded_input['func_obj'].fn_name, flags=re.IGNORECASE) is not None:
+                func_name = decoded_input['func_obj'].fn_name
+
+                if re.match(r'^swap.*$', func_name, flags=re.IGNORECASE) is not None:
                     # evolve tx
                     tx = SwapTx(tx)
                     swap_txs.append(tx)
+                else:
+                    self.logger.debug(
+                        f'Address {str(tx.sender)} executed {func_name} on {str(tx.receiver)}')
 
         return swap_txs
 
