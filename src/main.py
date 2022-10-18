@@ -5,18 +5,17 @@ References:
 """
 
 import argparse
+import asyncio
+import atexit
 import locale
 import logging
 import sys
 import threading
-import asyncio
 
-from com.cryptobot.extractors.accounts import AccountsExtractor
-from com.cryptobot.extractors.mempool import MempoolExtractor
-from com.cryptobot.extractors.token_holders import TokenHoldersExtractor
-from com.cryptobot.extractors.tokens import TokensExtractor
+from com.cryptobot.config import Config
 from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
+from com.cryptobot.utils.python import get_class_by_fullname
 
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
@@ -30,6 +29,9 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 # The functions defined in this section are wrappers around the main Python
 # API allowing them to be called directly from the terminal as a CLI
 # executable/script.
+
+settings = Config().get_settings()
+threads = []
 
 
 def parse_args(args):
@@ -89,31 +91,30 @@ def main(args):
     _logger.info('Starting up TradingBot...')
 
     # init extractors
-    # ae_thread = threading.Thread(name='AccountsExtractor',
-    #                              daemon=True, target=AccountsExtractor().run)
-    # te_thread = threading.Thread(name='TokensExtractor',
-    #                              daemon=True, target=TokensExtractor().run)
-    # th_thread = threading.Thread(name='TokenHolders',
-    #                              daemon=True, target=TokenHoldersExtractor().run)
-    mpe_thread = threading.Thread(name='MempoolExtractor',
-                                  daemon=True, target=MempoolExtractor().run)
+    extractors_paths = settings.runtime.extractors.enabled
+    for clf in extractors_paths:
+        cls = get_class_by_fullname(clf)
+        thread = threading.Thread(name=clf, daemon=True, target=cls().run)
+
+        threads.append(thread)
 
     # spawn traders
-    # trader_thread.start()
-    for i in range(1, 5):
+    for i in range(0, settings.runtime.traders.max_concurrent_runs):
         asyncio.run(Trader().run())
 
     # run extractors
-    # ae_thread.start()
-    mpe_thread.start()
-    # te_thread.start()
-    # th_thread.start()
+    for thread in threads:
+        thread.start()
 
-    # ae_thread.join()
-    mpe_thread.join()
-    # te_thread.join()
-    # th_thread.join()
-    # trader_thread.join()
+    for thread in threads:
+        thread.join()
+
+
+def stop():
+    for thread in threads:
+        _logger.info(f'Stopping thread {thread.name}')
+
+        thread._stop()
 
 
 def run():
@@ -121,6 +122,8 @@ def run():
 
     This function can be used as entry point to create console scripts with setuptools.
     """
+    atexit.register(stop)
+
     main(sys.argv[1:])
 
 

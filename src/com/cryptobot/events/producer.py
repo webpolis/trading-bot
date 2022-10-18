@@ -1,3 +1,4 @@
+import atexit
 import logging
 import time
 from rsmq import RedisSMQ
@@ -25,6 +26,8 @@ class EventsProducerMixin():
         self.rsmq_producer.createQueue(
             qname=self.queue, quiet=True).exceptions(False).execute()
 
+        atexit.register(self.stop)
+
         self._logger.info(f'Publishing on queue {self.queue}')
 
     def publish(self, msg=None, debug=False):
@@ -40,3 +43,6 @@ class EventsProducerMixin():
             self.logger.info(f'Published new msg #{msg_id} in queue {self.queue}')
 
         return msg_id
+
+    def stop(self):
+        self.rsmq_producer.quit()

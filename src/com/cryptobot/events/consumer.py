@@ -1,4 +1,4 @@
-import json
+import atexit
 import logging
 from typing import List
 
@@ -26,6 +26,8 @@ class EventsConsumerMixin():
                 qname=queue, processor=self.process, host=self.host, port=self.port,
                 ns=self.ns, vt=self.vt, empty_queue_delay=2, trace=self.trace, decode=True)
 
+        atexit.register(self.stop)
+
     def consume(self):
         for queue in self.queues:
             self.logger.info(f'Listening to {queue} queue')
@@ -34,3 +36,9 @@ class EventsConsumerMixin():
 
     def process(self, message=None, id=None, rc=None, ts=None):
         pass
+
+    def stop(self):
+        for queue in self.queues:
+            self.logger.info(f'Stopping listener for {queue} queue')
+
+            self.consumers[queue].stop()
