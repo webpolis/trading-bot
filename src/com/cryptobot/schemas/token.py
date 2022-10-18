@@ -2,6 +2,7 @@ from enum import Enum
 import json
 
 from com.cryptobot.schemas.schema import Schema
+from com.cryptobot.utils.pandas import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 
 # initialize data
@@ -23,7 +24,7 @@ class TokenSource(Enum):
 
 
 class Token(Schema):
-    def __init__(self, symbol, name, market_cap, price_usd, address=None):
+    def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None):
         self.symbol = symbol
         self.name = name
         self.market_cap = market_cap
@@ -50,3 +51,12 @@ class Token(Schema):
 
                 if token != None:
                     self.address = token['erc20Contract'].lower()
+
+    def from_df(df, address):
+        if df.empty:
+            return Token(address=address)
+
+        return Token(df['symbol'].item(), df['name'].item(), df['market_cap'].item(), df['price_usd'].item(), df['address'].item())
+
+    def metadata(self) -> dict:
+        return get_token_by_address(self.address)

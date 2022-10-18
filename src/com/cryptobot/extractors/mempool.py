@@ -1,6 +1,5 @@
 import asyncio
 import json
-from time import sleep
 from typing import List
 
 from com.cryptobot.classifiers.mempool_whale_tx import MempoolWhaleTXClassifier
@@ -75,13 +74,15 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                         mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
 
                     if len(mempool_txs) > 0:
-                        self.publish(list(map(lambda tx: encode(tx), mempool_txs)))
+                        self.publish(list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
                 except ConnectionClosed:
                     continue
                 except Exception as error:
                     self.logger.error(error)
 
-                    break
+                    await asyncio.sleep(1)
+
+                    continue
 
     def run(self):
         self.listen()

@@ -2,7 +2,6 @@ import logging
 from typing import List
 
 from com.cryptobot.classifiers.swap import SwapClassifier
-from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
@@ -43,10 +42,13 @@ class Trader(EventsConsumerMixin):
                 f'Probing strategies for tx: {self.etherscan_tx_endpoint.format(tx.hash)}')
 
             for strategy in self.strategies:
-                strategy_response: StrategyResponse = strategy.apply(tx)
+                try:
+                    strategy_response: StrategyResponse = strategy.apply(tx)
 
-                self.logger.info(
-                    f'We got the strategy\'s verdict: {str(strategy_response)}')
+                    self.logger.info(
+                        f'We got the strategy\'s verdict: {str(strategy_response)}')
+                except Exception as error:
+                    self.logger.error(error)
 
         return True
 

@@ -31,7 +31,7 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
         if swap_count > 0:
             self.logger.info(f'Found {swap_count} swap transaction(s) this time.')
 
-            encoded_swaps = [encode(swap) for swap in swap_txs]
+            encoded_swaps = [encode(swap, max_depth=3) for swap in swap_txs]
 
             self.logger.info('Publishing swaps...')
             self.publish(encoded_swaps, True)

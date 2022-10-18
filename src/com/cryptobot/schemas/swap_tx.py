@@ -1,3 +1,4 @@
+from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx, TxType
 from com.cryptobot.utils.pandas import get_token_by_address
 
@@ -11,14 +12,16 @@ class SwapTx(Tx):
         params = self.decoded_input['func_params']
 
         self.token_from = None
-        self.token_from_qty = None
+        self.token_from_qty = -1
         self.token_to = None
-        self.token_to_qty = None
+        self.token_to_qty = -1
 
         if 'path' in params:
             # Uniswap based contract
-            self.token_from = params['path'][0].lower()
-            self.token_to = params['path'][-1].lower()
+            self.token_from = Token.from_df(
+                get_token_by_address(params['path'][0].lower()), params['path'][0].lower())
+            self.token_to = Token.from_df(
+                get_token_by_address(params['path'][-1].lower()), params['path'][-1].lower())
             self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
 
             # output qty's key may vary
@@ -26,14 +29,18 @@ class SwapTx(Tx):
             self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
         elif 'desc' in params:
             # 1inch based contract
-            self.token_from = params['desc'][0].lower()
-            self.token_to = params['desc'][1].lower()
+            self.token_from = Token.from_df(
+                get_token_by_address(params['desc'][0].lower()), params['desc'][0].lower())
+            self.token_to = Token.from_df(
+                get_token_by_address(params['desc'][1].lower()), params['desc'][1].lower())
             self.token_from_qty = params['desc'][-4]
             self.token_to_qty = params['desc'][-3]
         elif 'singleSwap' in params:
             # Balancer vault based contract
-            self.token_from = params['singleSwap'][2].lower()
-            self.token_to = params['singleSwap'][3].lower()
+            self.token_from = Token.from_df(
+                get_token_by_address(params['singleSwap'][2].lower()), params['singleSwap'][2].lower())
+            self.token_to = Token.from_df(
+                get_token_by_address(params['singleSwap'][3].lower()), params['singleSwap'][3].lower())
             self.token_from_qty = params['singleSwap'][4]
             self.token_to_qty = params['limit']  # a minimum amount to receive
 
@@ -44,16 +51,7 @@ class SwapTx(Tx):
             self.token_to_qty = int(self.token_to_qty, 0)
 
     def __str__(self):
-        return str({'timestamp': str(self.timestamp), 'sender': self.sender, 'receiver': self.receiver,
-                    'token_from': self.token_from, 'token_from_qty': self.token_from_qty,
-                    'token_to': self.token_to, 'token_to_qty': self.token_to_qty,
+        return str({'timestamp': str(self.timestamp), 'sender': self.sender.address, 'receiver': self.receiver.address,
+                    'token_from': str(self.token_from) if self.token_from is not None else None, 'token_from_qty': self.token_from_qty,
+                    'token_to': str(self.token_to) if self.token_to is not None else None, 'token_to_qty': self.token_to_qty,
                     'hash': self.hash, 'block_number': self.block_number, 'value': self.value})
-
-    def metadata(self) -> dict:
-        metadata = super().metadata()
-        token_from_df = get_token_by_address(
-            self.token_from) if self.token_from is not None else None
-        token_to_df = get_token_by_address(
-            self.token_to) if self.token_to is not None else None
-
-        return {**metadata, 'token_from': token_from_df, 'token_to': token_to_df}

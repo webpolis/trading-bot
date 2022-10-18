@@ -90,8 +90,6 @@ def main(args):
     #                              daemon=True, target=TokenHoldersExtractor().run)
     mpe_thread = threading.Thread(name='MempoolExtractor',
                                   daemon=True, target=MempoolExtractor().run)
-    # trader_thread = threading.Thread(name='Trader',
-    #                                  daemon=True, target=Trader().run)
 
     # spawn traders
     # trader_thread.start()

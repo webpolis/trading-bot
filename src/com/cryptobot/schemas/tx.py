@@ -1,8 +1,8 @@
 from enum import Enum
 
+from com.cryptobot.schemas.address import Address
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.ethereum import get_contract
-from com.cryptobot.utils.pandas import get_address_details
 from ethtx.models.objects_model import Transaction
 
 
@@ -19,8 +19,8 @@ class Tx(Schema):
         self.block_number = block_number
         self.hash = hash
         # underscore (reserved keyword)
-        self.sender = _from
-        self.receiver = to
+        self.sender = Address(_from) if type(_from) == str else _from
+        self.receiver = Address(to) if type(to) == str else to
         self.gas = gas
         self.gas_price = gas_price
         self.value = int(value, 0) if type(value) == str else value
@@ -34,7 +34,7 @@ class Tx(Schema):
             return None
 
         try:
-            contract = get_contract(self.receiver)
+            contract = get_contract(self.receiver.address)
 
             if contract is None:
                 return None
@@ -52,9 +52,3 @@ class Tx(Schema):
     def from_dict(dict_obj):
         return Tx(dict_obj['timestamp'], dict_obj['block_number'], dict_obj['hash'], dict_obj['sender'], dict_obj['receiver'],
                   dict_obj['gas'], dict_obj['gas_price'], dict_obj['value'], dict_obj['input'])
-
-    def metadata(self) -> dict:
-        sender_df = get_address_details(self.sender)
-        receiver_df = get_address_details(self.receiver)
-
-        return {'sender': sender_df, 'receiver': receiver_df}

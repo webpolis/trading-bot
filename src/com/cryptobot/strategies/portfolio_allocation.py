@@ -15,23 +15,24 @@ class PortfolioAllocationStrategy(Strategy):
 
     def apply(self, tx: Tx | SwapTx) -> StrategyResponse:
         # collect metadata from transaction
-        metadata: dict = tx.metadata()
-        token_from_stats = metadata.get('token_from')
-        token_to_stats = metadata.get('token_to')
-        sender_stats = metadata['sender'] if len(metadata['sender']) > 0 else None
-        receiver_stats = metadata['receiver'] if len(metadata['receiver']) > 0 else None
+        token_from_stats = tx.token_from.metadata() if tx.token_from is not None else None
+        token_to_stats = tx.token_to.metadata() if tx.token_to is not None else None
+        sender_stats = tx.sender.metadata() if tx.sender is not None else None
+        receiver_stats = tx.receiver.metadata() if tx.receiver is not None else None
 
         publish_to_table(self.__class__.__name__, {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],
-            'sender': [tx.sender],
-            'receiver': [tx.receiver],
-            'token_from': [tx.token_from if hasattr(tx, 'token_from') else None],
+            'sender': [tx.sender.address],
+            'receiver': [tx.receiver.address],
+            'token_from': [tx.token_from.symbol if hasattr(tx, 'token_from') and tx.token_from is not None else None],
+            'token_from_address': [tx.token_from.address if hasattr(tx, 'token_from') and tx.token_from is not None else None],
             'token_from_qty': [tx.token_from_qty if hasattr(tx, 'token_from_qty') else None],
-            'token_to': [tx.token_to if hasattr(tx, 'token_to') else None],
+            'token_to': [tx.token_to.symbol if hasattr(tx, 'token_to') and tx.token_to is not None else None],
+            'token_to_address': [tx.token_to.address if hasattr(tx, 'token_to') and tx.token_to is not None else None],
             'token_to_qty': [tx.token_to_qty if hasattr(tx, 'token_to_qty') else None],
-            # 'token_from_stats': [token_from_stats.to_json(index=False, orient='table') if token_from_stats != None else None],
-            # 'token_to_stats': [token_to_stats.to_json(index=False, orient='table') if token_to_stats != None else None]
+            # 'token_from_stats': [token_from_stats.to_json(index=False, orient='results') if token_from_stats != None else None],
+            # 'token_to_stats': [token_to_stats.to_json(index=False, orient='results') if token_to_stats != None else None]
         }, [{'name': 'token_from_qty', 'type': 'BIGNUMERIC'}, {'name': 'token_to_qty', 'type': 'BIGNUMERIC'}])
 
         # we don't have enough stats to proceed
