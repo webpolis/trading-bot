@@ -20,6 +20,10 @@ class PortfolioAllocationStrategy(Strategy):
         sender_stats = tx.sender.metadata() if tx.sender is not None else None
         receiver_stats = tx.receiver.metadata() if tx.receiver is not None else None
 
+        self.logger.info(tx.sender.get_balances())
+
+        return None
+
         publish_to_table(self.__class__.__name__, {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],

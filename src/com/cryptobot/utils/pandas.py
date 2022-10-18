@@ -111,7 +111,7 @@ def merge_tokens_dicts_into_df(dict1, dict2, key):
     return df
 
 
-def get_address_details(address: str):
+def get_address_details(address: str) -> dict:
     tokens = (get_tokens_df()).copy()
     tokens_holders_df = (get_tokens_holders_df()).copy()
 
@@ -143,20 +143,20 @@ def get_address_details(address: str):
 
     del wallet['symbol']
 
-    return wallet.copy()
+    return wallet.copy().to_dict(orient='records')
 
 
-def get_token_by_symbol(symbol: str):
-    tokens = get_tokens_df()
+def get_token_by_symbol(symbol: str) -> dict:
+    tokens = get_tokens_df().copy()
     result = tokens[tokens['symbol'] == symbol.upper()].to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
-    return None
+    return result
 
 
-def get_token_by_address(address: str):
-    tokens = get_tokens_df()
+def get_token_by_address(address: str) -> dict:
+    tokens = get_tokens_df().copy()
     result = tokens[tokens['address'] == address.lower()].to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
-    return None
+    return result
