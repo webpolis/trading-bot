@@ -19,7 +19,7 @@ from websockets.connection import ConnectionClosed
 
 
 class MempoolExtractor(Extractor, EventsProducerMixin):
-    def __init__(self):
+    def __init__(self, classifiers_paths=None):
         for base_class in MempoolExtractor.__bases__:
             if base_class == EventsProducerMixin:
                 base_class.__init__(self, queue=TXClassifier.__name__)
@@ -30,7 +30,10 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.classifiers = []
 
         classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
-            Config().get_settings().runtime.extractors.mempool.classifiers
+            (
+                Config().get_settings().runtime.extractors.mempool.classifiers if classifiers_paths is None
+            else classifiers_paths
+        )
 
         for clf in classifiers_paths:
             cls = get_class_by_fullname(clf)

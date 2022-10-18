@@ -13,6 +13,7 @@ import sys
 import threading
 
 from com.cryptobot.config import Config
+from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
 from com.cryptobot.utils.python import get_class_by_fullname
@@ -31,6 +32,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 # executable/script.
 
 settings = Config().get_settings()
+extractors_paths = settings.runtime.extractors.enabled
 threads = []
 
 
@@ -69,6 +71,10 @@ def parse_args(args):
     )
     parser.add_argument('-d', '--debug_modules',
                         dest='debug_modules', nargs='+', default=[])
+    parser.add_argument('-e', '--extractors', help='Overrides enabled extractors in config.json',
+                        dest='extractors_override', nargs='+', default=[])
+    parser.add_argument('-c', '--classifiers', help='Overrides mempool classifiers in config.json',
+                        dest='classifiers_override', nargs='+', default=[])
 
     return parser.parse_args(args)
 
@@ -82,19 +88,27 @@ def main(args):
     global _logger
 
     args = parse_args(args)
+    classifiers_paths = None
 
     if len(args.debug_modules) > 0:
         logging.getLogger(__name__).addFilter(DebugModuleFilter(args.debug_modules))
+
+    if len(args.extractors_override) > 0:
+        extractors_paths = args.extractors_override
+    if len(args.classifiers_override) > 0:
+        classifiers_paths = args.classifiers_override
 
     _logger = PrettyLogger(__name__, args.loglevel)
 
     _logger.info('Starting up TradingBot...')
 
     # init extractors
-    extractors_paths = settings.runtime.extractors.enabled
+
     for clf in extractors_paths:
         cls = get_class_by_fullname(clf)
-        thread = threading.Thread(name=clf, daemon=True, target=cls().run)
+        instance = cls() if not issubclass(cls, MempoolExtractor) else cls(
+            classifiers_paths=classifiers_paths)
+        thread = threading.Thread(name=clf, daemon=True, target=instance.run)
 
         threads.append(thread)
 
