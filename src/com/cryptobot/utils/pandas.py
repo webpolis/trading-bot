@@ -148,11 +148,15 @@ def get_address_details(address: str):
 
 def get_token_by_symbol(symbol: str):
     tokens = get_tokens_df()
+    result = tokens[tokens['symbol'] == symbol.upper()].to_dict(orient='records')
+    result = result[0] if len(result) > 0 else None
 
-    return tokens[tokens['symbol'] == symbol.lower()]
+    return None
 
 
 def get_token_by_address(address: str):
     tokens = get_tokens_df()
+    result = tokens[tokens['address'] == address.lower()].to_dict(orient='records')
+    result = result[0] if len(result) > 0 else None
 
-    return tokens[tokens['address'] == address.lower()]
+    return None

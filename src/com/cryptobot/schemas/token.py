@@ -52,11 +52,10 @@ class Token(Schema):
                 if token != None:
                     self.address = token['erc20Contract'].lower()
 
-    def from_df(df, address):
-        if df.empty:
-            return Token(address=address)
-
-        return Token(df['symbol'].item(), df['name'].item(), df['market_cap'].item(), df['price_usd'].item(), df['address'].item())
+    def from_dict(dict_obj, address=None):
+        return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
+                     dict_obj['address'] if dict_obj['address'] is not None else address) \
+            if dict_obj is not None else Token(address=address)
 
     def metadata(self) -> dict:
         return get_token_by_address(self.address)

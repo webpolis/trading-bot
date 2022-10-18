@@ -18,9 +18,9 @@ class SwapTx(Tx):
 
         if 'path' in params:
             # Uniswap based contract
-            self.token_from = Token.from_df(
+            self.token_from = Token.from_dict(
                 get_token_by_address(params['path'][0].lower()), params['path'][0].lower())
-            self.token_to = Token.from_df(
+            self.token_to = Token.from_dict(
                 get_token_by_address(params['path'][-1].lower()), params['path'][-1].lower())
             self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
 
@@ -29,17 +29,17 @@ class SwapTx(Tx):
             self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
         elif 'desc' in params:
             # 1inch based contract
-            self.token_from = Token.from_df(
+            self.token_from = Token.from_dict(
                 get_token_by_address(params['desc'][0].lower()), params['desc'][0].lower())
-            self.token_to = Token.from_df(
+            self.token_to = Token.from_dict(
                 get_token_by_address(params['desc'][1].lower()), params['desc'][1].lower())
             self.token_from_qty = params['desc'][-4]
             self.token_to_qty = params['desc'][-3]
         elif 'singleSwap' in params:
             # Balancer vault based contract
-            self.token_from = Token.from_df(
+            self.token_from = Token.from_dict(
                 get_token_by_address(params['singleSwap'][2].lower()), params['singleSwap'][2].lower())
-            self.token_to = Token.from_df(
+            self.token_to = Token.from_dict(
                 get_token_by_address(params['singleSwap'][3].lower()), params['singleSwap'][3].lower())
             self.token_from_qty = params['singleSwap'][4]
             self.token_to_qty = params['limit']  # a minimum amount to receive
