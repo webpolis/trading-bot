@@ -61,8 +61,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
     async def get_pending_txs(self):
         async with connect(Config().get_settings().web3.providers.alchemy.wss) as wss:
             await wss.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}')
-
-            subscription_response = await wss.recv()
+            await wss.recv()
 
             while True:
                 try:
@@ -74,15 +73,24 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                         mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
 
                     if len(mempool_txs) > 0:
-                        self.publish(list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
+                        self.publish(
+                            list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
                 except ConnectionClosed:
                     continue
                 except Exception as error:
                     self.logger.error(error)
 
+                    await self.restart_ws(wss)
                     await asyncio.sleep(1)
 
                     continue
+
+    async def restart_ws(self, wss):
+        await wss.close()
+        await wss.wait_closed()
+
+        await wss.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}')
+        await wss.recv()
 
     def run(self):
         self.listen()
