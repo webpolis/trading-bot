@@ -62,12 +62,28 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         asyncio.run(self.get_pending_txs())
 
     async def get_pending_txs(self):
+        initial_payload = '{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}'
+
         async with connect(Config().get_settings().web3.providers.alchemy.wss) as wss:
-            await wss.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}')
+            await wss.send(initial_payload)
             await wss.recv()
 
             while True:
                 try:
+                    if not wss.open:
+                        try:
+                            self.logger.info('Reconnecting...')
+
+                            wss = connect(
+                                Config().get_settings().web3.providers.alchemy.wss)
+
+                            await wss.send(initial_payload)
+                            await wss.recv()
+                        except:
+                            await asyncio.sleep(1)
+
+                            continue
+
                     response = json.loads(await asyncio.wait_for(wss.recv(), timeout=15))
                     mempool_txs = [response['params']['result']]
 
@@ -78,13 +94,12 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
                     if len(mempool_txs) > 0:
                         self.publish(
                             list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
-                except ConnectionClosed:
-                    continue
-                except Exception as error:
+                except ConnectionClosed as error:
                     self.logger.error(error)
 
-                    await self.restart_ws(wss)
-                    await asyncio.sleep(1)
+                    continue
+                except Exception as _error:
+                    self.logger.error(_error)
 
                     continue
 
