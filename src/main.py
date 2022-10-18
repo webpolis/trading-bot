@@ -16,7 +16,7 @@ from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.extractors.token_holders import TokenHoldersExtractor
 from com.cryptobot.extractors.tokens import TokensExtractor
 from com.cryptobot.traders.trader import Trader
-from com.cryptobot.utils.logger import PrettyLogger
+from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
 
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
@@ -42,7 +42,8 @@ def parse_args(args):
     Returns:
       :obj:`argparse.Namespace`: command line parameters namespace
     """
-    parser = argparse.ArgumentParser(description='A crypto trading bot')
+    parser = argparse.ArgumentParser(
+        description='A multithreaded cryptocurrency bot that reacts to mempool transactions.')
     parser.add_argument(
         '--version',
         action='version',
@@ -64,6 +65,8 @@ def parse_args(args):
         action='store_const',
         const=logging.DEBUG,
     )
+    parser.add_argument('-d', '--debug_modules',
+                        dest='debug_modules', nargs='+', default=[])
 
     return parser.parse_args(args)
 
@@ -77,6 +80,10 @@ def main(args):
     global _logger
 
     args = parse_args(args)
+
+    if len(args.debug_modules) > 0:
+        logging.getLogger(__name__).addFilter(DebugModuleFilter(args.debug_modules))
+
     _logger = PrettyLogger(__name__, args.loglevel)
 
     _logger.info('Starting up TradingBot...')
