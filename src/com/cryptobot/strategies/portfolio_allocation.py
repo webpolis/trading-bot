@@ -37,19 +37,14 @@ class PortfolioAllocationStrategy(Strategy):
 
             return super().apply(tx)
 
-        wallet_token_stats = sender_stats[sender_stats['token_symbol'] == str(
-            tx.token_from.symbol)]
-
-        if len(wallet_token_stats) > 0:
+        if sender_stats is not None:
             self.logger.info(
-                f'We have some token stats for this wallet\'s portfolio: {wallet_token_stats.to_json(orient="records")}')
+                f'We have some token stats for this wallet\'s portfolio: {str(sender_stats)}')
 
-            if wallet_token_stats['wallet_portfolio_alloc'].item() >= self.settings.min_wallet_portfolio_alloc:
-                if wallet_token_stats['wallet_market_percent'].item() >= self.settings.min_wallet_market_percent:
-                    # we are interested in trading this signal
-                    return StrategyResponse(action=StrategyAction.SELL, token=tx.token_from)
+            # @TODO: refactor calc
+            return StrategyResponse(action=StrategyAction.SELL, token=tx.token_from)
         else:
             self.logger.info(
-                f'Not enough token stats for wallet: {wallet_token_stats.to_json(orient="records")}')
+                f'Not enough token stats for wallet: {str(sender_stats)}')
 
         return super().apply(tx)
