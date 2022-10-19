@@ -16,32 +16,22 @@ class PortfolioAllocationStrategy(Strategy):
     def apply(self, tx: Tx | SwapTx) -> StrategyResponse:
         verdict = super().apply(tx)
 
-        self.logger.info(f'Applying strategy for tx: {str(tx)}')
+        self.logger.info(f'Applying strategy for tx {tx.hash}')
 
         # collect metadata from sender
         if hasattr(tx, 'token_from') and tx.token_from is not None:
             try:
                 sender_stats = tx.sender.portfolio_stats()
-                sender_token_stat = next(map(
-                    lambda stat: stat if stat.balance.token.symbol == tx.token_from.symbol else None, sender_stats)) \
-                    if sender_stats is not None else None
+                sender_token_stats = next(map(
+                    lambda stat: stat if stat.balance.token.symbol == tx.token_from.symbol else None, sender_stats), None) \
+                    if sender_stats is not None and len(sender_stats) > 0 else None
 
-                print(sender_token_stat)
+                self.logger.info({'sender_stats': sender_stats,
+                                 'sender_token_stats': sender_token_stats})
             except Exception as error:
                 self.logger.error(error)
         else:
             self.logger.info('Not enough data for analysis.')
-
-        # if (not hasattr(tx, 'token_from') or tx.token_from is None or sender_stats is None or len(sender_stats) == 0):
-        #     # we don't have enough stats to proceed
-        #     self.logger.info(
-        #         f'Ignoring transaction since we have not collected enough data for strategy analysis: {str(tx)}')
-        # else:
-        #     self.logger.info(
-        #         f'We have some token stats for this wallet\'s portfolio: {str(sender_stats)}')
-
-        #     # @TODO: refactor calc
-        #     verdict = StrategyResponse(action=StrategyAction.SELL, token=tx.token_from)
 
         # publish_to_table(self.__class__.__name__, {
         #     'tx_timestamp': [tx.timestamp],

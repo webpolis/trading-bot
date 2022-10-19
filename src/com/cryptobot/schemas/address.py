@@ -14,17 +14,18 @@ settings = Config().get_settings()
 
 
 class AddressBalance(Schema):
-    def __init__(self, token: Token, qty: int):
+    def __init__(self, token: Token, qty: int = 0):
         super().__init__()
 
         self.token = token
         self.qty = qty
         self.qty_usd = (qty/10**token.decimals) * \
-            token.price_usd if token.price_usd is not None else 0
+            token.price_usd if token.price_usd is not None \
+            and token.decimals is not None else 0
 
 
 class AddressPortfolioStats(Schema):
-    def __init__(self, balance: AddressBalance, total_usd: float) -> None:
+    def __init__(self, balance: AddressBalance, total_usd: float = 0) -> None:
         super().__init__()
 
         self.balance = balance
@@ -67,20 +68,22 @@ class Address(Schema):
                 api_key=settings.web3.providers.alchemy.api_key), payload)
             balances = response.get('result', {}).get('tokenBalances', None)
 
-            for balance in balances:
-                token = Token(address=balance['contractAddress'])
-                qty = int(balance['tokenBalance'], 0)
-                address_balance = AddressBalance(token, qty)
+            if balances is not None:
+                for balance in balances:
+                    token = Token(address=balance['contractAddress'])
+                    qty = int(balance['tokenBalance'], 0)
+                    address_balance = AddressBalance(token, qty)
 
-                self.balances.append(address_balance)
+                    self.balances.append(address_balance)
         except Exception as error:
             print(error)
         finally:
             return self.balances
 
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
+        stats: List[AddressPortfolioStats] = []
+
         try:
-            stats: List[AddressPortfolioStats] = []
             balances = self.get_balances()
             total_usd = functools.reduce(
                 operator.add, [
@@ -93,7 +96,5 @@ class Address(Schema):
                 stats.append(AddressPortfolioStats(balance, total_usd))
         except Exception as error:
             print(error)
-
-            return None
-
-        return stats
+        finally:
+            return stats
