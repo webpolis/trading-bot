@@ -2,20 +2,16 @@ import asyncio
 import json
 from typing import List
 
-from com.cryptobot.classifiers.mempool_whale_tx import MempoolWhaleTXClassifier
-from com.cryptobot.classifiers.swap import SwapClassifier
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.events.producer import EventsProducerMixin
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.utils.ethereum import fetch_mempool_txs
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
+from com.cryptobot.utils.websocket import WSClient
 from jsonpickle import encode
-from websockets import connect
-from websockets.connection import ConnectionClosed
 
 
 class MempoolExtractor(Extractor, EventsProducerMixin):
@@ -28,6 +24,8 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
 
         self.cached_txs = TXQueue()
         self.classifiers = []
+        self.ws = WSClient(Config().get_settings(
+        ).web3.providers.alchemy.wss, callback=self.ws_callback)
 
         classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
             (
@@ -61,54 +59,26 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         # start listening
         asyncio.run(self.get_pending_txs())
 
-    async def get_pending_txs(self):
+    async def ws_callback(self, data, *args, **kwargs):
+        response = json.loads(data)
+        mempool_txs = [response['params']['result']]
+
+        # initialize on demand classifiers
+        for ondemand in self.ondemand_classifiers:
+            mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
+
+        if len(mempool_txs) > 0:
+            self.publish(
+                list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
+
+    async def ws_handshake(self, ws):
         initial_payload = '{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}'
 
-        async with connect(Config().get_settings().web3.providers.alchemy.wss) as wss:
-            await wss.send(initial_payload)
-            await wss.recv()
+        await ws.send(initial_payload)
+        await ws.recv()
 
-            while True:
-                try:
-                    if not wss.open:
-                        try:
-                            self.logger.info('Reconnecting...')
-
-                            wss = connect(
-                                Config().get_settings().web3.providers.alchemy.wss)
-
-                            await wss.send(initial_payload)
-                            await wss.recv()
-                        except:
-                            await asyncio.sleep(1)
-
-                            continue
-
-                    response = json.loads(await asyncio.wait_for(wss.recv(), timeout=15))
-                    mempool_txs = [response['params']['result']]
-
-                    # initialize on demand classifiers
-                    for ondemand in self.ondemand_classifiers:
-                        mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
-
-                    if len(mempool_txs) > 0:
-                        self.publish(
-                            list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
-                except ConnectionClosed as error:
-                    self.logger.error(error)
-
-                    continue
-                except Exception as _error:
-                    self.logger.error(_error)
-
-                    continue
-
-    async def restart_ws(self, wss):
-        await wss.close()
-        await wss.wait_closed()
-
-        await wss.send('{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}')
-        await wss.recv()
+    async def get_pending_txs(self):
+        await self.ws.listen_forever(handshake=self.ws_handshake)
 
     def run(self):
         self.listen()
