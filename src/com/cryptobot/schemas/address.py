@@ -65,7 +65,7 @@ class Address(Schema):
         try:
             response = request.post(settings.endpoints.alchemy.api.format(
                 api_key=settings.web3.providers.alchemy.api_key), payload)
-            balances = response['result']['tokenBalances']
+            balances = response.get('result', {}).get('tokenBalances', None)
 
             for balance in balances:
                 token = Token(address=balance['contractAddress'])
@@ -74,21 +74,26 @@ class Address(Schema):
 
                 self.balances.append(address_balance)
         except Exception as error:
-            pass
+            print(error)
         finally:
             return self.balances
 
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
-        stats: List[AddressPortfolioStats] = []
-        balances = self.get_balances()
-        total_usd = functools.reduce(
-            operator.add, [
-                balance.qty_usd
-                for balance in balances if balance.qty_usd is not None],
-            0
-        )
+        try:
+            stats: List[AddressPortfolioStats] = []
+            balances = self.get_balances()
+            total_usd = functools.reduce(
+                operator.add, [
+                    balance.qty_usd
+                    for balance in balances if balance.qty_usd is not None],
+                0
+            ) if len(balances) > 0 else 0
 
-        for balance in balances:
-            stats.append(AddressPortfolioStats(balance, total_usd))
+            for balance in balances:
+                stats.append(AddressPortfolioStats(balance, total_usd))
+        except Exception as error:
+            print(error)
 
-        return [stat for stat in stats if stat.balance.qty_usd is not None]
+            return None
+
+        return stats

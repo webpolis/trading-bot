@@ -32,7 +32,7 @@ class TokenSource(Enum):
 
 class Token(Schema):
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
-        self.symbol = symbol
+        self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
         self.market_cap = market_cap
         self.address = address.lower() if type(address) == str else address
@@ -41,27 +41,7 @@ class Token(Schema):
         self._alchemy_metadata = None
         self._metadata = self.metadata()
 
-        if self.address is None:
-            # populate ERC20 address
-            token = next((coin for coin in cg_coins if
-                          coin['symbol'].upper() == symbol
-                          and coin.get('platforms', None) != None
-                          and coin['platforms'].get('ethereum', None) != None), None)
-
-            # 1st try
-            if token != None:
-                self.address = token['platforms']['ethereum'].lower() if \
-                    token['platforms'].get(
-                    'ethereum', None) != None else None
-
-            # 2nd try
-            if self.address is None:
-                token = next((coin for coin in cg_coins if coin['id'].upper() == symbol
-                              and coin.get('erc20Contract', None) != None), None)
-
-                if token != None:
-                    self.address = token['erc20Contract'].lower()
-
+        # populate missing data
         if self._metadata is not None:
             if self.symbol is None:
                 self.symbol = self._metadata.get('symbol', None)
@@ -77,6 +57,27 @@ class Token(Schema):
 
             if self.price_usd is None:
                 self.price_usd = self._metadata.get('price_usd', None)
+
+        self._coingecko_coin = next((coin for coin in cg_coins if
+                                     coin['symbol'].upper() == self.symbol), None)
+        self._ftx_coin = next((coin for coin in ftx_coins if coin['id'].upper() == self.symbol
+                               and coin.get('erc20Contract', None) != None), None)
+
+        # populate ERC20 address
+        if self.address is None:
+            # 1st try
+            if self._coingecko_coin != None:
+                self.address = self._coingecko_coin['platforms']['ethereum'].lower() if \
+                    self._coingecko_coin['platforms'].get(
+                    'ethereum', None) != None else None
+
+            # 2nd try
+            if self.address is None:
+                if self._ftx_coin != None:
+                    self.address = self._ftx_coin['erc20Contract'].lower()
+
+        if self.price_usd is None:
+            self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
 
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
