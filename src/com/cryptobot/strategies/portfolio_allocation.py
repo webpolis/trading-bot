@@ -26,7 +26,7 @@ class PortfolioAllocationStrategy(Strategy):
                     lambda stat: stat if stat.balance.token.symbol == tx.token_from.symbol else None, sender_stats), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
 
-                self.logger.info({'sender_stats': sender_stats,
+                self.logger.info({'sender': str(tx.sender), 'sender_stats': [str(stat) for stat in sender_stats],
                                  'sender_token_stats': sender_token_stats})
             except Exception as error:
                 self.logger.error(error)

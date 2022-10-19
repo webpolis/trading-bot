@@ -34,6 +34,15 @@ class AddressPortfolioStats(Schema):
             self.balance.qty_usd*100)/self.total_usd \
             if self.balance.qty_usd != 0 and self.total_usd != 0 else 0
 
+    def __str__(self):
+        return str({
+            'symbol': self.balance.token.symbol,
+            'qty': self.balance.qty,
+            'qty_usd': self.balance.qty_usd,
+            'total_usd': self.total_usd,
+            'allocation_percent': self.allocation_percent
+        })
+
 
 class Address(Schema):
     def __init__(self, address):
