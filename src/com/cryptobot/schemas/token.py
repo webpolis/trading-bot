@@ -62,20 +62,21 @@ class Token(Schema):
                 if token != None:
                     self.address = token['erc20Contract'].lower()
 
-        if self.symbol is None:
-            self.symbol = self._metadata.get('symbol', None)
+        if self._metadata is not None:
+            if self.symbol is None:
+                self.symbol = self._metadata.get('symbol', None)
 
-        if self.name is None:
-            self.name = self._metadata.get('name', None)
+            if self.name is None:
+                self.name = self._metadata.get('name', None)
 
-        if self.market_cap is None:
-            self.market_cap = self._metadata.get('market_cap', None)
+            if self.market_cap is None:
+                self.market_cap = self._metadata.get('market_cap', None)
 
-        if self.decimals is None:
-            self.decimals = self._metadata.get('decimals', None)
+            if self.decimals is None:
+                self.decimals = self._metadata.get('decimals', None)
 
-        if self.price_usd is None:
-            self.price_usd = self._metadata.get('price_usd', None)
+            if self.price_usd is None:
+                self.price_usd = self._metadata.get('price_usd', None)
 
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
@@ -83,6 +84,9 @@ class Token(Schema):
             if dict_obj is not None else Token(address=address)
 
     def metadata(self) -> dict:
+        if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
+            return None
+
         mixed_metadata = {}
         _metadata = get_token_by_address(self.address)
         _alchemy_metadata = self.fetch_alchemy_metadata()

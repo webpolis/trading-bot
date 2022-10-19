@@ -31,20 +31,16 @@ class PortfolioAllocationStrategy(Strategy):
         }, [{'name': 'token_from_qty', 'type': 'BIGNUMERIC'}, {'name': 'token_to_qty', 'type': 'BIGNUMERIC'}])
 
         # we don't have enough stats to proceed
-        if (not hasattr(tx, 'token_from') or tx.token_from is None or sender_stats is None):
+        if (not hasattr(tx, 'token_from') or tx.token_from is None or sender_stats is None or len(sender_stats) == 0):
             self.logger.info(
                 f'Ignoring transaction since we have not collected enough data for strategy analysis: {str(tx)}')
 
             return super().apply(tx)
 
-        if sender_stats is not None:
-            self.logger.info(
-                f'We have some token stats for this wallet\'s portfolio: {str(sender_stats)}')
+        self.logger.info(
+            f'We have some token stats for this wallet\'s portfolio: {str(sender_stats)}')
 
-            # @TODO: refactor calc
-            return StrategyResponse(action=StrategyAction.SELL, token=tx.token_from)
-        else:
-            self.logger.info(
-                f'Not enough token stats for wallet: {str(sender_stats)}')
+        # @TODO: refactor calc
+        return StrategyResponse(action=StrategyAction.SELL, token=tx.token_from)
 
         return super().apply(tx)
