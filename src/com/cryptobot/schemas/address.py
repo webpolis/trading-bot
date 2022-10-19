@@ -79,8 +79,12 @@ class Address(Schema):
 
             if balances is not None:
                 for balance in balances:
-                    token = Token(address=balance['contractAddress'])
                     qty = int(balance['tokenBalance'], 0)
+
+                    if qty == 0:
+                        continue
+
+                    token = Token(address=balance['contractAddress'])
                     address_balance = AddressBalance(token, qty)
 
                     self.balances.append(address_balance)
