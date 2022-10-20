@@ -1,4 +1,5 @@
 from com.cryptobot.config import Config
+from com.cryptobot.schemas.address import AddressPortfolioStats
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx
@@ -26,7 +27,7 @@ class PortfolioAllocationStrategy(Strategy):
         if hasattr(tx, 'token_from') and tx.token_from is not None:
             try:
                 sender_stats = tx.sender.portfolio_stats()
-                sender_token_from_stats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
+                sender_token_from_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
 
                 self.logger.info({'sender': str(tx.sender), 'sender_token_from_stats': str(
@@ -46,14 +47,11 @@ class PortfolioAllocationStrategy(Strategy):
         token_to_qty = parse_token_qty(token_to, tx.token_to_qty) if hasattr(
             tx, 'token_to_qty') else None
         token_to_market_cap = tx.token_to.market_cap if token_to is not None else None
-        sender_token_from_qty = parse_token_qty(token_from, sender_token_from_stats.get(
-            'qty', None)) if has_token_from_stats else None
-        sender_token_from_qty_usd = sender_token_from_stats.get(
-            'qty_usd', None) if has_token_from_stats else None
-        sender_token_from_allocation = sender_token_from_stats.get(
-            'allocation_percent', None) if has_token_from_stats else None
-        sender_total_usd = sender_token_from_stats.get(
-            'total_usd', None) if has_token_from_stats else None
+        sender_token_from_qty = parse_token_qty(
+            token_from, sender_token_from_stats.balance.qty) if has_token_from_stats else None
+        sender_token_from_qty_usd = sender_token_from_stats.balance.qty_usd if has_token_from_stats else None
+        sender_token_from_allocation = sender_token_from_stats.allocation_percent if has_token_from_stats else None
+        sender_total_usd = sender_token_from_stats.total_usd if has_token_from_stats else None
 
         publish_to_table(self.__class__.__name__, {
             'tx_timestamp': [tx.timestamp],
