@@ -86,7 +86,7 @@ class Token(Schema):
 
         if self.price_usd is None and self._coingecko_coin is not None:
             try:
-                response = request.get(settings.endpoints.coingecko.coins, {
+                response = request.get(settings.endpoints.coingecko.price, {
                     'ids': self._coingecko_coin['id'],
                     'vs_currencies': 'usd'
                 })
