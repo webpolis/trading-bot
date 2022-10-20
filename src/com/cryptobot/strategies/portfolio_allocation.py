@@ -75,10 +75,6 @@ class PortfolioAllocationStrategy(Strategy):
             'token_to_address': [token_to.address if token_to != None else None],
             'token_to_qty': [token_to_qty],
             'token_to_market_cap': [token_to_market_cap],
-        }, [
-            {'name': 'token_from_qty', 'type': 'BIGNUMERIC'},
-            {'name': 'token_to_qty', 'type': 'BIGNUMERIC'},
-            {'name': 'sender_token_from_qty', 'type': 'BIGNUMERIC'},
-        ])
+        })
 
         return verdict

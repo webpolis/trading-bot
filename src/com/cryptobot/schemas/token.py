@@ -55,7 +55,7 @@ class Token(Schema):
                 self.market_cap = self._metadata.get('market_cap', None)
 
             if self.decimals is None:
-                self.decimals = self._metadata.get('decimals', None)
+                self.decimals = int(self._metadata.get('decimals', 0))
 
             if self.price_usd is None:
                 self.price_usd = self._metadata.get('price_usd', None)
