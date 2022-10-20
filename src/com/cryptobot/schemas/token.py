@@ -22,6 +22,7 @@ with open(get_data_path() + 'ftx_coins.json') as f:
     f.close()
 
 cached_metadata = {}
+cached_prices = {}
 
 
 class TokenSource(Enum):
@@ -78,6 +79,23 @@ class Token(Schema):
 
         if self.price_usd is None:
             self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
+
+        # fetch price from coingecko
+        if self.price_usd is None and self.symbol in cached_prices:
+            self.price_usd = cached_prices[self.symbol]
+
+        if self.price_usd is None and self._coingecko_coin is not None:
+            try:
+                response = request.get(settings.endpoints.coingecko.coins, {
+                    'ids': self._coingecko_coin.id,
+                    'vs_currencies': 'usd'
+                })
+                self.price_usd = response.get('result', {}).get(
+                    self._coingecko_coin.id, {}).get('usd', None)
+
+                cached_prices[self.symbol] = self.price_usd
+            except Exception as error:
+                pass
 
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
