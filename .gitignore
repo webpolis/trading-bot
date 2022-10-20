@@ -54,3 +54,4 @@ MANIFEST
 .python-version
 !data/.gitkeep
 data
+output.log

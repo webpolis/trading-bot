@@ -1,7 +1,7 @@
 import functools
 import operator
 from typing import List
-
+from cached_property import threaded_cached_property_with_ttl
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
@@ -49,8 +49,7 @@ class Address(Schema):
     def __init__(self, address):
         super().__init__()
 
-        self.address = address
-        self.balances: List[AddressBalance] = []
+        self.address = address.lower()
 
     def metadata(self) -> dict:
         return get_address_details(self.address)
@@ -61,11 +60,12 @@ class Address(Schema):
     def __str__(self):
         return self.address
 
-    def get_balances(self) -> List[AddressBalance]:
-        """Fetch once per iteration as it's cached in self.balances
-        """
+    def __eq__(self, __o: object) -> bool:
+        return self.address == __o.address if __o is not None else False
 
-        self.balances = []
+    @threaded_cached_property_with_ttl(ttl=settings.runtime.models.address.balances_cache_timeout)
+    def balances(self) -> List[AddressBalance]:
+        balances = []
 
         try:
             page_key = None
@@ -88,10 +88,10 @@ class Address(Schema):
                 response = request.post(settings.endpoints.alchemy.api.format(
                     api_key=settings.web3.providers.alchemy.api_key), payload)
                 page_key = response.get('result', {}).get('pageKey', None)
-                balances = response.get('result', {}).get('tokenBalances', None)
+                tokens_balances = response.get('result', {}).get('tokenBalances', None)
 
-                if balances is not None:
-                    for balance in balances:
+                if tokens_balances is not None:
+                    for balance in tokens_balances:
                         qty = int(balance['tokenBalance'], 0)
 
                         if qty == 0:
@@ -100,20 +100,20 @@ class Address(Schema):
                         token = Token(address=balance['contractAddress'])
                         address_balance = AddressBalance(token, qty)
 
-                        self.balances.append(address_balance)
+                        balances.append(address_balance)
 
                 if page_key is None:
                     break
         except Exception as error:
             print(error)
         finally:
-            return self.balances
+            return balances
 
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
         stats: List[AddressPortfolioStats] = []
 
         try:
-            balances = self.get_balances()
+            balances = self.balances
             total_usd = functools.reduce(
                 operator.add, [
                     balance.qty_usd

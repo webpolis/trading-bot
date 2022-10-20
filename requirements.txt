@@ -16,3 +16,4 @@ pandas_gbq==0.17.9
 protobuf==4.21.7
 ratelimit==2.2.1
 backoff==2.2.1
+cached_property==1.5.2

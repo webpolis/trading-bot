@@ -34,6 +34,8 @@ class TokenSource(Enum):
 
 class Token(Schema):
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
+        global cached_prices
+
         self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
         self.market_cap = market_cap
@@ -121,6 +123,8 @@ class Token(Schema):
         return _metadata
 
     def fetch_alchemy_metadata(self) -> dict:
+        global cached_metadata
+
         has_local_metadata = self._alchemy_metadata is not None
         has_cached_metadata = self.address in cached_metadata
 
