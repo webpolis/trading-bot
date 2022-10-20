@@ -67,3 +67,10 @@ def token_parse(token, token_source: TokenSource):
         float(price_usd) if price_usd is not None else None,
         None
     ) if parsed_token != None else None
+
+
+def parse_token_qty(token: Token = None, qty=None):
+    if token is None or qty is None:
+        return None
+
+    return qty/10**token.decimals

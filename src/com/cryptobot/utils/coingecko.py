@@ -6,7 +6,7 @@ from ratelimit import RateLimitException, limits
 request = HttpRequest()
 
 
-@on_exception(expo, RateLimitException, max_tries=3)
+@on_exception(expo, RateLimitException, max_tries=3, max_time=10)
 @limits(calls=49, period=60)
 def get_price(coin_id, currency='usd'):
     response = request.get(Config().get_settings().endpoints.coingecko.price, {
