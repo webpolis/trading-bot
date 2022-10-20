@@ -59,10 +59,10 @@ class Token(Schema):
             if self.price_usd is None:
                 self.price_usd = self._metadata.get('price_usd', None)
 
-        self._coingecko_coin = next((coin for coin in cg_coins if
-                                     coin['symbol'].upper() == self.symbol), None)
-        self._ftx_coin = next((coin for coin in ftx_coins if coin['id'].upper() == self.symbol
-                               and coin.get('erc20Contract', None) != None), None)
+        self._coingecko_coin = next(iter([coin for coin in cg_coins if
+                                          coin['symbol'].upper() == self.symbol]), None)
+        self._ftx_coin = next(iter([coin for coin in ftx_coins if coin['id'].upper() == self.symbol
+                                    and coin.get('erc20Contract', None) != None]), None)
 
         # populate ERC20 address
         if self.address is None:
@@ -81,21 +81,21 @@ class Token(Schema):
             self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
 
         # fetch price from coingecko
-        if self.price_usd is None and self.symbol in cached_prices:
-            self.price_usd = cached_prices[self.symbol]
+        if self.price_usd is None and self.address in cached_prices:
+            self.price_usd = cached_prices[self.address]
 
         if self.price_usd is None and self._coingecko_coin is not None:
             try:
                 response = request.get(settings.endpoints.coingecko.coins, {
-                    'ids': self._coingecko_coin.id,
+                    'ids': self._coingecko_coin['id'],
                     'vs_currencies': 'usd'
                 })
                 self.price_usd = response.get('result', {}).get(
                     self._coingecko_coin['id'], {}).get('usd', None)
 
-                cached_prices[self.symbol] = self.price_usd
+                cached_prices[self.address] = self.price_usd
             except Exception as error:
-                pass
+                print(error)
 
     def __eq__(self, o):
         return (self.address == o.address and self.symbol == o.symbol)
