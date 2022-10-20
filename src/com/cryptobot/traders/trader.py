@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import List
 
 from com.cryptobot.classifiers.swap import SwapClassifier
@@ -49,6 +50,7 @@ class Trader(EventsConsumerMixin):
                         f'We got the strategy\'s verdict: {str(strategy_response)}')
                 except Exception as error:
                     self.logger.error(error)
+                    self.logger.error(traceback.format_exc())
 
         return True
 
