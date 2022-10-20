@@ -91,7 +91,7 @@ class Token(Schema):
                     'vs_currencies': 'usd'
                 })
                 self.price_usd = response.get('result', {}).get(
-                    self._coingecko_coin.id, {}).get('usd', None)
+                    self._coingecko_coin['id'], {}).get('usd', None)
 
                 cached_prices[self.symbol] = self.price_usd
             except Exception as error:

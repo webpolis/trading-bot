@@ -74,7 +74,7 @@ class Address(Schema):
                 params = [self.address, 'erc20']
 
                 if page_key is not None:
-                    params.append(page_key)
+                    params.append({'pageKey': page_key})
 
                 payload = {
                     'id': 1,
