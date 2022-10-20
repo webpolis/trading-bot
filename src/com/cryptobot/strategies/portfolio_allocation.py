@@ -29,9 +29,6 @@ class PortfolioAllocationStrategy(Strategy):
                 sender_stats = tx.sender.portfolio_stats()
                 sender_token_from_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
-
-                self.logger.info({'sender': str(tx.sender), 'receiver': str(tx.receiver), 'sender_token_from_stats': str(
-                    sender_token_from_stats), 'token_from': str(tx.token_from)})
             except Exception as error:
                 self.logger.error(error)
         else:
@@ -58,7 +55,7 @@ class PortfolioAllocationStrategy(Strategy):
         sender_total_usd = sender_token_from_stats.total_usd if has_token_from_stats else float(
             -1)
 
-        publish_to_table(self.__class__.__name__, {
+        output = {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],
             'sender': [str(tx.sender)],
@@ -75,6 +72,9 @@ class PortfolioAllocationStrategy(Strategy):
             'token_to_address': [token_to.address if token_to != None else None],
             'token_to_qty': [token_to_qty],
             'token_to_market_cap': [token_to_market_cap],
-        })
+        }
+
+        # publish_to_table(self.__class__.__name__, output)
+        self.logger.info(str(output))
 
         return verdict
