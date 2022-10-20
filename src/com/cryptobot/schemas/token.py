@@ -3,6 +3,7 @@ from enum import Enum
 
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
+from com.cryptobot.utils.coingecko import get_price
 from com.cryptobot.utils.pandas import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
@@ -86,16 +87,12 @@ class Token(Schema):
 
         if self.price_usd is None and self._coingecko_coin is not None:
             try:
-                response = request.get(settings.endpoints.coingecko.price, {
-                    'ids': self._coingecko_coin['id'],
-                    'vs_currencies': 'usd'
-                })
-                self.price_usd = response.get('result', {}).get(
-                    self._coingecko_coin['id'], {}).get('usd', None)
+                self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
 
-                cached_prices[self.address] = self.price_usd
+                if self.price_usd is not None:
+                    cached_prices[self.address] = self.price_usd
             except Exception as error:
-                print(error)
+                print({'error': error, 'token': str(self)})
 
     def __eq__(self, o):
         return (self.address == o.address and self.symbol == o.symbol)
