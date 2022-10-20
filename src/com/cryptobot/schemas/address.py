@@ -66,29 +66,44 @@ class Address(Schema):
         """
 
         self.balances = []
-        payload = {
-            'id': 1,
-            'jsonrpc': '2.0',
-            'method': 'alchemy_getTokenBalances',
-            'params': [self.address]
-        }
 
         try:
-            response = request.post(settings.endpoints.alchemy.api.format(
-                api_key=settings.web3.providers.alchemy.api_key), payload)
-            balances = response.get('result', {}).get('tokenBalances', None)
+            page_key = None
 
-            if balances is not None:
-                for balance in balances:
-                    qty = int(balance['tokenBalance'], 0)
+            while True:
+                params = [self.address, 'erc20']
 
-                    if qty == 0:
-                        continue
+                if page_key is not None:
+                    params.append(page_key)
 
-                    token = Token(address=balance['contractAddress'])
-                    address_balance = AddressBalance(token, qty)
+                payload = {
+                    'id': 1,
+                    'jsonrpc': '2.0',
+                    'method': 'alchemy_getTokenBalances',
+                    'params': params
+                }
 
-                    self.balances.append(address_balance)
+                print(f'Fetching balances for {self.address} (pageKey: {page_key})')
+
+                response = request.post(settings.endpoints.alchemy.api.format(
+                    api_key=settings.web3.providers.alchemy.api_key), payload)
+                page_key = response.get('result', {}).get('pageKey', None)
+                balances = response.get('result', {}).get('tokenBalances', None)
+
+                if balances is not None:
+                    for balance in balances:
+                        qty = int(balance['tokenBalance'], 0)
+
+                        if qty == 0:
+                            continue
+
+                        token = Token(address=balance['contractAddress'])
+                        address_balance = AddressBalance(token, qty)
+
+                        self.balances.append(address_balance)
+
+                if page_key is None:
+                    break
         except Exception as error:
             print(error)
         finally:

@@ -22,12 +22,11 @@ class PortfolioAllocationStrategy(Strategy):
         if hasattr(tx, 'token_from') and tx.token_from is not None:
             try:
                 sender_stats = tx.sender.portfolio_stats()
-                sender_token_stats = next(map(
-                    lambda stat: stat if stat.balance.token == tx.token_from else None, sender_stats), None) \
+                sender_token_stats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
 
-                self.logger.info({'sender': str(tx.sender), 'sender_stats': [str(stat) for stat in sender_stats],
-                                 'sender_token_stats': sender_token_stats, 'token_from': str(tx.token_from)})
+                self.logger.info({'sender': str(tx.sender), 'sender_token_stats': str(
+                    sender_token_stats), 'token_from': str(tx.token_from)})
             except Exception as error:
                 self.logger.error(error)
         else:
