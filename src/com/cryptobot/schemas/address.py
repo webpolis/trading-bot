@@ -36,7 +36,8 @@ class AddressPortfolioStats(Schema):
 
     def __str__(self):
         return str({
-            'symbol': self.balance.token.symbol,
+            'token_symbol': self.balance.token.symbol,
+            'token_address': self.balance.token.address,
             'qty': self.balance.qty,
             'qty_usd': self.balance.qty_usd,
             'total_usd': self.total_usd,

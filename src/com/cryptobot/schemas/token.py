@@ -97,6 +97,9 @@ class Token(Schema):
             except Exception as error:
                 pass
 
+    def __eq__(self, o):
+        return (self.address == o.address and self.symbol == o.symbol)
+
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
                      dict_obj['address'] if dict_obj['address'] is not None else address) \
@@ -149,3 +152,12 @@ class Token(Schema):
             pass
         finally:
             return self._alchemy_metadata
+
+    def __str__(self):
+        return str({
+            'symbol': self.symbol,
+            'address': self.address,
+            'market_cap': self.market_cap,
+            'price_usd': self.price_usd,
+            'decimals': self.decimals
+        })
