@@ -21,7 +21,7 @@ class AddressBalance(Schema):
         self.qty = qty
         self.qty_usd = (qty/10**token.decimals) * \
             token.price_usd if token.price_usd is not None \
-            and token.decimals is not None else 0
+            and token.decimals is not None else float(0)
 
 
 class AddressPortfolioStats(Schema):
@@ -32,7 +32,7 @@ class AddressPortfolioStats(Schema):
         self.total_usd = total_usd
         self.allocation_percent = (
             self.balance.qty_usd*100)/self.total_usd \
-            if self.balance.qty_usd != 0 and self.total_usd != 0 else 0
+            if self.balance.qty_usd != 0 and self.total_usd != 0 else float(0)
 
     def __str__(self):
         return str({

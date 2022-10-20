@@ -95,7 +95,7 @@ class Token(Schema):
                 print({'error': error, 'token': str(self)})
 
     def __eq__(self, o):
-        return (self.address == o.address and self.symbol == o.symbol)
+        return (o is not None and self.address == o.address and self.symbol == o.symbol)
 
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],

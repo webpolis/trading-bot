@@ -30,7 +30,7 @@ class PortfolioAllocationStrategy(Strategy):
                 sender_token_from_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
 
-                self.logger.info({'sender': str(tx.sender), 'sender_token_from_stats': str(
+                self.logger.info({'sender': str(tx.sender), 'receiver': str(tx.receiver), 'sender_token_from_stats': str(
                     sender_token_from_stats), 'token_from': str(tx.token_from)})
             except Exception as error:
                 self.logger.error(error)
@@ -38,36 +38,41 @@ class PortfolioAllocationStrategy(Strategy):
             self.logger.info('Not enough data for analysis.')
 
         # collect values and prepare output
-        has_token_from_stats = sender_token_from_stats is not None
+        has_token_from_stats = sender_token_from_stats != None
         token_from: Token = tx.token_from if hasattr(tx, 'token_from') else None
         token_from_qty = parse_token_qty(token_from, tx.token_from_qty) if hasattr(
-            tx, 'token_from_qty') else None
-        token_from_market_cap = tx.token_from.market_cap if token_from is not None else None
+            tx, 'token_from_qty') else -1
+        token_from_market_cap = token_from.market_cap if token_from != None \
+            and token_from.market_cap != None else float(-1)
         token_to: Token = tx.token_to if hasattr(tx, 'token_to') else None
         token_to_qty = parse_token_qty(token_to, tx.token_to_qty) if hasattr(
-            tx, 'token_to_qty') else None
-        token_to_market_cap = tx.token_to.market_cap if token_to is not None else None
+            tx, 'token_to_qty') else -1
+        token_to_market_cap = token_to.market_cap if token_to != None \
+            and token_to.market_cap != None else float(-1)
         sender_token_from_qty = parse_token_qty(
-            token_from, sender_token_from_stats.balance.qty) if has_token_from_stats else None
-        sender_token_from_qty_usd = sender_token_from_stats.balance.qty_usd if has_token_from_stats else None
-        sender_token_from_allocation = sender_token_from_stats.allocation_percent if has_token_from_stats else None
-        sender_total_usd = sender_token_from_stats.total_usd if has_token_from_stats else None
+            token_from, sender_token_from_stats.balance.qty) if has_token_from_stats else float(-1)
+        sender_token_from_qty_usd = sender_token_from_stats.balance.qty_usd if has_token_from_stats else float(
+            -1)
+        sender_token_from_allocation = sender_token_from_stats.allocation_percent if has_token_from_stats else float(
+            -1)
+        sender_total_usd = sender_token_from_stats.total_usd if has_token_from_stats else float(
+            -1)
 
         publish_to_table(self.__class__.__name__, {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],
-            'sender': [tx.sender.address],
+            'sender': [str(tx.sender)],
             'sender_token_from_qty': [sender_token_from_qty],
             'sender_token_from_qty_usd': [sender_token_from_qty_usd],
             'sender_token_from_allocation': [sender_token_from_allocation],
             'sender_total_usd': [sender_total_usd],
-            'receiver': [tx.receiver.address],
-            'token_from': [token_from.symbol if token_from is not None else None],
-            'token_from_address': [token_from.address if token_from is not None else None],
+            'receiver': [str(tx.receiver)],
+            'token_from': [token_from.symbol if token_from != None else None],
+            'token_from_address': [token_from.address if token_from != None else None],
             'token_from_qty': [token_from_qty],
             'token_from_market_cap': [token_from_market_cap],
-            'token_to': [token_to.symbol if token_to is not None else None],
-            'token_to_address': [token_to.address if token_to is not None else None],
+            'token_to': [token_to.symbol if token_to != None else None],
+            'token_to_address': [token_to.address if token_to != None else None],
             'token_to_qty': [token_to_qty],
             'token_to_market_cap': [token_to_market_cap],
         }, [
