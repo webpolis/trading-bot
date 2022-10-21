@@ -1,7 +1,6 @@
 import functools
 import operator
 from typing import List
-from cached_property import threaded_cached_property_with_ttl
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
@@ -63,7 +62,6 @@ class Address(Schema):
     def __eq__(self, __o: object) -> bool:
         return self.address == __o.address if __o is not None else False
 
-    @threaded_cached_property_with_ttl(ttl=settings.runtime.models.address.balances_cache_timeout)
     def balances(self) -> List[AddressBalance]:
         balances = []
 
@@ -113,7 +111,7 @@ class Address(Schema):
         stats: List[AddressPortfolioStats] = []
 
         try:
-            balances = self.balances
+            balances = self.balances()
             total_usd = functools.reduce(
                 operator.add, [
                     balance.qty_usd

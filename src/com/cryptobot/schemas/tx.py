@@ -6,9 +6,6 @@ from com.cryptobot.utils.ethereum import get_contract
 from ethtx.models.objects_model import Transaction
 
 
-cached_addresses = {}
-
-
 class TxType(Enum):
     UNCLASSIFIED = 0
     SWAP = 1
@@ -16,22 +13,14 @@ class TxType(Enum):
 
 class Tx(Schema):
     def __init__(self, timestamp, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw: Transaction = None):
-        global cached_addresses
-
         super().__init__()
 
         self.timestamp = timestamp
         self.block_number = block_number
         self.hash = hash
         # underscore (reserved keyword)
-        cached_sender = cached_addresses.get(
-            _from.lower(), None) if type(_from) == str else None
-        self.sender = cached_sender if cached_sender != None else (
-            Address(_from) if type(_from) == str else _from)
-        cached_receiver = cached_addresses.get(
-            to.lower(), None) if type(to) == str else None
-        self.receiver = cached_receiver if cached_receiver != None else (
-            Address(to) if type(to) == str else to)
+        self.sender = Address(_from) if type(_from) == str else _from
+        self.receiver = Address(to) if type(to) == str else to
         self.gas = gas
         self.gas_price = gas_price
         self.value = int(value, 0) if type(value) == str else value
@@ -39,12 +28,6 @@ class Tx(Schema):
         self.raw = raw
         self.input = input
         self.decoded_input = decoded_input
-
-        if str(self.sender) not in cached_addresses:
-            cached_addresses[str(self.sender)] = self.sender
-
-        if str(self.receiver) not in cached_addresses:
-            cached_addresses[str(self.receiver)] = self.receiver
 
     def decode_input(self):
         if self.input is None:
