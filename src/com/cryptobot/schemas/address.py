@@ -99,6 +99,8 @@ class Address(Schema):
                         address_balance = AddressBalance(token, qty)
 
                         balances.append(address_balance)
+                else:
+                    print(f'No balances for {self.address}.')
 
                 if page_key is None:
                     break
@@ -112,6 +114,9 @@ class Address(Schema):
 
         try:
             balances = self.balances()
+
+            print(f'Retrieved {len(balances)} balance(s) for {self.address}')
+
             total_usd = functools.reduce(
                 operator.add, [
                     balance.qty_usd

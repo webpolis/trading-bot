@@ -52,7 +52,7 @@ class PortfolioAllocationStrategy(Strategy):
             -1)
         sender_token_from_allocation = sender_token_from_stats.allocation_percent if has_token_from_stats else float(
             -1)
-        sender_total_usd = sender_token_from_stats.total_usd if has_token_from_stats else float(
+        sender_total_usd = sender_stats[0].total_usd if sender_stats != None and len(sender_stats) > 0 else float(
             -1)
 
         output = {
@@ -75,6 +75,7 @@ class PortfolioAllocationStrategy(Strategy):
         }
 
         publish_to_table(self.__class__.__name__, output)
+
         self.logger.info(str(output))
 
         return verdict
