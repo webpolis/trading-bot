@@ -90,7 +90,7 @@ class Address(Schema):
 
                 if tokens_balances is not None:
                     for balance in tokens_balances:
-                        qty = int(balance['tokenBalance'], 0)
+                        qty = int(balance.get('tokenBalance', '-1'), 0)
 
                         if qty == 0:
                             continue
