@@ -68,9 +68,6 @@ class Address(Schema, RedisMixin):
     def __str__(self):
         return self.address
 
-    def __eq__(self, __o: object) -> bool:
-        return (isinstance(__o, type(self)) and self.address == __o.address)
-
     def balances(self) -> List[AddressBalance]:
         cached_balances = self.get('balances')
         balances = [] if cached_balances is None else cached_balances

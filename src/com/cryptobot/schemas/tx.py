@@ -20,7 +20,7 @@ class Tx(Schema):
 
         self.timestamp = timestamp
         self.block_number = block_number
-        self.hash = hash
+        self.hash = hash.lower() if type(hash) == str else hash
         # underscore (reserved keyword)
         self.sender: Address = _from
         self.receiver: Address = to
@@ -31,6 +31,9 @@ class Tx(Schema):
         self.raw = raw
         self.input = input
         self.decoded_input = decoded_input
+
+    def __hash__(self):
+        return hash(self.hash)
 
     def decode_input(self):
         if self.input is None:

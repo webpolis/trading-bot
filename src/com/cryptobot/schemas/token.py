@@ -99,9 +99,6 @@ class Token(Schema):
     def __hash__(self) -> int:
         return hash(self.address)
 
-    def __eq__(self, __o):
-        return (isinstance(__o, type(self)) and self.address == __o.address)
-
     def from_dict(dict_obj, address=None):
         return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
                      dict_obj['address'] if dict_obj['address'] is not None else address) \
