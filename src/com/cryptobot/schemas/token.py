@@ -7,6 +7,7 @@ from com.cryptobot.utils.coingecko import get_price
 from com.cryptobot.utils.pandas import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
+from com.cryptobot.utils.redis_mixin import RedisMixin
 
 request = HttpRequest()
 settings = Config().get_settings()
@@ -32,7 +33,7 @@ class TokenSource(Enum):
     FTX_LENDING = 3
 
 
-class Token(Schema):
+class Token(Schema, RedisMixin):
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
         global cached_prices
 
@@ -108,6 +109,12 @@ class Token(Schema):
         if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
             return None
 
+        cached_metadata = self.get('metadata')
+        _metadata = None if cached_metadata is None else cached_metadata
+
+        if _metadata != None:
+            return _metadata
+
         mixed_metadata = {}
         _metadata = get_token_by_address(self.address)
         _alchemy_metadata = self.fetch_alchemy_metadata()
@@ -119,6 +126,9 @@ class Token(Schema):
             mixed_metadata = {**mixed_metadata, **_alchemy_metadata}
 
         _metadata = mixed_metadata
+
+        if _metadata != None:
+            self.set('metadata', _metadata)
 
         return _metadata
 
