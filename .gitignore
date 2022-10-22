@@ -55,3 +55,5 @@ MANIFEST
 !data/.gitkeep
 data
 output.log
+
+trading-bot.fs*

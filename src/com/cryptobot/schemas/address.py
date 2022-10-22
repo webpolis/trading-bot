@@ -52,6 +52,9 @@ class Address(PersistentSchema):
 
         self.address = address.lower()
 
+    def __hash__(self):
+        return hash(self.address)
+
     def metadata(self) -> dict:
         return get_address_details(self.address)
 

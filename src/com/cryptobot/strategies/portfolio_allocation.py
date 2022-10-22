@@ -74,7 +74,7 @@ class PortfolioAllocationStrategy(Strategy):
             'token_to_market_cap': [token_to_market_cap],
         }
 
-        publish_to_table(self.__class__.__name__, output)
+        # publish_to_table(self.__class__.__name__, output)
 
         self.logger.info(str(output))
 
