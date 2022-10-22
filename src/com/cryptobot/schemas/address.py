@@ -1,7 +1,9 @@
 import functools
 import operator
 from typing import List
+
 from com.cryptobot.config import Config
+from com.cryptobot.schemas.persistent_schema import PersistentSchema
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.ethereum import is_contract
@@ -44,7 +46,7 @@ class AddressPortfolioStats(Schema):
         })
 
 
-class Address(Schema):
+class Address(PersistentSchema):
     def __init__(self, address):
         super().__init__()
 
