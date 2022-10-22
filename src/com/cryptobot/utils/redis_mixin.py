@@ -27,7 +27,8 @@ class RedisMixin():
 
         key = f'{self.__hash__()}-{key}'
         value = encode_message(encode(value))
+        is_set = redis_instance.set(key, value, ex=ttl)
 
         self.lock.release()
 
-        return redis_instance.set(key, value, ex=ttl)
+        return is_set
