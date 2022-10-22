@@ -14,8 +14,6 @@ class RedisMixin():
     def get(self, key):
         self.lock.acquire()
 
-        print(f'Retrieving key {key}')
-
         key = f'{self.__hash__()}-{key}'
         value = redis_instance.get(key)
         value = decode(decode_message(value)) if value != None else None
@@ -27,10 +25,7 @@ class RedisMixin():
     def set(self, key, value, ttl=None):
         self.lock.acquire()
 
-        print(f'Storing key {key}')
-
         key = f'{self.__hash__()}-{key}'
-
         value = encode_message(encode(value))
 
         self.lock.release()
