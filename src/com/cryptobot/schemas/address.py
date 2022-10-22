@@ -100,7 +100,7 @@ class Address(Schema, RedisMixin):
 
                 if tokens_balances is not None:
                     for balance in tokens_balances:
-                        token_balance = balance.get('tokenBalance', '-1')
+                        token_balance = balance.get('tokenBalance', '0')
                         qty = int(token_balance, 0) if token_balance != '0x' else 0
 
                         if qty == 0:
