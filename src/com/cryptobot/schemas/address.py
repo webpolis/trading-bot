@@ -122,8 +122,9 @@ class Address(Schema, RedisMixin):
             print(error)
             print(traceback.format_exc())
         finally:
-            self.set('balances', balances,
-                     ttl=settings.runtime.schemas.address.balances_cache_timeout)
+            if len(balances) > 0:
+                self.set('balances', balances,
+                         ttl=settings.runtime.schemas.address.balances_cache_timeout)
 
             return balances
 
