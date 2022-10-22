@@ -3,6 +3,7 @@ from datetime import datetime
 
 from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.schemas.tx import Tx
+from com.cryptobot.schemas.address import Address
 
 
 def parse_ethereum_address(address_str: str):
@@ -24,13 +25,17 @@ def tx_parse(tx: dict):
 
         return None
 
+    _from = parsed_tx['from'].lower(
+    ) if 'from' in parsed_tx and parsed_tx['from'] != None else ''
+    to = parsed_tx['to'].lower(
+    ) if 'to' in parsed_tx and parsed_tx['to'] != None else ''
+
     return Tx(
         datetime.utcnow(),
         parsed_tx['blockNumber'],
         parsed_tx['hash'].lower(),
-        parsed_tx['from'].lower(
-        ) if 'from' in parsed_tx and parsed_tx['from'] != None else None,
-        parsed_tx['to'].lower() if 'to' in parsed_tx and parsed_tx['to'] != None else None,
+        Address(_from),
+        Address(to),
         parsed_tx['gas'],
         parsed_tx['gasPrice'],
         parsed_tx['value'],

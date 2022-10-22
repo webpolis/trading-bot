@@ -1,9 +1,12 @@
 import functools
 import operator
+import traceback
 from typing import List
 
+from jsonpickle import encode
+
 from com.cryptobot.config import Config
-from com.cryptobot.schemas.persistent_schema import PersistentSchema
+from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.ethereum import is_contract
@@ -46,9 +49,10 @@ class AddressPortfolioStats(Schema):
         })
 
 
-class Address(PersistentSchema):
+class Address(Schema, RedisMixin):
     def __init__(self, address):
-        super().__init__()
+        for base_class in Address.__bases__:
+            base_class.__init__(self)
 
         self.address = address.lower()
 
@@ -65,10 +69,14 @@ class Address(PersistentSchema):
         return self.address
 
     def __eq__(self, __o: object) -> bool:
-        return self.address == __o.address if __o is not None else False
+        return (isinstance(__o, type(self)) and self.address == __o.address)
 
     def balances(self) -> List[AddressBalance]:
-        balances = []
+        cached_balances = self.get('balances')
+        balances = [] if cached_balances is None else cached_balances
+
+        if len(balances) > 0:
+            return balances
 
         try:
             page_key = None
@@ -111,7 +119,11 @@ class Address(PersistentSchema):
                     break
         except Exception as error:
             print(error)
+            print(traceback.format_exc())
         finally:
+            self.set('balances', balances,
+                     ttl=settings.runtime.schemas.address.balances_cache_timeout)
+
             return balances
 
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
@@ -133,5 +145,6 @@ class Address(PersistentSchema):
                 stats.append(AddressPortfolioStats(balance, total_usd))
         except Exception as error:
             print(error)
+            print(traceback.format_exc())
         finally:
             return stats

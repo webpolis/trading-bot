@@ -17,7 +17,6 @@ from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
 from com.cryptobot.utils.python import get_class_by_fullname
-from com.cryptobot.utils.zodb import ZODB
 
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
@@ -102,9 +101,6 @@ def main(args):
     _logger = PrettyLogger(__name__, args.loglevel)
 
     _logger.info('Starting up TradingBot...')
-
-    # init obj storage
-    zodb = ZODB()
 
     # init extractors
     for clf in extractors_paths:

@@ -96,6 +96,9 @@ class Token(Schema):
             except Exception as error:
                 print({'error': error, 'token': str(self)})
 
+    def __hash__(self) -> int:
+        return hash(self.address)
+
     def __eq__(self, o):
         return (o is not None and self.address == o.address and self.symbol == o.symbol)
 

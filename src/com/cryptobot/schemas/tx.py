@@ -1,4 +1,7 @@
 from enum import Enum
+import traceback
+
+from sympy import Add
 
 from com.cryptobot.schemas.address import Address
 from com.cryptobot.schemas.schema import Schema
@@ -19,8 +22,8 @@ class Tx(Schema):
         self.block_number = block_number
         self.hash = hash
         # underscore (reserved keyword)
-        self.sender = Address(_from) if type(_from) == str else _from
-        self.receiver = Address(to) if type(to) == str else to
+        self.sender: Address = _from
+        self.receiver: Address = to
         self.gas = gas
         self.gas_price = gas_price
         self.value = int(value, 0) if type(value) == str else value
