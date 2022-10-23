@@ -32,6 +32,7 @@ class TokenSource(Enum):
 
 class Token(Schema, RedisMixin):
     working_api_key = None
+    cached_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
         self.symbol = symbol.upper() if type(symbol) == str else symbol
@@ -107,8 +108,8 @@ class Token(Schema, RedisMixin):
         except Exception as error:
             return None
 
-        cached_metadata = self.get('metadata')
-        _metadata = None if cached_metadata is None else cached_metadata
+        _cached_metadata = self.get('metadata')
+        _metadata = None if _cached_metadata is None else _cached_metadata
 
         if _metadata != None:
             return _metadata
@@ -131,16 +132,14 @@ class Token(Schema, RedisMixin):
         return _metadata
 
     def fetch_alchemy_metadata(self) -> dict:
-        global cached_metadata
-
         has_local_metadata = self._alchemy_metadata is not None
-        has_cached_metadata = self.address in cached_metadata
+        has_cached_metadata = self.address in Token.cached_metadata
 
         if has_local_metadata:
             return self._alchemy_metadata
 
         if has_cached_metadata:
-            return cached_metadata[self.address]
+            return Token.cached_metadata[self.address]
 
         payload = {
             'id': 1,
@@ -153,7 +152,7 @@ class Token(Schema, RedisMixin):
             response = api_post(payload)
             self._alchemy_metadata = response['result']
 
-            cached_metadata[self.address] = self._alchemy_metadata
+            Token.cached_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
             print({'error': error, 'token': str(self)})
         finally:
