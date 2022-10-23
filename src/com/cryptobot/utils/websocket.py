@@ -4,6 +4,7 @@ import websockets
 import logging
 
 from com.cryptobot.utils.logger import PrettyLogger
+from websockets.exceptions import InvalidStatusCode
 
 
 class WSClient():
@@ -75,3 +76,7 @@ class WSClient():
                 await asyncio.sleep(self.sleep_time)
 
                 continue
+            except InvalidStatusCode as error:
+                self.logger.error(error)
+
+                await asyncio.sleep(self.sleep_time)
