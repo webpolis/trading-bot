@@ -33,7 +33,8 @@ def tx_parse(tx: dict):
     return Tx(
         datetime.utcnow(),
         parsed_tx['blockNumber'],
-        parsed_tx['hash'].lower(),
+        parsed_tx['hash'].lower() if type(
+            parsed_tx['hash']) == str else parsed_tx['hash'].hex(),
         Address(_from),
         Address(to),
         parsed_tx['gas'],

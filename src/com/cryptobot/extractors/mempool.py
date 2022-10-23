@@ -10,7 +10,9 @@ from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
-from com.cryptobot.utils.websocket import WSClient
+from com.cryptobot.utils.websocket import FatalWebsocketException, WSClient
+from com.cryptobot.utils.ethereum import fetch_mempool_txs
+
 from jsonpickle import encode
 
 
@@ -63,13 +65,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         response = json.loads(data)
         mempool_txs = [response['params']['result']]
 
-        # initialize on demand classifiers
-        for ondemand in self.ondemand_classifiers:
-            mempool_txs: List[Tx] = ondemand.classify(mempool_txs)
-
-        if len(mempool_txs) > 0:
-            self.publish(
-                list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
+        self.process_txs(mempool_txs)
 
     async def ws_handshake(self, ws):
         initial_payload = '{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}'
@@ -78,8 +74,31 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         await ws.recv()
 
     async def get_pending_txs(self):
-        # @TODO: programmatically switch between websockets and utils.ethereum.fetch_mempool_txs
-        await self.ws.listen_forever(handshake=self.ws_handshake)
+        try:
+            await self.ws.listen_forever(handshake=self.ws_handshake)
+        except FatalWebsocketException as error:
+            # @TODO: fallback to http polling (utils.ethereum.fetch_mempool_txs)
+            self.logger.error(error)
+            self.logger.info('Trying fallback to http polling...')
+
+            while True:
+                try:
+                    mempool_txs = fetch_mempool_txs()
+
+                    self.process_txs(mempool_txs)
+                except Exception as error:
+                    self.logger.error(error)
+                finally:
+                    await asyncio.sleep(1)
+
+    def process_txs(self, txs):
+        # initialize on demand classifiers
+        for ondemand in self.ondemand_classifiers:
+            mempool_txs: List[Tx] = ondemand.classify(txs)
+
+        if len(mempool_txs) > 0:
+            self.publish(
+                list(map(lambda tx: encode(tx, max_depth=3), mempool_txs)))
 
     def run(self):
         self.listen()

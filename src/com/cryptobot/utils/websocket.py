@@ -7,6 +7,11 @@ from com.cryptobot.utils.logger import PrettyLogger
 from websockets.exceptions import InvalidStatusCode
 
 
+class FatalWebsocketException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
 class WSClient():
     def __init__(self, url, **kwargs):
         self.logger = PrettyLogger(__name__, logging.INFO)
@@ -77,6 +82,4 @@ class WSClient():
 
                 continue
             except InvalidStatusCode as error:
-                self.logger.error(error)
-
-                await asyncio.sleep(self.sleep_time)
+                raise FatalWebsocketException(error)
