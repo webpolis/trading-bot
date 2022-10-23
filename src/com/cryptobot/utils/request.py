@@ -1,5 +1,7 @@
 import json
 import logging
+from time import sleep
+from urllib.error import HTTPError
 import urllib.parse
 from urllib.request import Request, urlopen
 
@@ -8,8 +10,10 @@ from com.cryptobot.utils.logger import PrettyLogger
 
 
 class FatalRequestException(Exception):
-    def __init__(self, *args: object) -> None:
+    def __init__(self, num_tries=None, *args: object) -> None:
         super().__init__(*args)
+
+        self.num_tries = num_tries
 
 
 class HttpRequest():
@@ -31,6 +35,10 @@ class HttpRequest():
         try:
             out = urlopen(req, timeout=15).read().decode('utf-8')
         except Exception as error:
+            request_logger.error({'error': error, 'params': str(params), 'url': url})
+
+            sleep(0.5)
+
             return self.get(url, params, try_num+1)
 
         return json.loads(out) if type(out) == str else out
@@ -39,7 +47,7 @@ class HttpRequest():
         max_tries = Config().get_settings().runtime.utils.request.max_tries
 
         if try_num > max_tries:
-            raise FatalRequestException(f'Tried {try_num} time(s)')
+            raise FatalRequestException(num_tries=try_num)
 
         out = None
         data = json.dumps(data).encode('utf-8')
@@ -50,8 +58,12 @@ class HttpRequest():
 
         try:
             out = urlopen(req, data, timeout=15).read().decode('utf-8')
+        except HTTPError as _error:
+            raise _error
         except Exception as error:
             request_logger.error({'error': error, 'data': data, 'url': url})
+
+            sleep(0.5)
 
             return self.post(url, data, try_num+1)
 

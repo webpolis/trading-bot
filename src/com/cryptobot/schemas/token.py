@@ -6,11 +6,11 @@ from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
 from com.cryptobot.utils.pandas import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
-from com.cryptobot.utils.request import HttpRequest
 from com.cryptobot.utils.redis_mixin import RedisMixin
+from com.cryptobot.utils.alchemy import api_post
 
-request = HttpRequest()
 settings = Config().get_settings()
+alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
 
 # initialize data
 with open(get_data_path() + 'coingecko_coins.json') as f:
@@ -34,6 +34,8 @@ class TokenSource(Enum):
 
 
 class Token(Schema, RedisMixin):
+    working_api_key = None
+
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
         global cached_prices
 
@@ -127,7 +129,7 @@ class Token(Schema, RedisMixin):
 
         _metadata = mixed_metadata
 
-        if _metadata != None:
+        if _metadata != None and len(_metadata) > 0:
             self.set('metadata', _metadata)
 
         return _metadata
@@ -152,8 +154,7 @@ class Token(Schema, RedisMixin):
         }
 
         try:
-            response = request.post(settings.endpoints.alchemy.api.format(
-                api_key=settings.web3.providers.alchemy.api_key), payload)
+            response = api_post(payload)
             self._alchemy_metadata = response['result']
 
             cached_metadata[self.address] = self._alchemy_metadata
