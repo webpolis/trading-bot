@@ -159,7 +159,7 @@ class Token(Schema, RedisMixin):
 
             cached_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
-            pass
+            print({'error': error, 'token': str(self)})
         finally:
             return self._alchemy_metadata
 

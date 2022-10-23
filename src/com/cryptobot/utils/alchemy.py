@@ -49,7 +49,7 @@ def api_post(payload):
         alchemy_logger.error(
             f'FatalRequestException: tried {_error.num_tries} time(s).')
 
-        return api_post(payload)
+        raise _error
 
 
 alchemy_logger = PrettyLogger(HttpRequest.__name__, logging.INFO)
