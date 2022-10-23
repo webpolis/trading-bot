@@ -4,12 +4,16 @@ from com.cryptobot.utils.request import HttpRequest
 from ratelimit import RateLimitException, limits
 
 request = HttpRequest()
+settings = Config().get_settings()
+max_threads = settings.runtime.classifiers.SwapClassifier.max_concurrent_threads
+max_calls = int(50/max_threads)
+period_per_thread = int(60/max_threads)
 
 
 @on_exception(expo, RateLimitException, max_tries=3, max_time=10)
-@limits(calls=49, period=60)
+@limits(calls=max_calls, period=period_per_thread)
 def get_price(coin_id, currency='usd'):
-    response = request.get(Config().get_settings().endpoints.coingecko.price, {
+    response = request.get(settings.endpoints.coingecko.price, {
         'ids': coin_id,
         'vs_currencies': currency
     })
