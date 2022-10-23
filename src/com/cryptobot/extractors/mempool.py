@@ -78,6 +78,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         await ws.recv()
 
     async def get_pending_txs(self):
+        # @TODO: programmatically switch between websockets and utils.ethereum.fetch_mempool_txs
         await self.ws.listen_forever(handshake=self.ws_handshake)
 
     def run(self):

@@ -144,8 +144,6 @@ class Token(Schema, RedisMixin):
         if has_cached_metadata:
             return cached_metadata[self.address]
 
-        """Fetch once per iteration as it's cached in self.balances
-        """
         payload = {
             'id': 1,
             'jsonrpc': '2.0',
