@@ -11,10 +11,11 @@ from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.ethereum import is_contract
 from com.cryptobot.utils.pandas import get_address_details
-from com.cryptobot.utils.request import HttpRequest
+from com.cryptobot.utils.request import FatalRequestException, HttpRequest
 
 request = HttpRequest()
 settings = Config().get_settings()
+alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
 
 
 class AddressBalance(Schema):
@@ -93,8 +94,15 @@ class Address(Schema, RedisMixin):
 
                 print(f'Fetching balances for {self.address} (pageKey: {page_key})')
 
-                response = request.post(settings.endpoints.alchemy.api.format(
-                    api_key=settings.web3.providers.alchemy.api_key), payload)
+                try:
+                    response = request.post(settings.endpoints.alchemy.api.format(
+                        api_key=next(alchemy_api_keys)), payload)
+                except FatalRequestException as error:
+                    print(error)
+                    print(traceback.format_exc())
+
+                    continue
+
                 page_key = response.get('result', {}).get('pageKey', None)
                 tokens_balances = response.get('result', {}).get('tokenBalances', None)
 

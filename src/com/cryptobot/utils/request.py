@@ -7,12 +7,17 @@ from com.cryptobot.config import Config
 from com.cryptobot.utils.logger import PrettyLogger
 
 
+class FatalRequestException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
 class HttpRequest():
     def get(self, url, params: dict = None, try_num=1):
         max_tries = Config().get_settings().runtime.utils.request.max_tries
 
         if try_num > max_tries:
-            return None
+            raise FatalRequestException(f'Tried {try_num} time(s)')
 
         out = None
         params_encoded = urllib.parse.urlencode(params) if params != None else None
@@ -34,7 +39,7 @@ class HttpRequest():
         max_tries = Config().get_settings().runtime.utils.request.max_tries
 
         if try_num > max_tries:
-            return None
+            raise FatalRequestException(f'Tried {try_num} time(s)')
 
         out = None
         data = json.dumps(data).encode('utf-8')

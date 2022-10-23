@@ -24,10 +24,12 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
             else:
                 base_class.__init__(self, __name__)
 
+        self.settings = Config().get_settings()
         self.cached_txs = TXQueue()
         self.classifiers = []
-        self.ws = WSClient(Config().get_settings(
-        ).web3.providers.alchemy.wss, callback=self.ws_callback)
+        self.alchemy_api_keys = iter(self.settings.web3.providers.alchemy.api_keys)
+        self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=next(self.alchemy_api_keys)),
+                           callback=self.ws_callback)
 
         classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
             (

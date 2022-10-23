@@ -15,15 +15,14 @@ class FatalWebsocketException(Exception):
 class WSClient():
     def __init__(self, url, **kwargs):
         self.logger = PrettyLogger(__name__, logging.INFO)
-
-        self.logger.info('Initialized.')
-
         self.url = url
         # set some default values
         self.reply_timeout = kwargs.get('reply_timeout') or 10
         self.ping_timeout = kwargs.get('ping_timeout') or 5
         self.sleep_time = kwargs.get('sleep_time') or 5
         self.callback = kwargs.get('callback')
+
+        self.logger.info(f'Initialized websocket client at {self.url}')
 
     async def listen_forever(self, handshake=None):
         while True:
