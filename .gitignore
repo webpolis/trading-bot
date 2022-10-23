@@ -52,8 +52,6 @@ MANIFEST
 .venv*/
 .conda*/
 .python-version
-!data/.gitkeep
-data
 output.log
 
 trading-bot.fs*
