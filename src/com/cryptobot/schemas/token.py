@@ -108,7 +108,10 @@ class Token(Schema, RedisMixin):
             if dict_obj is not None else Token(address=address)
 
     def metadata(self) -> dict:
-        if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
+        try:
+            if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
+                return None
+        except Exception as error:
             return None
 
         cached_metadata = self.get('metadata')
