@@ -34,7 +34,7 @@ class Token(Schema, RedisMixin):
     working_api_key = None
     cached_metadata = {}
 
-    def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None):
+    def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
         self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
         self.market_cap = market_cap
@@ -43,6 +43,7 @@ class Token(Schema, RedisMixin):
         self.decimals = decimals
         self._alchemy_metadata = None
         self._metadata = self.metadata()
+        self.no_price_checkup = no_price_checkup
 
         # populate missing data
         if self._metadata is not None:
@@ -83,7 +84,7 @@ class Token(Schema, RedisMixin):
             self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
 
         # fetch price from coingecko
-        if self.price_usd is None and self._coingecko_coin is not None:
+        if not self.no_price_checkup and self.price_usd is None and self._coingecko_coin is not None:
             try:
                 self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
             except Exception as error:
