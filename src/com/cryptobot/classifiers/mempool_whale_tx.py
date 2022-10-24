@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 from com.cryptobot.classifiers.tx import TXClassifier
 from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.utils.pandas import get_tokens_holders_df
+from com.cryptobot.utils.pandas_utils import get_tokens_holders_df
 from com.cryptobot.utils.path import get_data_path
 
 

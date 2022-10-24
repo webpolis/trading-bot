@@ -4,7 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
-from com.cryptobot.utils.pandas import accounts_table_to_df
+from com.cryptobot.utils.pandas_utils import accounts_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
 

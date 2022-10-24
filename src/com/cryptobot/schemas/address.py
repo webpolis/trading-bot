@@ -10,7 +10,7 @@ from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.ethereum import is_contract
-from com.cryptobot.utils.pandas import get_address_details
+from com.cryptobot.utils.pandas_utils import get_address_details
 from com.cryptobot.utils.request import FatalRequestException
 from com.cryptobot.utils.alchemy import api_post
 

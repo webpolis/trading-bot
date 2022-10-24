@@ -1,6 +1,6 @@
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx, TxType
-from com.cryptobot.utils.pandas import get_token_by_address
+from com.cryptobot.utils.pandas_utils import get_token_by_address
 
 
 class SwapTx(Tx):

@@ -4,7 +4,7 @@ from enum import Enum
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
-from com.cryptobot.utils.pandas import get_token_by_address
+from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.alchemy import api_post

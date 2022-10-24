@@ -5,7 +5,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
-from com.cryptobot.utils.pandas import get_tokens_df, holders_table_to_df
+from com.cryptobot.utils.pandas_utils import get_tokens_df, holders_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
 

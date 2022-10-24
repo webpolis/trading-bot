@@ -7,7 +7,7 @@ from com.cryptobot.classifiers.ftx_tokens import FTXTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token, TokenSource
-from com.cryptobot.utils.pandas import merge_tokens_dicts_into_df
+from com.cryptobot.utils.pandas_utils import merge_tokens_dicts_into_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 
