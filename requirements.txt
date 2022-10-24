@@ -19,3 +19,4 @@ backoff==2.2.1
 cached_property==1.5.2
 ethtx
 simpy
+numpy==1.22.4

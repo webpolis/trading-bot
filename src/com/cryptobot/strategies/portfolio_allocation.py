@@ -7,7 +7,7 @@ from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
                                                StrategyResponse)
 from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.gbq import publish_to_table
-from com.cryptobot.utils.trader import is_kucoin_listed
+from com.cryptobot.utils.trader import get_btc_trend, is_kucoin_listed
 
 
 class PortfolioAllocationStrategy(Strategy):
@@ -15,6 +15,9 @@ class PortfolioAllocationStrategy(Strategy):
         super().__init__(__name__)
 
         self.settings = Config().get_settings().runtime.strategies.portfolio_allocation
+
+    def __hash__(self) -> int:
+        return hash(__name__)
 
     def apply(self, tx: Tx | SwapTx) -> StrategyResponse:
         verdict = super().apply(tx)
@@ -57,6 +60,7 @@ class PortfolioAllocationStrategy(Strategy):
             -1)
         kucoin_listed = is_kucoin_listed(token_from)
         ftx_listed = is_kucoin_listed(token_from)
+        btc_trend_7_days = get_btc_trend(days=self.settings.btc_trend_in_days)
 
         output = {
             'tx_timestamp': [tx.timestamp],
@@ -76,7 +80,8 @@ class PortfolioAllocationStrategy(Strategy):
             'token_to_qty': [token_to_qty],
             'token_to_market_cap': [token_to_market_cap],
             'is_kucoin_listed': [kucoin_listed],
-            'is_ftx_listed': [ftx_listed]
+            'is_ftx_listed': [ftx_listed],
+            'btc_trend_7_days': [btc_trend_7_days]
         }
 
         publish_to_table(self.__class__.__name__, output)
