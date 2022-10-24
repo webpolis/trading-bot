@@ -8,9 +8,10 @@ from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
 from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.gbq import publish_to_table
 from com.cryptobot.utils.trader import get_btc_trend, is_kucoin_listed
+from src.com.cryptobot.utils.redis_mixin import RedisMixin
 
 
-class PortfolioAllocationStrategy(Strategy):
+class PortfolioAllocationStrategy(Strategy, RedisMixin):
     def __init__(self):
         super().__init__(__name__)
 
@@ -60,7 +61,14 @@ class PortfolioAllocationStrategy(Strategy):
             -1)
         kucoin_listed = is_kucoin_listed(token_from)
         ftx_listed = is_kucoin_listed(token_from)
-        btc_trend_7_days = get_btc_trend(days=self.settings.btc_trend_in_days)
+
+        # bitcoin trend
+        cached_btc_trend_7_days = self.get('btc_trend_7_days')
+        btc_trend_7_days = cached_btc_trend_7_days if cached_btc_trend_7_days != None else get_btc_trend(
+            days=self.settings.btc_trend_in_days)
+
+        if btc_trend_7_days != cached_btc_trend_7_days:
+            self.set('btc_trend_7_days', btc_trend_7_days, ttl=60*60*24)
 
         output = {
             'tx_timestamp': [tx.timestamp],
