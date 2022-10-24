@@ -59,8 +59,8 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             -1)
         sender_total_usd = sender_stats[0].total_usd if sender_stats != None and len(sender_stats) > 0 else float(
             -1)
-        kucoin_listed = is_kucoin_listed(token_from)
-        ftx_listed = is_kucoin_listed(token_from)
+        kucoin_listed = is_kucoin_listed(token_from) if token_from != None else False
+        ftx_listed = is_kucoin_listed(token_from) if token_from != None else False
 
         # bitcoin trend
         cached_btc_trend_7_days = self.get('btc_trend_7_days')
