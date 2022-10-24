@@ -1,6 +1,5 @@
 import json
 import logging
-from time import sleep
 from urllib.error import HTTPError
 import urllib.parse
 from urllib.request import Request, urlopen
@@ -17,12 +16,7 @@ class FatalRequestException(Exception):
 
 
 class HttpRequest():
-    def get(self, url, params: dict = None, try_num=1):
-        max_tries = Config().get_settings().runtime.utils.request.max_tries
-
-        if try_num > max_tries:
-            raise FatalRequestException(f'Tried {try_num} time(s)')
-
+    def get(self, url, params: dict = None):
         out = None
         params_encoded = urllib.parse.urlencode(params) if params != None else None
         url_encoded = f'{url}%s' % (('?' + params_encoded)
@@ -34,21 +28,14 @@ class HttpRequest():
 
         try:
             out = urlopen(req, timeout=15).read().decode('utf-8')
+        except HTTPError as _error:
+            raise _error
         except Exception as error:
-            request_logger.error({'error': error, 'params': str(params), 'url': url})
-
-            sleep(0.5)
-
-            return self.get(url, params, try_num+1)
+            raise FatalRequestException(error)
 
         return json.loads(out) if type(out) == str else out
 
-    def post(self, url, data: dict = None, try_num=1):
-        max_tries = Config().get_settings().runtime.utils.request.max_tries
-
-        if try_num > max_tries:
-            raise FatalRequestException(num_tries=try_num)
-
+    def post(self, url, data: dict = None):
         out = None
         data = json.dumps(data).encode('utf-8')
         req = Request(url)
@@ -61,11 +48,7 @@ class HttpRequest():
         except HTTPError as _error:
             raise _error
         except Exception as error:
-            request_logger.error({'error': error, 'data': data, 'url': url})
-
-            sleep(0.5)
-
-            return self.post(url, data, try_num+1)
+            raise FatalRequestException(error)
 
         return json.loads(out) if type(out) == str else out
 

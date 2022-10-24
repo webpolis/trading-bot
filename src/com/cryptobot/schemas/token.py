@@ -1,9 +1,12 @@
 import json
 from enum import Enum
 
+from ratelimit import RateLimitException
+
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
+from com.cryptobot.utils.ethplorer import get_price as get_ethplorer_price
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
@@ -87,6 +90,13 @@ class Token(Schema, RedisMixin):
         if not self.no_price_checkup and self.price_usd is None and self._coingecko_coin is not None:
             try:
                 self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
+            except Exception as error:
+                print({'error': error, 'token': str(self)})
+
+        # fetch price from ethplorer
+        if not self.no_price_checkup and self.price_usd is None:
+            try:
+                self.price_usd = get_ethplorer_price(self)
             except Exception as error:
                 print({'error': error, 'token': str(self)})
 
