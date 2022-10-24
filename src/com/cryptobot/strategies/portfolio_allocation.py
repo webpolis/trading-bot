@@ -7,6 +7,7 @@ from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
                                                StrategyResponse)
 from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.gbq import publish_to_table
+from com.cryptobot.utils.trader import is_kucoin_listed
 
 
 class PortfolioAllocationStrategy(Strategy):
@@ -54,6 +55,8 @@ class PortfolioAllocationStrategy(Strategy):
             -1)
         sender_total_usd = sender_stats[0].total_usd if sender_stats != None and len(sender_stats) > 0 else float(
             -1)
+        kucoin_listed = is_kucoin_listed(token_from)
+        ftx_listed = is_kucoin_listed(token_from)
 
         output = {
             'tx_timestamp': [tx.timestamp],
@@ -72,6 +75,8 @@ class PortfolioAllocationStrategy(Strategy):
             'token_to_address': [token_to.address if token_to != None else None],
             'token_to_qty': [token_to_qty],
             'token_to_market_cap': [token_to_market_cap],
+            'is_kucoin_listed': [kucoin_listed],
+            'is_ftx_listed': [ftx_listed]
         }
 
         publish_to_table(self.__class__.__name__, output)
