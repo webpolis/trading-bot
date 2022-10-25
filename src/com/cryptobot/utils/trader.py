@@ -15,7 +15,7 @@ kucoin_tickers = json.load(open(get_data_path() + 'kucoin_tickers.json'))
 ftx_lending_tokens = pd.read_csv(get_data_path() + 'ftx_lending_tokens.csv')
 
 
-def trendline(data, order=1):
+def slope(data, order=1):
     coeffs = np.polyfit(data.index.values, list(data), order)
     slope = coeffs[-2]
 
@@ -44,9 +44,12 @@ def get_btc_trend(days=settings.runtime.strategies.portfolio_allocation.btc_tren
 
         btc_df = pd.DataFrame(response, columns=[
                               'time', 'open', 'high', 'low', 'close'])
-        diff = btc_df['close'].diff()
-        norm = np.linalg.norm(diff[diff.notna()].values)
+        diff = btc_df['close'].pct_change()
+        diff = diff[diff.notna()]
+        norm = np.linalg.norm(diff.values)
+        slope = round(slope(diff), 8)
+        vel = (norm/btc_df.time).mean()
 
-        return trendline((norm/btc_df.time))
+        return slope
     except:
         return None
