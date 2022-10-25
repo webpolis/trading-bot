@@ -64,8 +64,7 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
 
         # bitcoin trend
         cached_btc_trend_7_days = self.get('btc_trend_7_days')
-        btc_trend_7_days = cached_btc_trend_7_days if cached_btc_trend_7_days != None else get_btc_trend(
-            days=self.settings.btc_trend_in_days)
+        btc_trend_7_days = cached_btc_trend_7_days if cached_btc_trend_7_days != None else get_btc_trend(days=7)
 
         if btc_trend_7_days != cached_btc_trend_7_days:
             self.set('btc_trend_7_days', btc_trend_7_days, ttl=60*60*24)

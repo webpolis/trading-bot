@@ -36,7 +36,7 @@ def is_ftx_listed(token: Token):
     return len(ticker) > 0
 
 
-def get_btc_trend(days=settings.runtime.strategies.portfolio_allocation.btc_trend_in_days):
+def get_btc_trend(days=1):
     try:
         response = request.get(settings.endpoints.coingecko.ohlc.format(
             coin_id='bitcoin',
@@ -47,9 +47,9 @@ def get_btc_trend(days=settings.runtime.strategies.portfolio_allocation.btc_tren
         diff = btc_df['close'].pct_change()
         diff = diff[diff.notna()]
         norm = np.linalg.norm(diff.values)
-        slope = round(slope(diff), 8)
+        trend = round(slope(diff), 8)
         vel = (norm/btc_df.time).mean()
 
-        return slope
-    except:
+        return trend
+    except Exception as error:
         return None
