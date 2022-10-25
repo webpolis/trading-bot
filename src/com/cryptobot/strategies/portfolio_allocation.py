@@ -65,9 +65,14 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
         # bitcoin trend
         cached_btc_trend_7_days = self.get('btc_trend_7_days')
         btc_trend_7_days = cached_btc_trend_7_days if cached_btc_trend_7_days != None else get_btc_trend(days=7)
+        cached_btc_trend_1_day = self.get('btc_trend_1_day')
+        btc_trend_1_day = cached_btc_trend_1_day if cached_btc_trend_1_day != None else get_btc_trend(days=1)
 
         if btc_trend_7_days != cached_btc_trend_7_days:
             self.set('btc_trend_7_days', btc_trend_7_days, ttl=60*60*24)
+
+        if btc_trend_1_day != cached_btc_trend_1_day:
+            self.set('btc_trend_1_day', btc_trend_1_day, ttl=60*60*24)
 
         output = {
             'tx_timestamp': [tx.timestamp],
@@ -88,7 +93,8 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             'token_to_market_cap': [token_to_market_cap],
             'is_kucoin_listed': [kucoin_listed],
             'is_ftx_listed': [ftx_listed],
-            'btc_trend_7_days': [btc_trend_7_days]
+            'btc_trend_7_days': [btc_trend_7_days],
+            'btc_trend_1_day': [btc_trend_1_day]
         }
 
         publish_to_table(self.__class__.__name__, output)
