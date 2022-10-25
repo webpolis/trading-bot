@@ -100,6 +100,8 @@ class Token(Schema, RedisMixin):
             except Exception as error:
                 print({'error': error, 'token': str(self)})
 
+        # @TODO: fetch price from coinmarketcap
+
         if self.price_usd != None:
             self.set('price_usd', self.price_usd,
                      ttl=settings.runtime.schemas.token.price_usd_ttl)
