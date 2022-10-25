@@ -43,6 +43,13 @@ def api_post(payload):
             api_key=get_working_key()), payload)
 
         return response
+    except HTTPError as error:
+        api_key = None
+
+        alchemy_logger.error(
+            f'HTTPError: code {error.code}. Repeating (will try next api_key)...')
+
+        return api_post(payload)
     except FatalRequestException as _error:
         api_key = None
 
