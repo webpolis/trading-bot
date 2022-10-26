@@ -13,16 +13,11 @@ period_per_thread = int(60/max_threads)
 @on_exception(expo, RateLimitException, max_tries=1, max_time=10)
 @limits(calls=max_calls, period=period_per_thread)
 def get_price(coin_id, currency='usd'):
-    price = None
-
-    try:
-        response = request.get(settings.endpoints.coingecko.price, {
-            'ids': coin_id,
-            'vs_currencies': currency
-        })
-        price = response.get(coin_id, {}).get(
-            currency, None) if response is not None else None
-    except:
-        return price
+    response = request.get(settings.endpoints.coingecko.price, {
+        'ids': coin_id,
+        'vs_currencies': currency
+    })
+    price = response.get(coin_id, {}).get(
+        currency, None) if response is not None else None
 
     return price

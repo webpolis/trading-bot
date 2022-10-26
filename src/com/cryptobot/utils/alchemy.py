@@ -14,7 +14,7 @@ settings = Config().get_settings()
 max_threads = settings.runtime.classifiers.SwapClassifier.max_concurrent_threads
 max_calls = int(50/max_threads)
 period_per_thread = int(60/max_threads)
-alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
+alchemy_api_keys = cycle(settings.web3.providers.alchemy.api_keys)
 lock = Lock()
 api_key = None
 

@@ -4,11 +4,12 @@ from enum import Enum
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
-from com.cryptobot.utils.ethplorer import get_price as get_ethplorer_price
+from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.alchemy import api_post
+from toolz import valfilter
 
 settings = Config().get_settings()
 alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
@@ -29,11 +30,13 @@ class TokenSource(Enum):
     COINGECKO = 1
     FTX = 2
     FTX_LENDING = 3
+    ETHPLORER = 4
 
 
 class Token(Schema, RedisMixin):
     working_api_key = None
-    cached_metadata = {}
+    cached_alchemy_metadata = {}
+    cached_ethplorer_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
         self.symbol = symbol.upper() if type(symbol) == str else symbol
@@ -43,6 +46,7 @@ class Token(Schema, RedisMixin):
         self.price_usd = price_usd if price_usd != None else self.get('price_usd')
         self.decimals = decimals
         self._alchemy_metadata = None
+        self._ethplorer_metadata = None
         self._metadata = self.metadata()
         self.no_price_checkup = no_price_checkup
 
@@ -94,13 +98,6 @@ class Token(Schema, RedisMixin):
             except Exception as error:
                 print({'error': error, 'token': str(self)})
 
-        # fetch price from ethplorer
-        if not self.no_price_checkup and self.price_usd is None:
-            try:
-                self.price_usd = get_ethplorer_price(self)
-            except Exception as error:
-                print({'error': error, 'token': str(self)})
-
         # @TODO: fetch price from coinmarketcap
 
         if self.price_usd != None:
@@ -116,6 +113,7 @@ class Token(Schema, RedisMixin):
             if dict_obj is not None else Token(address=address)
 
     def metadata(self) -> dict:
+        """Populate token with all the data we can gather from many different sources"""
         try:
             if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
                 return None
@@ -129,34 +127,69 @@ class Token(Schema, RedisMixin):
             return _metadata
 
         mixed_metadata = {}
-        _metadata = get_token_by_address(self.address)
-        _alchemy_metadata = self.fetch_alchemy_metadata()
 
+        # fetch data collected by the TokensExtractor
+        _metadata = get_token_by_address(self.address)
+
+        # start fetching from other sources
+        _alchemy_metadata = self.fetch_alchemy_metadata()
+        _ethplorer_metadata = self.fetch_ethplorer_metadata()
+
+        # combine all the data
         if _metadata is not None:
             mixed_metadata = {**mixed_metadata, **_metadata}
 
         if _alchemy_metadata is not None:
             mixed_metadata = {**mixed_metadata, **_alchemy_metadata}
 
-        _metadata = mixed_metadata
+        if _ethplorer_metadata is not None:
+            mixed_metadata = {**mixed_metadata, **_ethplorer_metadata}
 
+        _metadata = valfilter(lambda v: v != None, mixed_metadata)
+
+        # cache the metadata
         if _metadata != None and len(_metadata) > 0:
             self.set('metadata', _metadata)
 
         return _metadata
 
+    def fetch_ethplorer_metadata(self) -> dict:
+        # we don't need anything extra than these attributes
+        if self.price_usd != None and self.market_cap != None and self.address != None:
+            return {}
+
+        has_local_metadata = self._ethplorer_metadata is not None
+        has_cached_metadata = self.address in Token.cached_ethplorer_metadata
+
+        if has_local_metadata:
+            return self._ethplorer_metadata
+
+        if has_cached_metadata:
+            return Token.cached_ethplorer_metadata[self.address]
+
+        try:
+            response = get_token_info(self)
+            self._ethplorer_metadata = valfilter(lambda v: v != None, response)
+
+            Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
+        except Exception as error:
+            print({'error': error.with_traceback(), 'token': str(self)})
+        finally:
+            return self._ethplorer_metadata
+
     def fetch_alchemy_metadata(self) -> dict:
+        # only useful thing provided here is decimals
         if self.decimals != None:
             return {}
 
         has_local_metadata = self._alchemy_metadata is not None
-        has_cached_metadata = self.address in Token.cached_metadata
+        has_cached_metadata = self.address in Token.cached_alchemy_metadata
 
         if has_local_metadata:
             return self._alchemy_metadata
 
         if has_cached_metadata:
-            return Token.cached_metadata[self.address]
+            return Token.cached_alchemy_metadata[self.address]
 
         payload = {
             'id': 1,
@@ -167,9 +200,9 @@ class Token(Schema, RedisMixin):
 
         try:
             response = api_post(payload)
-            self._alchemy_metadata = response['result']
+            self._alchemy_metadata = valfilter(lambda v: v != None, response['result'])
 
-            Token.cached_metadata[self.address] = self._alchemy_metadata
+            Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
             print({'error': error, 'token': str(self)})
         finally:

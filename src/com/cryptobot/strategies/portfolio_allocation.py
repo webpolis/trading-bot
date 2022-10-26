@@ -99,7 +99,7 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             'btc_trend_1_day': [btc_trend_1_day]
         }
 
-        publish_to_table(self.__class__.__name__, output)
+        # publish_to_table(self.__class__.__name__, output)
 
         self.logger.info(str(output))
 
