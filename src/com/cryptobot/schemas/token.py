@@ -203,7 +203,7 @@ class Token(Schema, RedisMixin):
             _alchemy_metadata = valfilter(
                 lambda v: v != None, response.get('result', {}))
 
-            if len(self._alchemy_metadata) > 0:
+            if len(_alchemy_metadata) > 0:
                 self._alchemy_metadata = _alchemy_metadata
                 Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
