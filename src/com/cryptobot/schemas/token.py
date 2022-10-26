@@ -169,9 +169,12 @@ class Token(Schema, RedisMixin):
 
         try:
             response = get_token_info(self)
-            self._ethplorer_metadata = valfilter(lambda v: v != None, response)
+            _ethplorer_metadata = valfilter(
+                lambda v: v != None, response if type(response) == dict else dict())
 
-            Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
+            if len(_ethplorer_metadata) > 0:
+                self._ethplorer_metadata = _ethplorer_metadata
+                Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
         except Exception as error:
             print({'error': error.with_traceback(), 'token': str(self)})
         finally:
