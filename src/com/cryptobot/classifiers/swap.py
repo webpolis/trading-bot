@@ -44,10 +44,10 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
 
         for tx in items:
             # make sure the transaction is processed only once
-            if self.cache.has_tx(tx):
+            if self.cache.has_tx(tx.hash):
                 continue
             else:
-                self.cache.add_tx(tx)
+                self.cache.add_tx(tx.hash)
 
             decoded_input = tx.decode_input()
 
