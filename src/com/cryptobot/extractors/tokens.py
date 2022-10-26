@@ -97,6 +97,7 @@ class TokensExtractor(Extractor):
             tokens = merge_tokens_dicts_into_df(coingecko_tokens, ftx_tokens, 'symbol')
 
             # combine with tokenslist
+            self.logger.info('Combine with tokenslist...')
             tokenslist_cg_tokens = json.load(
                 open(get_data_path() + 'tokenslist_coingecko.json'))['tokens']
             tokenslist_uniswap_tokens = json.load(
@@ -114,7 +115,7 @@ class TokensExtractor(Extractor):
             tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
             self.logger.info(
-                f'Collected {tokens.symbol.size} tokens from Coingecko & FTX')
+                f'Collected {tokens.symbol.size} tokens from Coingecko, FTX & Tokenslist')
 
             self.logger.info(f'Sleeping for {refresh_interval} seconds.')
 

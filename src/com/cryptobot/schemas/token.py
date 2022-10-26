@@ -128,12 +128,52 @@ class Token(Schema, RedisMixin):
         if _metadata != None:
             return _metadata
 
+        mixed_metadata = {}
         _metadata = get_token_by_address(self.address)
+        _alchemy_metadata = self.fetch_alchemy_metadata()
+
+        if _metadata is not None:
+            mixed_metadata = {**mixed_metadata, **_metadata}
+
+        if _alchemy_metadata is not None:
+            mixed_metadata = {**mixed_metadata, **_alchemy_metadata}
+
+        _metadata = mixed_metadata
 
         if _metadata != None and len(_metadata) > 0:
             self.set('metadata', _metadata)
 
         return _metadata
+
+    def fetch_alchemy_metadata(self) -> dict:
+        if self.decimals != None:
+            return {}
+
+        has_local_metadata = self._alchemy_metadata is not None
+        has_cached_metadata = self.address in Token.cached_metadata
+
+        if has_local_metadata:
+            return self._alchemy_metadata
+
+        if has_cached_metadata:
+            return Token.cached_metadata[self.address]
+
+        payload = {
+            'id': 1,
+            'jsonrpc': '2.0',
+            'method': 'alchemy_getTokenMetadata',
+            'params': [self.address]
+        }
+
+        try:
+            response = api_post(payload)
+            self._alchemy_metadata = response['result']
+
+            Token.cached_metadata[self.address] = self._alchemy_metadata
+        except Exception as error:
+            print({'error': error, 'token': str(self)})
+        finally:
+            return self._alchemy_metadata
 
     def __str__(self):
         return str({
