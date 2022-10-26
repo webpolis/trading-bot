@@ -39,8 +39,9 @@ def get_token_info(token):
 def get_address_info(address):
     response = request.get(settings.endpoints.ethplorer.address_info.format(
         address=address, api_key=settings.endpoints.ethplorer.api_key))
-    ETH, tokens = itemgetter('ETH', 'tokens')(response)
-    
+    eth = response.get('ETH', None)
+    tokens = response.get('tokens', [])
+
     return tokens
 
 
