@@ -1,5 +1,7 @@
+import logging
 from backoff import expo, on_exception
 from com.cryptobot.config import Config
+from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.request import HttpRequest
 from ratelimit import RateLimitException, limits
 
@@ -15,13 +17,13 @@ period_per_thread = int(60/max_threads)
 def get_price(token):
     price = None
 
-    try:
-        response = request.get(settings.endpoints.ethplorer.token_info.format(
-            address=token.address, api_key=settings.endpoints.ethplorer.api_key))
-        price = response.get('price', False)
-        price = response.get('price', {}).get(
-            'rate', None) if response is not None and price != False else None
-    except:
-        return price
+    response = request.get(settings.endpoints.ethplorer.token_info.format(
+        address=token.address, api_key=settings.endpoints.ethplorer.api_key))
+    price = response.get('price', False)
+    price = response.get('price', {}).get(
+        'rate', None) if response is not None and price != False else None
 
     return price
+
+
+ethplorer_logger = PrettyLogger(HttpRequest.__name__, logging.INFO)

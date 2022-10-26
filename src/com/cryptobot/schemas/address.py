@@ -95,13 +95,6 @@ class Address(Schema, RedisMixin):
 
                 try:
                     response = api_post(payload)
-                except FatalRequestException as error:
-                    print(error)
-                    print(traceback.format_exc())
-
-                    self.working_api_key = None
-
-                    continue
                 except Exception as _error:
                     print(_error)
                     print(traceback.format_exc())

@@ -1,5 +1,7 @@
+import json
 from time import sleep
 from typing import List
+
 import pandas as pd
 from com.cryptobot.classifiers.coingecko_tokens import \
     CoingeckoTokensClassifier
@@ -10,6 +12,7 @@ from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.utils.pandas_utils import merge_tokens_dicts_into_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
+from toolz import dissoc
 
 
 class TokensExtractor(Extractor):
@@ -93,7 +96,21 @@ class TokensExtractor(Extractor):
             self.logger.info('Produce tokens union list...')
             tokens = merge_tokens_dicts_into_df(coingecko_tokens, ftx_tokens, 'symbol')
 
-            # store locally just for reference
+            # combine with tokenslist
+            tokenslist_cg_tokens = json.load(
+                open(get_data_path() + 'tokenslist_coingecko.json'))['tokens']
+            tokenslist_uniswap_tokens = json.load(
+                open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
+            tokenslist_1inch_tokens = json.load(
+                open(get_data_path() + 'tokenslist_1inch.json'))['tokens']
+            tokenslist_all_tokens = list(map(lambda token: dissoc(
+                token, 'extensions', 'logoURI', 'name'), tokenslist_cg_tokens + tokenslist_uniswap_tokens + tokenslist_1inch_tokens))
+            tokenslist_df = pd.DataFrame(tokenslist_all_tokens)
+            tokenslist_df['address'] = tokenslist_df['address'].str.lower()
+            tokenslist_df.drop_duplicates(inplace=True)
+            tokens = tokens.merge(tokenslist_df, how='outer', on=['symbol', 'address'])
+
+            # store locally for future reference
             tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
             self.logger.info(
