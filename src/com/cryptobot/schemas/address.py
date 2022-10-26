@@ -24,9 +24,16 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
-        self.qty_usd = (qty/10**token.decimals) * \
-            token.price_usd if token.price_usd is not None \
-            and token.decimals is not None else float(0)
+
+        try:
+            self.qty_usd = (qty/10**token.decimals) * \
+                token.price_usd if token.price_usd is not None \
+                and token.decimals is not None else float(0)
+        except Exception as error:
+            print({'error': error, 'balance': str(self)})
+            print(traceback.format_exc())
+
+            self.qty_usd = -1
 
 
 class AddressPortfolioStats(Schema):
@@ -132,7 +139,7 @@ class Address(Schema, RedisMixin):
 
             return balances
 
-    def balances_ethplorer(self):
+    def balances_ethplorer(self) -> List[AddressBalance]:
         cached_balances = self.get('ethplorer_balances')
         balances = [] if cached_balances is None else cached_balances
 
@@ -154,10 +161,8 @@ class Address(Schema, RedisMixin):
                             symbol = token_info.get('symbol', None)
                             decimals = token_info.get('decimals', None)
                             price = token_info.get('price', {})
-                            price_usd = price.get('rate') if type(
-                                price) == dict else None
-                            market_cap = price.get('marketCapUsd') if type(
-                                price) == dict else None
+                            price_usd = price.get('rate', None)
+                            market_cap = price.get('marketCapUsd', None)
 
                             token = Token(symbol, name, market_cap,
                                           price_usd, address, int(decimals) if decimals != None else None)
