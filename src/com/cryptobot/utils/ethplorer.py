@@ -9,8 +9,8 @@ from ratelimit import RateLimitException, limits
 request = HttpRequest()
 settings = Config().get_settings()
 max_threads = settings.runtime.classifiers.SwapClassifier.max_concurrent_threads
-max_calls = int(600/max_threads)
-period_per_thread = int(60/max_threads)
+max_calls = int(300/max_threads)
+period_per_thread = int(30/max_threads)
 
 
 @on_exception(expo, RateLimitException, max_tries=1, max_time=10)
@@ -29,6 +29,16 @@ def get_token_info(token):
         'price_usd': price.get('rate') if type(price) == dict else None,
         'market_cap': price.get('marketCapUsd') if type(price) == dict else None
     }
+
+
+@on_exception(expo, RateLimitException, max_tries=1, max_time=10)
+@limits(calls=max_calls, period=period_per_thread)
+def get_address_info(address):
+    response = request.get(settings.endpoints.ethplorer.address_info.format(
+        address=address, api_key=settings.endpoints.ethplorer.api_key))
+    ETH, tokens = itemgetter('ETH', 'tokens')(response)
+    
+    return tokens
 
 
 ethplorer_logger = PrettyLogger(HttpRequest.__name__, logging.INFO)

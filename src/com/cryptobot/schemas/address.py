@@ -4,8 +4,9 @@ import traceback
 from typing import List
 
 from jsonpickle import encode
-
+from operator import itemgetter
 from com.cryptobot.config import Config
+from com.cryptobot.utils.ethplorer import get_address_info
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
@@ -68,8 +69,8 @@ class Address(Schema, RedisMixin):
     def __str__(self):
         return self.address
 
-    def balances(self) -> List[AddressBalance]:
-        cached_balances = self.get('balances')
+    def balances_alchemy(self) -> List[AddressBalance]:
+        cached_balances = self.get('alchemy_balances')
         balances = [] if cached_balances is None else cached_balances
 
         if len(balances) > 0:
@@ -99,7 +100,7 @@ class Address(Schema, RedisMixin):
                     print(_error)
                     print(traceback.format_exc())
 
-                    break
+                    continue
 
                 page_key = response.get('result', {}).get('pageKey', None)
                 tokens_balances = response.get('result', {}).get('tokenBalances', None)
@@ -126,7 +127,44 @@ class Address(Schema, RedisMixin):
             print(traceback.format_exc())
         finally:
             if len(balances) > 0:
-                self.set('balances', balances,
+                self.set('alchemy_balances', balances,
+                         ttl=settings.runtime.schemas.address.balances_cache_timeout)
+
+            return balances
+
+    def balances_ethplorer(self):
+        cached_balances = self.get('ethplorer_balances')
+        balances = [] if cached_balances is None else cached_balances
+
+        if len(balances) > 0:
+            return balances
+
+        try:
+            response = get_address_info(self.address)
+
+            for balance in response:
+                token_info = balance.get('tokenInfo', None)
+                qty = balance.get('balance', None)
+
+                if token_info != None:
+                    address, name, symbol, decimals, price = itemgetter(
+                        'address', 'name', 'symbol', 'decimals', 'price')(token_info)
+                    price_usd = price.get('rate') if type(price) == dict else None
+                    market_cap = price.get('marketCapUsd') if type(
+                        price) == dict else None
+
+                    token = Token(symbol, name, market_cap,
+                                  price_usd, address, int(decimals) if decimals != None else None)
+
+                    address_balance = AddressBalance(token, qty)
+
+                    balances.append(address_balance)
+        except Exception as error:
+            print(error)
+            print(traceback.format_exc())
+        finally:
+            if len(balances) > 0:
+                self.set('ethplorer_balances', balances,
                          ttl=settings.runtime.schemas.address.balances_cache_timeout)
 
             return balances
@@ -135,18 +173,19 @@ class Address(Schema, RedisMixin):
         stats: List[AddressPortfolioStats] = []
 
         try:
-            balances = self.balances()
+            balances_ethplorer = self.balances_ethplorer()
 
-            print(f'Retrieved {len(balances)} balance(s) for {self.address}')
+            print(
+                f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')
 
             total_usd = functools.reduce(
                 operator.add, [
                     balance.qty_usd
-                    for balance in balances if balance.qty_usd is not None],
+                    for balance in balances_ethplorer if balance.qty_usd is not None],
                 0
-            ) if len(balances) > 0 else 0
+            ) if len(balances_ethplorer) > 0 else 0
 
-            for balance in balances:
+            for balance in balances_ethplorer:
                 stats.append(AddressPortfolioStats(balance, total_usd))
         except Exception as error:
             print(error)
