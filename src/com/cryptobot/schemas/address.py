@@ -147,8 +147,11 @@ class Address(Schema, RedisMixin):
                 qty = balance.get('balance', None)
 
                 if token_info != None:
-                    address, name, symbol, decimals, price = itemgetter(
-                        'address', 'name', 'symbol', 'decimals', 'price')(token_info)
+                    address = token_info.get('address', None)
+                    name = token_info.get('name', None)
+                    symbol = token_info.get('symbol', None)
+                    decimals = token_info.get('decimals', None)
+                    price = token_info.get('price', {})
                     price_usd = price.get('rate') if type(price) == dict else None
                     market_cap = price.get('marketCapUsd') if type(
                         price) == dict else None

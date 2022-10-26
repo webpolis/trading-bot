@@ -18,8 +18,11 @@ period_per_thread = int(30/max_threads)
 def get_token_info(token):
     response = request.get(settings.endpoints.ethplorer.token_info.format(
         address=token.address, api_key=settings.endpoints.ethplorer.api_key))
-    address, name, symbol, decimals, price = itemgetter(
-        'address', 'name', 'symbol', 'decimals', 'price')(response)
+    address = response.get('address', None)
+    name = response.get('name', None)
+    symbol = response.get('symbol', None)
+    decimals = response.get('decimals', None)
+    price = response.get('price', {})
 
     return {
         'address': address.lower(),
