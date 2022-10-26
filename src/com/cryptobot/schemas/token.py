@@ -200,9 +200,12 @@ class Token(Schema, RedisMixin):
 
         try:
             response = api_post(payload)
-            self._alchemy_metadata = valfilter(lambda v: v != None, response['result'])
+            _alchemy_metadata = valfilter(
+                lambda v: v != None, response.get('result', {}))
 
-            Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
+            if len(self._alchemy_metadata) > 0:
+                self._alchemy_metadata = _alchemy_metadata
+                Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
             print({'error': error, 'token': str(self)})
         finally:

@@ -142,26 +142,31 @@ class Address(Schema, RedisMixin):
         try:
             response = get_address_info(self.address)
 
-            for balance in response:
-                token_info = balance.get('tokenInfo', None)
-                qty = balance.get('balance', None)
+            if type(response) == type([]):
+                for balance in response:
+                    token_info = balance.get('tokenInfo', None)
+                    qty = balance.get('balance', None)
 
-                if token_info != None:
-                    address = token_info.get('address', None)
-                    name = token_info.get('name', None)
-                    symbol = token_info.get('symbol', None)
-                    decimals = token_info.get('decimals', None)
-                    price = token_info.get('price', {})
-                    price_usd = price.get('rate') if type(price) == dict else None
-                    market_cap = price.get('marketCapUsd') if type(
-                        price) == dict else None
+                    if token_info != None:
+                        try:
+                            address = token_info.get('address', None)
+                            name = token_info.get('name', None)
+                            symbol = token_info.get('symbol', None)
+                            decimals = token_info.get('decimals', None)
+                            price = token_info.get('price', {})
+                            price_usd = price.get('rate') if type(
+                                price) == dict else None
+                            market_cap = price.get('marketCapUsd') if type(
+                                price) == dict else None
 
-                    token = Token(symbol, name, market_cap,
-                                  price_usd, address, int(decimals) if decimals != None else None)
+                            token = Token(symbol, name, market_cap,
+                                          price_usd, address, int(decimals) if decimals != None else None)
 
-                    address_balance = AddressBalance(token, qty)
+                            address_balance = AddressBalance(token, qty)
 
-                    balances.append(address_balance)
+                            balances.append(address_balance)
+                        except Exception as _error:
+                            print({'error': _error, 'balance': str(balance)})
         except Exception as error:
             print(error)
             print(traceback.format_exc())
