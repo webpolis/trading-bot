@@ -164,9 +164,9 @@ class Address(Schema, RedisMixin):
                             symbol = token_info.get('symbol', None)
                             decimals = token_info.get('decimals', None)
                             price = token_info.get('price', {})
-                            price_usd = price.get('rate') if type(
+                            price_usd = float(price.get('rate')) if type(
                                 price) == dict else None
-                            market_cap = price.get('marketCapUsd') if type(
+                            market_cap = float(price.get('marketCapUsd')) if type(
                                 price) == dict else None
 
                             token = Token(symbol, name, market_cap,

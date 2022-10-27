@@ -70,7 +70,7 @@ def token_parse(token, token_source: TokenSource):
         parsed_token['symbol'].upper(),
         parsed_token['name'].upper() if 'name' in parsed_token else None,
         parsed_token.get('market_cap', None),
-        float(price_usd) if price_usd is not None else None,
+        price_usd,
         None,
         no_price_checkup=True
     ) if parsed_token != None else None

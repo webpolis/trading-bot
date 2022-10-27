@@ -47,8 +47,8 @@ class Token(Schema, RedisMixin):
         self.name = name
         self.market_cap = float(market_cap) if market_cap != None else market_cap
         self.address = address.lower() if type(address) == str else address
-        self.price_usd = price_usd if type(
-            price_usd) == float else self.get('price_usd')
+        self.price_usd = float(
+            price_usd) if price_usd != None else self.get('price_usd')
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
@@ -64,13 +64,13 @@ class Token(Schema, RedisMixin):
                 self.name = self._metadata.get('name', None)
 
             if self.market_cap is None:
-                self.market_cap = self._metadata.get('market_cap', float(0))
+                self.market_cap = float(self._metadata.get('market_cap', 0))
 
             if self.decimals is None:
                 self.decimals = int(self._metadata.get('decimals', 18))
 
             if self.price_usd is None:
-                self.price_usd = self._metadata.get('price_usd', None)
+                self.price_usd = float(self._metadata.get('price_usd', None))
 
             if self.address is None:
                 self.address = self._metadata.get('address', None)
@@ -92,12 +92,15 @@ class Token(Schema, RedisMixin):
             self.address = None
 
         if self.price_usd is None:
-            self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
+            self.price_usd = float(self._ftx_coin.get(
+                'indexPrice', 0)) if self._ftx_coin is not None else None
 
         # fetch price from coingecko
         if not self.no_price_checkup and self.price_usd is None and self._coingecko_coin is not None:
             try:
                 self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
+                self.price_usd = float(
+                    self.price_usd) if self.price_usd != None else self.price_usd
             except Exception as error:
                 self.logger.error({'error': error, 'token': str(self)})
 
