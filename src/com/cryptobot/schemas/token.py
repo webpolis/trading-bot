@@ -43,7 +43,8 @@ class Token(Schema, RedisMixin):
         self.name = name
         self.market_cap = market_cap
         self.address = address.lower() if type(address) == str else address
-        self.price_usd = price_usd if type(price_usd) == float else self.get('price_usd')
+        self.price_usd = price_usd if type(
+            price_usd) == float else self.get('price_usd')
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
@@ -114,12 +115,6 @@ class Token(Schema, RedisMixin):
 
     def metadata(self) -> dict:
         """Populate token with all the data we can gather from many different sources"""
-        try:
-            if int(self.address, 0) == 0 or self.address == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
-                return None
-        except Exception as error:
-            return None
-
         _cached_metadata = self.get('metadata')
         _metadata = None if _cached_metadata is None else _cached_metadata
 

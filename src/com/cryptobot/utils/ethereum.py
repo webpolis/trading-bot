@@ -17,6 +17,10 @@ def is_contract(address: str):
     return code != b''
 
 
+def is_eth_address(address: str):
+    return int(address.lower(), 0) == 0 or address.lower() == '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+
+
 def fetch_mempool_txs():
     pending_block = w3Http.eth.getBlock(
         block_identifier='pending', full_transactions=True)

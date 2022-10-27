@@ -27,7 +27,7 @@ class AddressBalance(Schema):
         qty_usd = float(0)
 
         try:
-            if type(self.qty) == int \
+            if type(self.qty) == int or type(self.qty) == float \
                 and type(self.token.decimals) == int \
                     and type(self.token.price_usd) == float:
                 qty_usd = float((self.qty/10**self.token.decimals)

@@ -42,6 +42,18 @@ def get_address_info(address):
     eth = response.get('ETH', None)
     tokens = response.get('tokens', [])
 
+    if type(eth) == dict:
+        tokens.append({
+            'tokenInfo': {
+                'symbol': 'ETH',
+                'name': 'Ethereum',
+                'price': eth.get('price', None),
+                'decimals': 18,
+                'address': '0x0000000000000000000000000000000000000000'
+            },
+            'balance': eth.get('balance', None)
+        })
+
     return tokens
 
 
