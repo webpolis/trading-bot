@@ -1,10 +1,8 @@
 import functools
 import operator
 import traceback
-from typing import List
+from typing import List, final
 
-from jsonpickle import encode
-from operator import itemgetter
 from com.cryptobot.config import Config
 from com.cryptobot.utils.ethplorer import get_address_info
 from com.cryptobot.utils.redis_mixin import RedisMixin
@@ -24,16 +22,22 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
-        self.qty_usd = float(0)
+
+    @property
+    def qty_usd(self):
+        qty_usd = 0
 
         try:
             if type(self.qty) == int \
-                and type(token.decimals) == int \
-                    and type(token.price_usd) == int:
-                self.qty_usd = float((qty/10**token.decimals) * token.price_usd)
+                and type(self.token.decimals) == int \
+                    and type(self.token.price_usd) == float:
+                qty_usd = float((self.qty/10**self.token.decimals)
+                                * self.token.price_usd)
         except Exception as error:
             print({'error': error, 'balance': str(self)})
             print(traceback.format_exc())
+        finally:
+            return qty_usd
 
 
 class AddressPortfolioStats(Schema):
