@@ -156,8 +156,8 @@ def get_token_by_symbol(symbol: str) -> dict:
     return result
 
 
-def get_token_by_address(address: str) -> dict:
-    if is_eth_address(address):
+def get_token_by_address(address) -> dict:
+    if is_eth_address(str(address)):
         return {
             'symbol': 'ETH',
             'name': 'Ethereum',
