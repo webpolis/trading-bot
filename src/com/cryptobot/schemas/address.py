@@ -24,7 +24,7 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
-        self.qty_usd = float(-1)
+        self.qty_usd = float(0)
 
         try:
             if type(self.qty) == int \
