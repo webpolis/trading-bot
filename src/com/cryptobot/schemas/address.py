@@ -24,16 +24,16 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
+        self.qty_usd = -1
 
         try:
-            self.qty_usd = (qty/10**token.decimals) * \
-                token.price_usd if token.price_usd is not None \
-                and token.decimals is not None else float(0)
+            if type(self.qty) == int \
+                and type(token.decimals) == int \
+                    and type(token.price_usd) == int:
+                self.qty_usd = (qty/10**token.decimals) * token.price_usd
         except Exception as error:
             print({'error': error, 'balance': str(self)})
             print(traceback.format_exc())
-
-            self.qty_usd = -1
 
 
 class AddressPortfolioStats(Schema):
