@@ -3,7 +3,7 @@ import re
 import time
 
 from com.cryptobot.config import Config
-from com.cryptobot.utils.ethereum import is_contract
+from com.cryptobot.utils.ethereum import is_contract, is_eth_address
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
@@ -157,6 +157,14 @@ def get_token_by_symbol(symbol: str) -> dict:
 
 
 def get_token_by_address(address: str) -> dict:
+    if is_eth_address(address):
+        return {
+            'symbol': 'ETH',
+            'name': 'Ethereum',
+            'decimals': 18,
+            'address': '0x0000000000000000000000000000000000000000'
+        }
+
     tokens = get_tokens_df().copy()
     result = tokens[tokens['address'] == address.lower()]
     result = result.dropna(axis='columns')
