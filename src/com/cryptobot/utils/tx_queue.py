@@ -1,6 +1,9 @@
 import itertools
 from heapq import heappop, heappush
+import logging
 from threading import Lock
+
+from com.cryptobot.utils.logger import PrettyLogger
 
 
 class TXQueue():
@@ -10,6 +13,9 @@ class TXQueue():
     REMOVED = '<removed-tx>'      # placeholder for a removed tx
     counter = itertools.count()     # unique sequence count
 
+    def __init__(self):
+        self.logger = PrettyLogger(__name__, logging.INFO)
+
     def count(self):
         count = self.counter
 
@@ -18,8 +24,14 @@ class TXQueue():
     def has_tx(self, tx: str):
         self.lock.acquire()
 
-        tx = hash(tx)
-        has_hash = tx in self.entry_finder
+        try:
+            tx = hash(tx)
+            has_hash = tx in self.entry_finder
+        except Exception as error:
+            self.logger.error(error)
+            self.lock.release()
+
+            raise error
 
         self.lock.release()
 
@@ -28,17 +40,23 @@ class TXQueue():
     def add_tx(self, tx: str, priority=0):
         self.lock.acquire()
 
-        tx = hash(tx)
+        try:
+            tx = hash(tx)
 
-        'Add a new tx or update the priority of an existing tx'
-        if tx in self.entry_finder:
-            self.remove_tx(tx)
+            'Add a new tx or update the priority of an existing tx'
+            if tx in self.entry_finder:
+                self.remove_tx(tx)
 
-        count = next(self.counter)
-        entry = [priority, count, tx]
-        self.entry_finder[tx] = entry
+            count = next(self.counter)
+            entry = [priority, count, tx]
+            self.entry_finder[tx] = entry
 
-        heappush(self.pq, entry)
+            heappush(self.pq, entry)
+        except Exception as error:
+            self.logger.error(error)
+            self.lock.release()
+
+            return
 
         self.lock.release()
 

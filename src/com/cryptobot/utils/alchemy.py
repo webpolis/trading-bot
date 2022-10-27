@@ -22,11 +22,17 @@ api_key = None
 def get_working_key():
     lock.acquire()
 
-    global api_key
-    global alchemy_api_keys
+    try:
+        global api_key
+        global alchemy_api_keys
 
-    if api_key is None:
-        api_key = next(alchemy_api_keys)
+        if api_key is None:
+            api_key = next(alchemy_api_keys)
+    except Exception as error:
+        alchemy_logger.error(error)
+        lock.release()
+
+        return api_key
 
     lock.release()
 
