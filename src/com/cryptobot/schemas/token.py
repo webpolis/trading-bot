@@ -51,28 +51,7 @@ class Token(Schema, RedisMixin):
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
-        self._metadata = self.metadata()
         self.no_price_checkup = no_price_checkup
-
-        # populate missing data
-        if self._metadata is not None:
-            if self.symbol is None:
-                self.symbol = self._metadata.get('symbol', None)
-
-            if self.name is None:
-                self.name = self._metadata.get('name', None)
-
-            if self.market_cap is None:
-                self.market_cap = self._metadata.get('market_cap', float(0))
-
-            if self.decimals is None:
-                self.decimals = int(self._metadata.get('decimals', 18))
-
-            if self.price_usd is None:
-                self.price_usd = self._metadata.get('price_usd', None)
-
-            if self.address is None:
-                self.address = self._metadata.get('address', None)
 
         self._coingecko_coin = next(iter([coin for coin in cg_coins if
                                           coin['symbol'].upper() == self.symbol]), None)
@@ -91,6 +70,31 @@ class Token(Schema, RedisMixin):
             if self.address is None:
                 if self._ftx_coin != None:
                     self.address = self._ftx_coin['erc20Contract'].lower()
+
+        if self.address == '':
+            self.address = None
+
+        # populate missing data
+        self._metadata = self.metadata()
+
+        if self._metadata is not None:
+            if self.symbol is None:
+                self.symbol = self._metadata.get('symbol', None)
+
+            if self.name is None:
+                self.name = self._metadata.get('name', None)
+
+            if self.market_cap is None:
+                self.market_cap = self._metadata.get('market_cap', float(0))
+
+            if self.decimals is None:
+                self.decimals = int(self._metadata.get('decimals', 18))
+
+            if self.price_usd is None:
+                self.price_usd = self._metadata.get('price_usd', None)
+
+            if self.address is None:
+                self.address = self._metadata.get('address', None)
 
         if self.price_usd is None:
             self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
@@ -155,7 +159,7 @@ class Token(Schema, RedisMixin):
 
     def fetch_ethplorer_metadata(self) -> dict:
         # we don't need anything extra than these attributes
-        if self.price_usd != None and self.market_cap != None and self.address != None:
+        if (self.price_usd != None and self.market_cap != None and self.address != None):
             return {}
 
         has_local_metadata = self._ethplorer_metadata is not None
@@ -182,7 +186,7 @@ class Token(Schema, RedisMixin):
 
     def fetch_alchemy_metadata(self) -> dict:
         # only useful thing provided here is decimals
-        if self.decimals != None:
+        if self.decimals != None or self.address is None:
             return {}
 
         has_local_metadata = self._alchemy_metadata is not None
