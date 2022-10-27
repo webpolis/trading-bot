@@ -1,10 +1,12 @@
 import json
 from enum import Enum
+import logging
 
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
 from com.cryptobot.utils.ethplorer import get_token_info
+from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
@@ -39,9 +41,10 @@ class Token(Schema, RedisMixin):
     cached_ethplorer_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
+        self.logger = PrettyLogger(__name__, logging.INFO)
         self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
-        self.market_cap = market_cap
+        self.market_cap = float(market_cap) if market_cap != None else market_cap
         self.address = address.lower() if type(address) == str else address
         self.price_usd = price_usd if type(
             price_usd) == float else self.get('price_usd')
@@ -60,7 +63,7 @@ class Token(Schema, RedisMixin):
                 self.name = self._metadata.get('name', None)
 
             if self.market_cap is None:
-                self.market_cap = self._metadata.get('market_cap', None)
+                self.market_cap = self._metadata.get('market_cap', float(0))
 
             if self.decimals is None:
                 self.decimals = int(self._metadata.get('decimals', 18))
@@ -97,7 +100,7 @@ class Token(Schema, RedisMixin):
             try:
                 self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
             except Exception as error:
-                print({'error': error, 'token': str(self)})
+                self.logger.error({'error': error, 'token': str(self)})
 
         # @TODO: fetch price from coinmarketcap
 
@@ -108,7 +111,7 @@ class Token(Schema, RedisMixin):
     def __hash__(self) -> int:
         return hash(self.address) if self.address != None else hash(self.symbol)
 
-    def from_dict(dict_obj = {}, address=None):
+    def from_dict(dict_obj={}, address=None):
         _address = dict_obj.get('address', None)
 
         return Token(dict_obj.get('symbol', None), dict_obj.get('name', None), dict_obj.get('market_cap', None), dict_obj.get('price_usd', None),
@@ -173,7 +176,7 @@ class Token(Schema, RedisMixin):
                 self._ethplorer_metadata = _ethplorer_metadata
                 Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
         except Exception as error:
-            print({'error': error.with_traceback(), 'token': str(self)})
+            self.logger.error({'error': error.with_traceback(), 'token': str(self)})
         finally:
             return self._ethplorer_metadata
 
@@ -207,7 +210,7 @@ class Token(Schema, RedisMixin):
                 self._alchemy_metadata = _alchemy_metadata
                 Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
-            print({'error': error, 'token': str(self)})
+            self.logger.error({'error': error, 'token': str(self)})
         finally:
             return self._alchemy_metadata
 
