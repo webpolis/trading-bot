@@ -5,6 +5,7 @@ import logging
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.coingecko import get_price
+from com.cryptobot.utils.ethereum import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
@@ -52,31 +53,9 @@ class Token(Schema, RedisMixin):
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
         self.no_price_checkup = no_price_checkup
-
-        self._coingecko_coin = next(iter([coin for coin in cg_coins if
-                                          coin['symbol'].upper() == self.symbol]), None)
-        self._ftx_coin = next(iter([coin for coin in ftx_coins if coin['id'].upper() == self.symbol
-                                    and coin.get('erc20Contract', None) != None]), None)
-
-        # populate ERC20 address
-        if self.address is None:
-            # 1st try
-            if self._coingecko_coin != None:
-                self.address = self._coingecko_coin['platforms']['ethereum'].lower() if \
-                    self._coingecko_coin['platforms'].get(
-                    'ethereum', None) != None else None
-
-            # 2nd try
-            if self.address is None:
-                if self._ftx_coin != None:
-                    self.address = self._ftx_coin['erc20Contract'].lower()
-
-        if self.address == '':
-            self.address = None
-
-        # populate missing data
         self._metadata = self.metadata()
 
+        # populate missing data
         if self._metadata is not None:
             if self.symbol is None:
                 self.symbol = self._metadata.get('symbol', None)
@@ -95,6 +74,22 @@ class Token(Schema, RedisMixin):
 
             if self.address is None:
                 self.address = self._metadata.get('address', None)
+
+        # populate ERC20 address
+        if self.address is None:
+            # 1st try
+            if self._coingecko_coin != None:
+                self.address = self._coingecko_coin['platforms']['ethereum'].lower() if \
+                    self._coingecko_coin['platforms'].get(
+                    'ethereum', None) != None else None
+
+            # 2nd try
+            if self.address is None:
+                if self._ftx_coin != None:
+                    self.address = self._ftx_coin['erc20Contract'].lower()
+
+        if self.address == '':
+            self.address = None
 
         if self.price_usd is None:
             self.price_usd = self._ftx_coin['indexPrice'] if self._ftx_coin is not None else None
@@ -115,7 +110,18 @@ class Token(Schema, RedisMixin):
     def __hash__(self) -> int:
         return hash(self.address) if self.address != None else hash(self.symbol)
 
+    @property
+    def _coingecko_coin(self):
+        return next(iter([coin for coin in cg_coins if
+                          coin['symbol'].upper() == self.symbol]), None)
+
+    @property
+    def _ftx_coin(self):
+        return next(iter([coin for coin in ftx_coins if coin['id'].upper() == self.symbol
+                          and coin.get('erc20Contract', None) != None]), None)
+
     def from_dict(dict_obj={}, address=None):
+        dict_obj = {} if dict_obj == None else dict_obj
         _address = dict_obj.get('address', None)
 
         return Token(dict_obj.get('symbol', None), dict_obj.get('name', None), dict_obj.get('market_cap', None), dict_obj.get('price_usd', None),
@@ -186,7 +192,7 @@ class Token(Schema, RedisMixin):
 
     def fetch_alchemy_metadata(self) -> dict:
         # only useful thing provided here is decimals
-        if self.decimals != None or self.address is None:
+        if self.decimals != None or (self.address is None or is_eth_address(self.address)):
             return {}
 
         has_local_metadata = self._alchemy_metadata is not None
