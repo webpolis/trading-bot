@@ -161,7 +161,8 @@ class Address(Schema, RedisMixin):
                             symbol = token_info.get('symbol', None)
                             decimals = token_info.get('decimals', None)
                             price = token_info.get('price', {})
-                            price_usd = price.get('rate', None)
+                            price_usd = price.get(
+                                'rate', None) if price != False else None
                             market_cap = price.get('marketCapUsd', None)
 
                             token = Token(symbol, name, market_cap,
