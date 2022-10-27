@@ -24,13 +24,13 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
-        self.qty_usd = -1
+        self.qty_usd = float(-1)
 
         try:
             if type(self.qty) == int \
                 and type(token.decimals) == int \
                     and type(token.price_usd) == int:
-                self.qty_usd = (qty/10**token.decimals) * token.price_usd
+                self.qty_usd = float((qty/10**token.decimals) * token.price_usd)
         except Exception as error:
             print({'error': error, 'balance': str(self)})
             print(traceback.format_exc())
