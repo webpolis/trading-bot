@@ -70,7 +70,7 @@ class Token(Schema, RedisMixin):
                 self.decimals = int(self._metadata.get('decimals', 18))
 
             if self.price_usd is None:
-                self.price_usd = float(self._metadata.get('price_usd', None))
+                self.price_usd = float(self._metadata.get('price_usd', 0))
 
             if self.address is None:
                 self.address = self._metadata.get('address', None)
