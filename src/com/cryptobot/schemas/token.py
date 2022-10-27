@@ -62,7 +62,7 @@ class Token(Schema, RedisMixin):
                 self.market_cap = self._metadata.get('market_cap', None)
 
             if self.decimals is None:
-                self.decimals = int(self._metadata.get('decimals', 0))
+                self.decimals = int(self._metadata.get('decimals', 18))
 
             if self.price_usd is None:
                 self.price_usd = self._metadata.get('price_usd', None)
