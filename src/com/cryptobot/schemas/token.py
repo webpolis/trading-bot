@@ -108,9 +108,11 @@ class Token(Schema, RedisMixin):
     def __hash__(self) -> int:
         return hash(self.address) if self.address != None else hash(self.symbol)
 
-    def from_dict(dict_obj, address=None):
-        return Token(dict_obj['symbol'], dict_obj['name'], dict_obj['market_cap'], dict_obj['price_usd'],
-                     dict_obj['address'] if dict_obj['address'] is not None else address) \
+    def from_dict(dict_obj = {}, address=None):
+        _address = dict_obj.get('address', None)
+
+        return Token(dict_obj.get('symbol', None), dict_obj.get('name', None), dict_obj.get('market_cap', None), dict_obj.get('price_usd', None),
+                     _address if _address is not None else address) \
             if dict_obj is not None else Token(address=address)
 
     def metadata(self) -> dict:
