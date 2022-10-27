@@ -13,6 +13,7 @@ import sys
 import threading
 
 from com.cryptobot.config import Config
+from com.cryptobot.extractors.fake_mempool import FakeMempoolExtractor
 from com.cryptobot.extractors.mempool import MempoolExtractor
 from com.cryptobot.traders.trader import Trader
 from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
@@ -105,7 +106,10 @@ def main(args):
     # init extractors
     for clf in extractors_paths:
         cls = get_class_by_fullname(clf)
-        instance = cls() if not issubclass(cls, MempoolExtractor) else cls(
+        instance = cls() if (
+            not issubclass(cls, MempoolExtractor)
+            and not issubclass(cls, FakeMempoolExtractor)
+        ) else cls(
             classifiers_paths=classifiers_paths)
         thread = threading.Thread(name=clf, daemon=True, target=instance.run)
 
