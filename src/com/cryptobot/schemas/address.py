@@ -25,7 +25,7 @@ class AddressBalance(Schema):
 
     @property
     def qty_usd(self):
-        qty_usd = 0
+        qty_usd = float(0)
 
         try:
             if type(self.qty) == int \
