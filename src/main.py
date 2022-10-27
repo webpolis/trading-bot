@@ -112,7 +112,8 @@ def main(args):
         threads.append(thread)
 
     # spawn traders
-    if 'com.cryptobot.extractors.mempool.MempoolExtractor' in extractors_paths:
+    if 'com.cryptobot.extractors.mempool.MempoolExtractor' in extractors_paths \
+            or 'com.cryptobot.extractors.fake_mempool.FakeMempoolExtractor' in extractors_paths:
         for i in range(0, settings.runtime.traders.max_concurrent_runs):
             asyncio.run(Trader().run())
 

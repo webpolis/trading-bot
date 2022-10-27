@@ -20,6 +20,8 @@ class RedisMixin():
     def get(self, key):
         self.lock.acquire()
 
+        value = None
+
         try:
             key = f'{self.__hash__()}-{key}'
             value = redis_instance.get(key)

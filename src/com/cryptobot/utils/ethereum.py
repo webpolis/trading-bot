@@ -2,6 +2,7 @@ import json
 from web3 import Web3
 
 from com.cryptobot.config import Config
+from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
@@ -22,6 +23,16 @@ def fetch_mempool_txs():
     pending_transactions = pending_block['transactions']
 
     return pending_transactions
+
+
+def fetch_fake_mempool_txs():
+    txs_hashes = json.load(open(get_data_path() + 'fake_mempool_transactions.json'))
+    txs = []
+
+    for tx_hash in txs_hashes:
+        txs.append(w3Http.eth.get_transaction(tx_hash))
+
+    return txs
 
 
 def client():
