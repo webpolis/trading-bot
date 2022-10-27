@@ -148,7 +148,9 @@ def get_address_details(address: str) -> dict:
 
 def get_token_by_symbol(symbol: str) -> dict:
     tokens = get_tokens_df().copy()
-    result = tokens[tokens['symbol'] == symbol.upper()].to_dict(orient='records')
+    result = tokens[tokens['symbol'] == symbol.upper()]
+    result = result.dropna(axis='columns')
+    result = result.to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
     return result
@@ -156,7 +158,9 @@ def get_token_by_symbol(symbol: str) -> dict:
 
 def get_token_by_address(address: str) -> dict:
     tokens = get_tokens_df().copy()
-    result = tokens[tokens['address'] == address.lower()].to_dict(orient='records')
+    result = tokens[tokens['address'] == address.lower()]
+    result = result.dropna(axis='columns')
+    result = result.to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
     return result

@@ -1,5 +1,4 @@
-import functools
-import operator
+import math
 import traceback
 from typing import List, final
 
@@ -197,12 +196,11 @@ class Address(Schema, RedisMixin):
             print(
                 f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')
 
-            total_usd = functools.reduce(
-                operator.add, [
-                    balance.qty_usd
-                    for balance in balances_ethplorer if balance.qty_usd is not None],
-                0
-            ) if len(balances_ethplorer) > 0 else 0
+            total_usd = 0
+
+            for balance in balances_ethplorer:
+                if type(balance.qty_usd) == float and not math.isnan(balance.qty_usd):
+                    total_usd += balance.qty_usd
 
             for balance in balances_ethplorer:
                 stats.append(AddressPortfolioStats(balance, total_usd))

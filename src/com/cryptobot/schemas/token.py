@@ -43,7 +43,7 @@ class Token(Schema, RedisMixin):
         self.name = name
         self.market_cap = market_cap
         self.address = address.lower() if type(address) == str else address
-        self.price_usd = price_usd if price_usd != None else self.get('price_usd')
+        self.price_usd = price_usd if type(price_usd) == float else self.get('price_usd')
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
