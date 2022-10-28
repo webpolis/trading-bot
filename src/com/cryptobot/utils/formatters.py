@@ -80,7 +80,7 @@ def parse_token_qty(token: Token = None, qty=None):
     if token is None or qty is None:
         return float(-1)
 
-    if type(qty) != int or type(token.decimals) != int:
+    if (type(qty) != int and type(qty) != float) or type(token.decimals) != int:
         return float(-1)
 
-    return qty/10**token.decimals
+    return float(qty/10**token.decimals)
