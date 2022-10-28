@@ -1,17 +1,16 @@
 import json
-from enum import Enum
 import logging
+from enum import Enum
 
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
+from com.cryptobot.utils.alchemy import api_post
 from com.cryptobot.utils.coingecko import get_price
 from com.cryptobot.utils.ethereum import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
-from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
-from com.cryptobot.utils.alchemy import api_post
 from toolz import valfilter
 
 settings = Config().get_settings()
@@ -42,7 +41,6 @@ class Token(Schema, RedisMixin):
     cached_ethplorer_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
-        self.logger = PrettyLogger(__name__, logging.INFO)
         self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
         self.market_cap = float(market_cap) if market_cap != None else market_cap

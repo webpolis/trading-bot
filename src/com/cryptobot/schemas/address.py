@@ -1,16 +1,15 @@
 import math
 import traceback
-from typing import List, final
+from typing import List
 
 from com.cryptobot.config import Config
-from com.cryptobot.utils.ethplorer import get_address_info
-from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
-from com.cryptobot.utils.ethereum import is_contract
-from com.cryptobot.utils.pandas_utils import get_address_details
-from com.cryptobot.utils.request import FatalRequestException
 from com.cryptobot.utils.alchemy import api_post
+from com.cryptobot.utils.ethereum import is_contract
+from com.cryptobot.utils.ethplorer import get_address_info
+from com.cryptobot.utils.pandas_utils import get_address_details
+from com.cryptobot.utils.redis_mixin import RedisMixin
 
 settings = Config().get_settings()
 
@@ -21,22 +20,21 @@ class AddressBalance(Schema):
 
         self.token = token
         self.qty = qty
+        self.qty_usd = float(0)
 
-    @property
-    def qty_usd(self):
-        qty_usd = float(0)
-
-        try:
-            if (type(self.qty) == int or type(self.qty) == float) \
+        if (type(self.qty) == int or type(self.qty) == float) \
                 and type(self.token.decimals) == int \
-                    and type(self.token.price_usd) == float:
-                qty_usd = float((self.qty/10**self.token.decimals)
-                                * self.token.price_usd)
-        except Exception as error:
-            print({'error': error, 'balance': str(self)})
-            print(traceback.format_exc())
-        finally:
-            return qty_usd
+                and type(self.token.price_usd) == float \
+                and self.token.decimals < 100:  # prevent Overflow error (ehtplorer gives odd stuff w/0x0911ee3fa4c45fd68601cb4206c09b4afc84c384)
+            try:
+                self.qty_usd = float(
+                    (self.qty/10**self.token.decimals) * self.token.price_usd)
+            except Exception as error:
+                print(error)
+                print(traceback.format_exc())
+
+    def __str__(self):
+        return str({'token': self.token.symbol, 'token_address': self.token.address, 'qty': self.qty, 'qty_usd': self.qty_usd})
 
 
 class AddressPortfolioStats(Schema):
@@ -174,9 +172,12 @@ class Address(Schema, RedisMixin):
 
                             address_balance = AddressBalance(token, qty)
 
+                            # print(f'Got balance for {self.address}: {str(address_balance)}')
+
                             balances.append(address_balance)
                         except Exception as _error:
                             print({'error': _error, 'balance': str(balance)})
+                            print(traceback.format_exc())
         except Exception as error:
             print(error)
             print(traceback.format_exc())

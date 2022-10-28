@@ -7,8 +7,9 @@ from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
                                                StrategyResponse)
 from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.gbq import publish_to_table
-from com.cryptobot.utils.trader import get_btc_trend, is_ftx_listed, is_kucoin_listed
 from com.cryptobot.utils.redis_mixin import RedisMixin
+from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
+                                        is_kucoin_listed)
 
 
 class PortfolioAllocationStrategy(Strategy, RedisMixin):

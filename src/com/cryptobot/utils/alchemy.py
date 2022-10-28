@@ -1,6 +1,6 @@
 import logging
 from itertools import cycle
-from threading import Lock
+from threading import RLock
 from urllib.error import HTTPError
 
 from backoff import expo, on_exception
@@ -15,28 +15,25 @@ max_threads = settings.runtime.classifiers.SwapClassifier.max_concurrent_threads
 max_calls = int(50/max_threads)
 period_per_thread = int(60/max_threads)
 alchemy_api_keys = cycle(settings.web3.providers.alchemy.api_keys)
-lock = Lock()
+lock = RLock()
 api_key = None
 
 
 def get_working_key():
-    lock.acquire()
+    global api_key
+    global alchemy_api_keys
+    global lock
 
-    try:
-        global api_key
-        global alchemy_api_keys
+    with lock:
+        try:
+            if api_key is None:
+                api_key = next(alchemy_api_keys)
+        except Exception as error:
+            alchemy_logger.error(error)
 
-        if api_key is None:
-            api_key = next(alchemy_api_keys)
-    except Exception as error:
-        alchemy_logger.error(error)
-        lock.release()
+            return api_key
 
         return api_key
-
-    lock.release()
-
-    return api_key
 
 
 @on_exception(expo, RateLimitException, max_tries=1, max_time=10)

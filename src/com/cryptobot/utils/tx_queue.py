@@ -22,43 +22,35 @@ class TXQueue():
         return count
 
     def has_tx(self, tx: str):
-        self.lock.acquire()
+        with self.lock:
+            try:
+                tx = hash(tx)
+                has_hash = tx in self.entry_finder
+            except Exception as error:
+                self.logger.error(error)
 
-        try:
-            tx = hash(tx)
-            has_hash = tx in self.entry_finder
-        except Exception as error:
-            self.logger.error(error)
-            self.lock.release()
+                raise error
 
-            raise error
-
-        self.lock.release()
-
-        return has_hash
+            return has_hash
 
     def add_tx(self, tx: str, priority=0):
-        self.lock.acquire()
+        with self.lock:
+            try:
+                tx = hash(tx)
 
-        try:
-            tx = hash(tx)
+                'Add a new tx or update the priority of an existing tx'
+                if tx in self.entry_finder:
+                    self.remove_tx(tx)
 
-            'Add a new tx or update the priority of an existing tx'
-            if tx in self.entry_finder:
-                self.remove_tx(tx)
+                count = next(self.counter)
+                entry = [priority, count, tx]
+                self.entry_finder[tx] = entry
 
-            count = next(self.counter)
-            entry = [priority, count, tx]
-            self.entry_finder[tx] = entry
+                heappush(self.pq, entry)
+            except Exception as error:
+                self.logger.error(error)
 
-            heappush(self.pq, entry)
-        except Exception as error:
-            self.logger.error(error)
-            self.lock.release()
-
-            return
-
-        self.lock.release()
+                return None
 
     def remove_tx(self, tx: str):
         'Mark an existing tx as REMOVED.  Raise KeyError if not found.'
