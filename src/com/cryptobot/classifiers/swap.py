@@ -56,8 +56,11 @@ class SwapClassifier(TXClassifier, EventsConsumerMixin, EventsProducerMixin):
 
                 if re.match(r'^swap.*$', func_name, flags=re.IGNORECASE) is not None:
                     # evolve tx
-                    tx = SwapTx(tx)
-                    swap_txs.append(tx)
+                    try:
+                        tx = SwapTx(tx)
+                        swap_txs.append(tx)
+                    except Exception as error:
+                        self.logger.error(error)
                 else:
                     self.logger.debug(
                         f'Address {str(tx.sender)} executed {func_name} on {str(tx.receiver)}')

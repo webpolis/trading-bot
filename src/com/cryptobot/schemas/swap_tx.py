@@ -28,13 +28,24 @@ class SwapTx(Tx):
             self.token_to_qty = params['amountOutMin'] if 'amountOutMin' in params else None
             self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
         elif 'desc' in params:
-            # 1inch based contract
-            self.token_from = Token.from_dict(
-                get_token_by_address(params['desc'][0].lower()), params['desc'][0].lower())
-            self.token_to = Token.from_dict(
-                get_token_by_address(params['desc'][1].lower()), params['desc'][1].lower())
-            self.token_from_qty = params['desc'][-4]
-            self.token_to_qty = params['desc'][-3]
+            desc = params['desc']
+
+            if type(desc[0]) == int:
+                # see 0x9865eebdd1ce65f45b6247aeed2fa2252eca7a08
+                self.token_from = Token.from_dict(
+                    get_token_by_address(desc[1].lower()), desc[1].lower())
+                self.token_to = Token.from_dict(
+                    get_token_by_address(desc[2].lower()), desc[2].lower())
+                self.token_from_qty = float(desc[5])
+                self.token_to_qty = float(desc[6])
+            else:
+                # 1inch based contract
+                self.token_from = Token.from_dict(
+                    get_token_by_address(desc[0].lower()), desc[0].lower())
+                self.token_to = Token.from_dict(
+                    get_token_by_address(desc[1].lower()), desc[1].lower())
+                self.token_from_qty = desc[-4]
+                self.token_to_qty = desc[-3]
         elif 'singleSwap' in params:
             # Balancer vault based contract
             self.token_from = Token.from_dict(
