@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas_gbq
 from com.cryptobot.config import Config
-from com.cryptobot.utils.path import get_data_path, get_dev_path
+from com.cryptobot.utils.path import get_dev_path
 from google.oauth2 import service_account
 
 import pandas as pd
