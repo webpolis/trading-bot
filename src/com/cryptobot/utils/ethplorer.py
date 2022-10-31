@@ -58,7 +58,7 @@ def get_address_info(address):
                     'decimals': 18,
                     'address': '0x0000000000000000000000000000000000000000'
                 },
-                'balance': eth.get('balance', None)
+                'balance': float(eth.get('rawBalance', -1))
             })
 
         return tokens
