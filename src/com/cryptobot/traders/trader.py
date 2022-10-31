@@ -7,9 +7,9 @@ from com.cryptobot.config import Config
 from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.strategies.strategy import StrategyResponse
-from com.cryptobot.strategies.portfolio_allocation import \
-    PortfolioAllocationStrategy
+from com.cryptobot.strategies.strategy import StrategyInput, StrategyResponse
+from com.cryptobot.strategies.whale_buy_sell_strategy import \
+    WhaleBuySellStrategy
 from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
 from jsonpickle import decode, encode
@@ -26,7 +26,7 @@ class Trader(EventsConsumerMixin):
                 base_class.__init__(self, __name__)
 
         self.strategies = [
-            PortfolioAllocationStrategy()
+            WhaleBuySellStrategy()
         ]
         self.etherscan_tx_endpoint = Config().get_settings().endpoints.etherscan.tx
         self.logger = PrettyLogger(cls, logging.INFO)
@@ -44,7 +44,9 @@ class Trader(EventsConsumerMixin):
 
             for strategy in self.strategies:
                 try:
-                    strategy_response: StrategyResponse = strategy.apply(tx)
+                    strategy_input: StrategyInput = StrategyInput(
+                        tx=tx, metadata=strategy.metadata(tx))
+                    strategy_response: StrategyResponse = strategy.apply(strategy_input)
 
                     self.logger.info(
                         f'We got the strategy\'s verdict: {str(strategy_response)}')

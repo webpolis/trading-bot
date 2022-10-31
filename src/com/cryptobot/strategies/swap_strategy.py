@@ -3,28 +3,19 @@ from com.cryptobot.schemas.address import AddressPortfolioStats
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx
-from com.cryptobot.strategies.strategy import (Strategy, StrategyAction,
-                                               StrategyResponse)
+from com.cryptobot.strategies.strategy import (Strategy, StrategyMetadata)
 from com.cryptobot.utils.formatters import parse_token_qty
-from com.cryptobot.utils.gbq import publish_to_table
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
                                         is_kucoin_listed)
 
 
-class PortfolioAllocationStrategy(Strategy, RedisMixin):
+class SwapStrategy(Strategy, RedisMixin):
     def __init__(self):
         super().__init__(__name__)
 
-        self.settings = Config().get_settings().runtime.strategies.portfolio_allocation
-
-    def __hash__(self) -> int:
-        return hash(__name__)
-
-    def apply(self, tx: Tx | SwapTx) -> StrategyResponse:
-        verdict = super().apply(tx)
-
-        self.logger.info(f'Applying strategy for tx {tx.hash}')
+    def metadata(self, tx: Tx | SwapTx) -> StrategyMetadata:
+        self.logger.info(f'Formatting tx {tx.hash}')
 
         # collect metadata from sender
         sender_stats = None
@@ -42,6 +33,8 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
                 self.logger.error(error)
         else:
             self.logger.info('Not enough data for analysis.')
+
+            return super().format(tx)
 
         # collect values and prepare output
         has_token_from_stats = sender_token_from_stats != None
@@ -91,7 +84,7 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
         if btc_trend_1_day != cached_btc_trend_1_day:
             self.set('btc_trend_1_day', btc_trend_1_day, ttl=60*30)
 
-        output = {
+        metadata = {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],
             'sender': [str(tx.sender)],
@@ -119,8 +112,4 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             'btc_trend_1_day': [btc_trend_1_day]
         }
 
-        publish_to_table(self.__class__.__name__, output)
-
-        self.logger.info(str(output))
-
-        return verdict
+        return StrategyMetadata(metadata)
