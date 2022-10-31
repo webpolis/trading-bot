@@ -10,9 +10,8 @@ from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.strategies.strategy import StrategyInput, StrategyResponse
 from com.cryptobot.strategies.whale_buy_sell_strategy import \
     WhaleBuySellStrategy
-from com.cryptobot.utils.formatters import tx_parse
 from com.cryptobot.utils.logger import PrettyLogger
-from jsonpickle import decode, encode
+from jsonpickle import decode
 
 
 class Trader(EventsConsumerMixin):
