@@ -1,5 +1,6 @@
 import logging
 import json
+from typing import TypedDict
 
 from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.schemas.tx import Tx
@@ -13,12 +14,10 @@ class StrategyAction(Enum):
     SELL = 2
 
 
-class StrategyMetadata(dict):
-    def __str__(self):
-        return json.dumps(self, default=lambda o: o.__dict__ if hasattr(o, '__dict__') else (
-            o._asdict() if hasattr(o, '_asdict') else None
-        ),
-            sort_keys=True, indent=4)
+class StrategyMetadata(TypedDict):
+    tx: str
+    sender: str
+    receiver: str
 
 
 class StrategyInput:

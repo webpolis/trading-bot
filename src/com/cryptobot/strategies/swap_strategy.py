@@ -1,3 +1,4 @@
+from datetime import datetime
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.address import AddressPortfolioStats
 from com.cryptobot.schemas.swap_tx import SwapTx
@@ -10,11 +11,39 @@ from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
                                         is_kucoin_listed)
 
 
+class SwapStrategyMetadata(StrategyMetadata):
+    tx_timestamp: datetime
+    hash: str
+    sender: str
+    sender_token_from_qty: float
+    sender_token_from_qty_usd: float
+    sender_token_from_allocation: float
+    sender_token_to_qty: float
+    sender_token_to_qty_usd: float
+    sender_token_to_allocation: float
+    sender_total_usd: float
+    receiver: str
+    token_from: str
+    token_from_address: str
+    token_from_qty: float
+    token_from_price_usd: float
+    token_from_market_cap: float
+    token_to: str
+    token_to_address: str
+    token_to_qty: float
+    token_to_price_usd: float
+    token_to_market_cap: float
+    is_kucoin_listed: bool
+    is_ftx_listed: bool
+    btc_trend_7_days: float
+    btc_trend_1_day: float
+
+
 class SwapStrategy(Strategy, RedisMixin):
     def __init__(self, cls=__name__):
         super().__init__(cls)
 
-    def metadata(self, tx: Tx | SwapTx) -> StrategyMetadata:
+    def metadata(self, tx: Tx | SwapTx) -> SwapStrategyMetadata:
         self.logger.info(f'Generating metadata for tx {tx.hash}')
 
         # collect metadata from sender
@@ -112,4 +141,4 @@ class SwapStrategy(Strategy, RedisMixin):
             'btc_trend_1_day': [btc_trend_1_day]
         }
 
-        return StrategyMetadata(metadata)
+        return SwapStrategyMetadata(metadata)
