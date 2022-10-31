@@ -13,6 +13,11 @@ class WhaleBuySellStrategy(SwapStrategy):
     def apply(self, input: StrategyInput) -> StrategyResponse:
         metadata: SwapStrategyMetadata = input.metadata
 
+        if len(metadata) == 0:
+            self.logger.info('No metadata for analysis.')
+
+            return super().apply(input)
+
         publish_to_table(self.__class__.__name__, metadata)
 
         return super().apply(input)

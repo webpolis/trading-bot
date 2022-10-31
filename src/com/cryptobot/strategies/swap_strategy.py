@@ -61,7 +61,8 @@ class SwapStrategy(Strategy, RedisMixin):
             except Exception as error:
                 self.logger.error(error)
         else:
-            self.logger.info('Not enough data collected for analysis.')
+            self.logger.info(
+                'Not enough data collected. Swap contract was probably not supported.')
 
             return super().format(tx)
 
