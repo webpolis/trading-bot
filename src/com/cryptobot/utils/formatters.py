@@ -47,6 +47,20 @@ def tx_parse(tx: dict):
 def token_parse(token, token_source: TokenSource):
     parsed_token = None
     price_usd = None
+    address = None
+
+    if token_source == TokenSource.COINMARKETCAP:
+        parsed_token = {key: token[key] for key in token.keys()
+                        & {'name', 'symbol', 'quote', 'platform'}}
+        quote = parsed_token.get('quote', {}).get('USD', None)
+        platform = parsed_token.get('platform', None)
+
+        if platform != None and platform['slug'] == 'ethereum':
+            address = platform.get('token_address', None)
+
+        if quote != None:
+            parsed_token['market_cap'] = quote.get('market_cap', None)
+            price_usd = quote.get('price', None)
 
     if token_source == TokenSource.COINGECKO:
         parsed_token = {key: token[key] for key in token.keys()
@@ -71,8 +85,8 @@ def token_parse(token, token_source: TokenSource):
         parsed_token['name'].upper() if 'name' in parsed_token else None,
         parsed_token.get('market_cap', None),
         price_usd,
-        None,
-        no_price_checkup=True
+        address,
+        no_live_checkup=True
     ) if parsed_token != None else None
 
 

@@ -6,12 +6,14 @@ import pandas as pd
 from com.cryptobot.classifiers.coingecko_tokens import \
     CoingeckoTokensClassifier
 from com.cryptobot.classifiers.ftx_tokens import FTXTokensClassifier
+from com.cryptobot.classifiers.coinmarketcap_tokens import CoinmarketcapTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token, TokenSource
 from com.cryptobot.utils.pandas_utils import merge_tokens_dicts_into_df
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
+from com.cryptobot.utils.coinmarketcap import get_listings
 from toolz import dissoc
 
 
@@ -23,6 +25,7 @@ class TokensExtractor(Extractor):
             'ftx': List[Token],
             'coingecko': List[Token]
         }
+        self.coinmarketcap_classifier = CoinmarketcapTokensClassifier()
         self.coingecko_classifier = CoingeckoTokensClassifier()
         self.ftx_classifier = FTXTokensClassifier()
 

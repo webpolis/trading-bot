@@ -34,14 +34,14 @@ class TokenSource(Enum):
     FTX = 2
     FTX_LENDING = 3
     ETHPLORER = 4
+    COINMARKETCAP = 5
 
 
 class Token(Schema, RedisMixin):
-    working_api_key = None
     cached_alchemy_metadata = {}
     cached_ethplorer_metadata = {}
 
-    def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
+    def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_live_checkup=False):
         self._logger = PrettyLogger(__name__, logging.INFO)
         self.address = address.lower() if type(address) == str else address
         self.symbol = symbol.upper() if type(symbol) == str else symbol
@@ -53,10 +53,14 @@ class Token(Schema, RedisMixin):
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
-        self.no_price_checkup = no_price_checkup
-        self._metadata = self.metadata()
+        self.no_live_checkup = no_live_checkup
+
+        if self.no_live_checkup:
+            return
 
         # populate missing data
+        self._metadata = self.metadata()
+
         if self._metadata is not None:
             if self.symbol is None:
                 self.symbol = self._metadata.get('symbol', None)
@@ -97,8 +101,7 @@ class Token(Schema, RedisMixin):
                 'indexPrice', 0)) if self._ftx_coin is not None else None
 
         no_price_or_market_cap = (
-            ((self.price_usd is None or self.price_usd == 0)
-             and not self.no_price_checkup)
+            (self.price_usd is None or self.price_usd == 0)
             or
             (self.market_cap is None or self.market_cap == 0)
         )
@@ -251,3 +254,13 @@ class Token(Schema, RedisMixin):
             'price_usd': self.price_usd,
             'decimals': self.decimals
         })
+
+    @property
+    def __dict__(self):
+        return {
+            'symbol': self.symbol,
+            'address': self.address,
+            'market_cap': self.market_cap,
+            'price_usd': self.price_usd,
+            'decimals': self.decimals
+        }
