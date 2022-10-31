@@ -29,11 +29,14 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
         # collect metadata from sender
         sender_stats = None
         sender_token_from_stats = None
+        sender_token_to_stats = None
 
         if hasattr(tx, 'token_from') and tx.token_from is not None:
             try:
                 sender_stats = tx.sender.portfolio_stats()
                 sender_token_from_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
+                    if sender_stats is not None and len(sender_stats) > 0 else None
+                sender_token_to_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_to]), None) \
                     if sender_stats is not None and len(sender_stats) > 0 else None
             except Exception as error:
                 self.logger.error(error)
@@ -42,6 +45,7 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
 
         # collect values and prepare output
         has_token_from_stats = sender_token_from_stats != None
+        has_token_to_stats = sender_token_to_stats != None
         token_from: Token = tx.token_from if hasattr(tx, 'token_from') else None
         token_from_qty = parse_token_qty(token_from, tx.token_from_qty) if hasattr(
             tx, 'token_from_qty') else float(-1)
@@ -61,6 +65,12 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
         sender_token_from_qty_usd = sender_token_from_stats.balance.qty_usd if has_token_from_stats else float(
             -1)
         sender_token_from_allocation = sender_token_from_stats.allocation_percent if has_token_from_stats else float(
+            -1)
+        sender_token_to_qty = parse_token_qty(
+            token_to, sender_token_to_stats.balance.qty) if has_token_to_stats else float(-1)
+        sender_token_to_qty_usd = sender_token_to_stats.balance.qty_usd if has_token_to_stats else float(
+            -1)
+        sender_token_to_allocation = sender_token_to_stats.allocation_percent if has_token_to_stats else float(
             -1)
         sender_total_usd = sender_stats[0].total_usd if sender_stats != None and len(sender_stats) > 0 else float(
             -1)
@@ -88,6 +98,9 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             'sender_token_from_qty': [sender_token_from_qty],
             'sender_token_from_qty_usd': [sender_token_from_qty_usd],
             'sender_token_from_allocation': [sender_token_from_allocation],
+            'sender_token_to_qty': [sender_token_to_qty],
+            'sender_token_to_qty_usd': [sender_token_to_qty_usd],
+            'sender_token_to_allocation': [sender_token_to_allocation],
             'sender_total_usd': [sender_total_usd],
             'receiver': [str(tx.receiver)],
             'token_from': [token_from.symbol if token_from != None else None],
