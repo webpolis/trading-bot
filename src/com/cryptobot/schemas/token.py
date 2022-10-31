@@ -96,14 +96,15 @@ class Token(Schema, RedisMixin):
             self.price_usd = float(self._ftx_coin.get(
                 'indexPrice', 0)) if self._ftx_coin is not None else None
 
+        no_price_or_market_cap = (
+            ((self.price_usd is None or self.price_usd == 0)
+             and not self.no_price_checkup)
+            or
+            (self.market_cap is None or self.market_cap == 0)
+        )
+
         # fetch price and market cap from coingecko
-        if self._coingecko_coin is not None \
-                and (
-                    ((self.price_usd is None or self.price_usd == 0)
-                     and not self.no_price_checkup)
-                    or
-                    (self.market_cap is None or self.market_cap == 0)
-                ):
+        if self._coingecko_coin is not None and no_price_or_market_cap:
             try:
                 markets = get_markets(self._coingecko_coin['id'], 'usd')
 
