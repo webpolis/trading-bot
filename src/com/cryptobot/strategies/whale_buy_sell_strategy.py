@@ -2,6 +2,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.strategies.swap_strategy import SwapStrategy, SwapStrategyMetadata
 from com.cryptobot.strategies.strategy import StrategyInput, StrategyResponse
 from com.cryptobot.utils.gbq import publish_to_table
+from pypika import Table, Query, Interval, Criterion
 
 
 class WhaleBuySellStrategy(SwapStrategy):

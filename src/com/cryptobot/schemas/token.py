@@ -1,16 +1,17 @@
 import json
-import logging
 from enum import Enum
+import logging
 
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.alchemy import api_post
-from com.cryptobot.utils.coingecko import get_price
+from com.cryptobot.utils.coingecko import get_markets
 from com.cryptobot.utils.ethereum import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
+from com.cryptobot.utils.logger import PrettyLogger
 from toolz import valfilter
 
 settings = Config().get_settings()
@@ -41,10 +42,12 @@ class Token(Schema, RedisMixin):
     cached_ethplorer_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_price_checkup=False):
+        self._logger = PrettyLogger(__name__, logging.INFO)
+        self.address = address.lower() if type(address) == str else address
         self.symbol = symbol.upper() if type(symbol) == str else symbol
         self.name = name
-        self.market_cap = float(market_cap) if market_cap != None else market_cap
-        self.address = address.lower() if type(address) == str else address
+        self.market_cap = float(
+            market_cap) if market_cap != None else self.get('market_cap')
         self.price_usd = float(
             price_usd) if price_usd != None else self.get('price_usd')
         self.decimals = decimals
@@ -93,20 +96,34 @@ class Token(Schema, RedisMixin):
             self.price_usd = float(self._ftx_coin.get(
                 'indexPrice', 0)) if self._ftx_coin is not None else None
 
-        # fetch price from coingecko
-        if not self.no_price_checkup and self.price_usd is None and self._coingecko_coin is not None:
+        # fetch price and market cap from coingecko
+        if self._coingecko_coin is not None \
+                and (
+                    ((self.price_usd is None or self.price_usd == 0)
+                     and not self.no_price_checkup)
+                    or
+                    (self.market_cap is None or self.market_cap == 0)
+                ):
             try:
-                self.price_usd = get_price(self._coingecko_coin['id'], 'usd')
-                self.price_usd = float(
-                    self.price_usd) if self.price_usd != None else self.price_usd
+                markets = get_markets(self._coingecko_coin['id'], 'usd')
+
+                if markets != None:
+                    self.price_usd = float(markets.get(
+                        'current_price', 0)) if self.price_usd == None else self.price_usd
+                    self.market_cap = float(markets.get(
+                        'market_cap', 0)) if self.market_cap == None else self.market_cap
             except Exception as error:
-                self.logger.error({'error': error, 'token': str(self)})
+                self._logger.error({'error': error, 'token': str(self)})
 
         # @TODO: fetch price from coinmarketcap
 
         if self.price_usd != None:
             self.set('price_usd', self.price_usd,
                      ttl=settings.runtime.schemas.token.price_usd_ttl)
+
+        if self.market_cap != None:
+            self.set('market_cap', self.market_cap,
+                     ttl=settings.runtime.schemas.token.market_cap_ttl)
 
     def __hash__(self) -> int:
         return hash(self.address) if self.address != None else hash(self.symbol)
@@ -187,7 +204,7 @@ class Token(Schema, RedisMixin):
                 self._ethplorer_metadata = _ethplorer_metadata
                 Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
         except Exception as error:
-            self.logger.error({'error': error.with_traceback(), 'token': str(self)})
+            self._logger.error({'error': error.with_traceback(), 'token': str(self)})
         finally:
             return self._ethplorer_metadata
 
@@ -221,7 +238,7 @@ class Token(Schema, RedisMixin):
                 self._alchemy_metadata = _alchemy_metadata
                 Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
         except Exception as error:
-            self.logger.error({'error': error, 'token': str(self)})
+            self._logger.error({'error': error, 'token': str(self)})
         finally:
             return self._alchemy_metadata
 
