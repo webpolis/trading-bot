@@ -48,10 +48,12 @@ class StrategyResponse:
         self.input = input
 
     def __str__(self):
-        return json.dumps(self, default=lambda o: o.__dict__ if hasattr(o, '__dict__') else (
-            o._asdict() if hasattr(o, '_asdict') else None
-        ),
-            sort_keys=True)
+        return str({
+            'action': self.action,
+            'token': self.token.symbol if self.token != None else None,
+            'metadata': self.input.metadata if self.input != None else None,
+            'tx': self.input.tx.hash
+        })
 
 
 class Strategy:

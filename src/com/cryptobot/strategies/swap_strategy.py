@@ -11,11 +11,11 @@ from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
 
 
 class SwapStrategy(Strategy, RedisMixin):
-    def __init__(self):
-        super().__init__(__name__)
+    def __init__(self, cls=__name__):
+        super().__init__(cls)
 
     def metadata(self, tx: Tx | SwapTx) -> StrategyMetadata:
-        self.logger.info(f'Formatting tx {tx.hash}')
+        self.logger.info(f'Generating metadata for tx {tx.hash}')
 
         # collect metadata from sender
         sender_stats = None
@@ -32,7 +32,7 @@ class SwapStrategy(Strategy, RedisMixin):
             except Exception as error:
                 self.logger.error(error)
         else:
-            self.logger.info('Not enough data for analysis.')
+            self.logger.info('Not enough data collected for analysis.')
 
             return super().format(tx)
 
