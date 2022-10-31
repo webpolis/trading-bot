@@ -44,12 +44,14 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
         has_token_from_stats = sender_token_from_stats != None
         token_from: Token = tx.token_from if hasattr(tx, 'token_from') else None
         token_from_qty = parse_token_qty(token_from, tx.token_from_qty) if hasattr(
-            tx, 'token_from_qty') else -1
+            tx, 'token_from_qty') else float(-1)
+        token_from_price_usd = token_from.price_usd if token_from != None else float(-1)
         token_from_market_cap = token_from.market_cap if token_from != None \
             and token_from.market_cap != None else float(-1)
         token_to: Token = tx.token_to if hasattr(tx, 'token_to') else None
         token_to_qty = parse_token_qty(token_to, tx.token_to_qty) if hasattr(
-            tx, 'token_to_qty') else -1
+            tx, 'token_to_qty') else float(-1)
+        token_to_price_usd = token_to.price_usd if token_to != None else float(-1)
         token_to_market_cap = token_to.market_cap if token_to != None \
             and token_to.market_cap != None else float(-1)
         sender_token_from_qty = parse_token_qty(
@@ -89,10 +91,12 @@ class PortfolioAllocationStrategy(Strategy, RedisMixin):
             'token_from': [token_from.symbol if token_from != None else None],
             'token_from_address': [token_from.address if token_from != None else None],
             'token_from_qty': [token_from_qty],
+            'token_from_price_usd': [token_from_price_usd],
             'token_from_market_cap': [token_from_market_cap],
             'token_to': [token_to.symbol if token_to != None else None],
             'token_to_address': [token_to.address if token_to != None else None],
             'token_to_qty': [token_to_qty],
+            'token_to_price_usd': [token_to_price_usd],
             'token_to_market_cap': [token_to_market_cap],
             'is_kucoin_listed': [kucoin_listed],
             'is_ftx_listed': [ftx_listed],
