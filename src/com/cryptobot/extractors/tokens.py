@@ -32,78 +32,83 @@ class TokensExtractor(Extractor):
         cg_markets_endpoint = settings.endpoints.coingecko.markets
 
         while True:
-            runtime_settings = Config().get_settings().runtime
-            refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
-            max_pages = runtime_settings.extractors.tokens.max_pages
+            try:
+                runtime_settings = Config().get_settings().runtime
+                refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
+                max_pages = runtime_settings.extractors.tokens.max_pages
 
-            # fetch coinmarketcap listings
-            self.logger.info('Collecting listings from Coinmarketcap')
+                # fetch coinmarketcap listings
+                self.logger.info('Collecting listings from Coinmarketcap')
 
-            coinmarketcap_listings = get_listings()
-            coinmarketcap_tokens = self.coinmarketcap_classifier.classify(
-                coinmarketcap_listings)
-            cmc_tokens_df = pd.DataFrame([
-                token.__dict__ for token in coinmarketcap_tokens if token is not None])
-            cmc_tokens_df.to_csv(
-                get_data_path() + 'coinmarketcap_tokens.csv', index=False)
+                coinmarketcap_listings = get_listings()
+                coinmarketcap_tokens = self.coinmarketcap_classifier.classify(
+                    coinmarketcap_listings)
+                cmc_tokens_df = pd.DataFrame([
+                    token.__dict__ for token in coinmarketcap_tokens if token is not None])
+                cmc_tokens_df.to_csv(
+                    get_data_path() + 'coinmarketcap_tokens.csv', index=False)
 
-            # fetch markets from coingecko
-            coingecko_markets = []
-            page = 1
+                # fetch markets from coingecko
+                coingecko_markets = []
+                page = 1
 
-            while page < max_pages:
-                self.logger.info(f'Collecting markets from Coingecko (page #{page})')
+                while page < max_pages:
+                    self.logger.info(
+                        f'Collecting markets from Coingecko (page #{page})')
 
-                coingecko_markets = HttpRequest().get(cg_markets_endpoint, {
-                    'vs_currency': 'usd',
-                    'order': 'market_cap_desc,volume_desc',
-                    'per_page': 250,
-                    'page': page,
-                    'sparkline': 'false',
-                }) + coingecko_markets
-                page += 1
+                    coingecko_markets = HttpRequest().get(cg_markets_endpoint, {
+                        'vs_currency': 'usd',
+                        'order': 'market_cap_desc,volume_desc',
+                        'per_page': 250,
+                        'page': page,
+                        'sparkline': 'false',
+                    }) + coingecko_markets
+                    page += 1
 
-                self.logger.info(f'{len(coingecko_markets)} markets collected so far')
+                    self.logger.info(
+                        f'{len(coingecko_markets)} markets collected so far')
 
-                sleep(1)
+                    sleep(1)
 
-            coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
-            coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
-            coingecko_tokens = pd.DataFrame(coingecko_tokens)
-            coingecko_tokens.to_csv(
-                get_data_path() + 'coingecko_tokens.csv', index=False)
+                coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
+                coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
+                coingecko_tokens = pd.DataFrame(coingecko_tokens)
+                coingecko_tokens.to_csv(
+                    get_data_path() + 'coingecko_tokens.csv', index=False)
 
-            # convert and merge
-            self.logger.info('Produce tokens union list...')
-            tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
-                'symbol'], suffixes=('', '_cmc'))
+                # convert and merge
+                self.logger.info('Produce tokens union list...')
+                tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
+                    'symbol'], suffixes=('', '_cmc'))
 
-            fill_diverged_columns(tokens, '_cmc')
+                fill_diverged_columns(tokens, '_cmc')
 
-            # combine with tokenslist
-            self.logger.info('Combine with tokenslist...')
-            tokenslist_cg_tokens = json.load(
-                open(get_data_path() + 'tokenslist_coingecko.json'))['tokens']
-            tokenslist_uniswap_tokens = json.load(
-                open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
-            tokenslist_1inch_tokens = json.load(
-                open(get_data_path() + 'tokenslist_1inch.json'))['tokens']
-            tokenslist_all_tokens = list(map(lambda token: dissoc(
-                token, 'extensions', 'logoURI', 'name'), tokenslist_cg_tokens + tokenslist_uniswap_tokens + tokenslist_1inch_tokens))
-            tokenslist_df = pd.DataFrame(tokenslist_all_tokens)
-            tokenslist_df['address'] = tokenslist_df['address'].str.lower()
-            tokenslist_df.drop_duplicates(inplace=True)
-            tokens = tokens.merge(tokenslist_df, how='outer', on=[
-                                  'symbol', 'address'], suffixes=('', '_tl'))
+                # combine with tokenslist
+                self.logger.info('Combine with tokenslist...')
+                tokenslist_cg_tokens = json.load(
+                    open(get_data_path() + 'tokenslist_coingecko.json'))['tokens']
+                tokenslist_uniswap_tokens = json.load(
+                    open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
+                tokenslist_1inch_tokens = json.load(
+                    open(get_data_path() + 'tokenslist_1inch.json'))['tokens']
+                tokenslist_all_tokens = list(map(lambda token: dissoc(
+                    token, 'extensions', 'logoURI', 'name'), tokenslist_cg_tokens + tokenslist_uniswap_tokens + tokenslist_1inch_tokens))
+                tokenslist_df = pd.DataFrame(tokenslist_all_tokens)
+                tokenslist_df['address'] = tokenslist_df['address'].str.lower()
+                tokenslist_df.drop_duplicates(inplace=True)
+                tokens = tokens.merge(tokenslist_df, how='outer', on=[
+                    'symbol', 'address'], suffixes=('', '_tl'))
 
-            fill_diverged_columns(tokens, '_tl')
+                fill_diverged_columns(tokens, '_tl')
 
-            # store locally for future reference
-            tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
+                # store locally for future reference
+                tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
-            self.logger.info(
-                f'Collected {tokens.symbol.size} tokens from Coingecko, Coinmarketcap & Tokenslist')
+                self.logger.info(
+                    f'Collected {tokens.symbol.size} tokens from Coingecko, Coinmarketcap & Tokenslist')
 
-            self.logger.info(f'Sleeping for {refresh_interval} seconds.')
-
-            sleep(refresh_interval)
+                self.logger.info(f'Sleeping for {refresh_interval} seconds.')
+            except Exception as error:
+                self.logger.error(error)
+            finally:
+                sleep(refresh_interval)
