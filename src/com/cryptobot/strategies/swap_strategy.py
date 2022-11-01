@@ -64,7 +64,7 @@ class SwapStrategy(Strategy, RedisMixin):
             self.logger.info(
                 'Not enough data collected. Swap contract was probably not supported.')
 
-            return super().format(tx)
+            return super().metadata(tx)
 
         # collect values and prepare output
         has_token_from_stats = sender_token_from_stats != None
