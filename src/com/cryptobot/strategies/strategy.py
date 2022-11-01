@@ -86,5 +86,9 @@ class Strategy:
         """
         return StrategyResponse(input=input)
 
-    def __hash__(self) -> int:
-        return hash(self.cls)
+    @property
+    def __key__(self):
+        return (None)
+
+    def __hash__(self):
+        return hash(self.__key__)

@@ -43,6 +43,10 @@ class SwapStrategy(Strategy, RedisMixin):
     def __init__(self, cls=__name__):
         super().__init__(cls)
 
+    @property
+    def __key__(self):
+        return (__name__)
+
     def metadata(self, tx: Tx | SwapTx) -> SwapStrategyMetadata:
         self.logger.info(f'Generating metadata for tx {tx.hash}')
 

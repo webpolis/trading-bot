@@ -32,8 +32,9 @@ class Tx(Schema):
         self.input = input
         self.decoded_input = decoded_input
 
-    def __hash__(self):
-        return hash(self.hash)
+    @property
+    def __key__(self):
+        return (self.hash)
 
     def decode_input(self):
         if self.input is None:

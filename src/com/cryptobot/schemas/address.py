@@ -2,6 +2,7 @@ import math
 import traceback
 from typing import List
 
+from jsonpickle import encode, decode
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
@@ -34,7 +35,15 @@ class AddressBalance(Schema):
                 print(traceback.format_exc())
 
     def __str__(self):
-        return str({'token': self.token.symbol, 'token_address': self.token.address, 'qty': self.qty, 'qty_usd': self.qty_usd})
+        return str(self.__dict__)
+
+    @property
+    def __dict__(self):
+        return {
+            'token': self.token.__dict__,
+            'qty': self.qty,
+            'qty_usd': self.qty_usd
+        }
 
 
 class AddressPortfolioStats(Schema):
@@ -48,14 +57,15 @@ class AddressPortfolioStats(Schema):
             if self.balance.qty_usd != 0 and self.total_usd != 0 else float(0)
 
     def __str__(self):
-        return str({
-            'token_symbol': self.balance.token.symbol,
-            'token_address': self.balance.token.address,
-            'qty': self.balance.qty,
-            'qty_usd': self.balance.qty_usd,
+        return str(self.__dict__)
+
+    @property
+    def __dict__(self):
+        return {
+            'balance': self.balance.__dict__,
             'total_usd': self.total_usd,
             'allocation_percent': self.allocation_percent
-        })
+        }
 
 
 class Address(Schema, RedisMixin):
@@ -65,8 +75,9 @@ class Address(Schema, RedisMixin):
 
         self.address = address.lower()
 
-    def __hash__(self):
-        return hash(self.address)
+    @property
+    def __key__(self):
+        return (self.address)
 
     def metadata(self) -> dict:
         return get_address_details(self.address)
@@ -78,11 +89,7 @@ class Address(Schema, RedisMixin):
         return self.address
 
     def balances_alchemy(self) -> List[AddressBalance]:
-        cached_balances = self.get('alchemy_balances')
-        balances = [] if cached_balances is None else cached_balances
-
-        if len(balances) > 0:
-            return balances
+        balances = []
 
         try:
             page_key = None
@@ -141,11 +148,7 @@ class Address(Schema, RedisMixin):
             return balances
 
     def balances_ethplorer(self) -> List[AddressBalance]:
-        cached_balances = self.get('ethplorer_balances')
-        balances = [] if cached_balances is None else cached_balances
-
-        if len(balances) > 0:
-            return balances
+        balances = []
 
         try:
             response = get_address_info(self.address)
@@ -182,14 +185,17 @@ class Address(Schema, RedisMixin):
             print(error)
             print(traceback.format_exc())
         finally:
-            if len(balances) > 0:
-                self.set('ethplorer_balances', balances,
-                         ttl=settings.runtime.schemas.address.balances_cache_timeout)
-
             return balances
 
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
-        stats: List[AddressPortfolioStats] = []
+        cached_portfolio_stats = self.get('portfolio_stats')
+        cached_portfolio_stats = [decode(
+            stat) for stat in cached_portfolio_stats] if cached_portfolio_stats != None else []
+        stats: List[AddressPortfolioStats] = [
+        ] if cached_portfolio_stats is None else cached_portfolio_stats
+
+        if len(stats) > 0:
+            return stats
 
         try:
             balances_ethplorer = self.balances_ethplorer()
@@ -209,4 +215,8 @@ class Address(Schema, RedisMixin):
             print(error)
             print(traceback.format_exc())
         finally:
+            if len(stats) > 0:
+                self.set('portfolio_stats', [encode(stat,  max_depth=3) for stat in stats],
+                         ttl=settings.runtime.schemas.address.portfolio_stats_cache_timeout)
+
             return stats

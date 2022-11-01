@@ -129,8 +129,9 @@ class Token(Schema, RedisMixin):
             self.set('market_cap', self.market_cap,
                      ttl=settings.runtime.schemas.token.market_cap_ttl)
 
-    def __hash__(self) -> int:
-        return hash(self.address) if self.address != None else hash(self.symbol)
+    @property
+    def __key__(self):
+        return (self.symbol, self.address)
 
     @property
     def _coingecko_coin(self):
@@ -253,6 +254,7 @@ class Token(Schema, RedisMixin):
     def __dict__(self):
         return {
             'symbol': self.symbol,
+            'name': self.name,
             'address': self.address,
             'market_cap': self.market_cap,
             'price_usd': self.price_usd,
