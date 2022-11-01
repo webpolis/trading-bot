@@ -5,12 +5,10 @@ from typing import List
 import pandas as pd
 from com.cryptobot.classifiers.coingecko_tokens import \
     CoingeckoTokensClassifier
-from com.cryptobot.classifiers.ftx_tokens import FTXTokensClassifier
 from com.cryptobot.classifiers.coinmarketcap_tokens import CoinmarketcapTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
-from com.cryptobot.schemas.token import Token, TokenSource
-from com.cryptobot.utils.pandas_utils import merge_tokens_dicts_into_df
+from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 from com.cryptobot.utils.coinmarketcap import get_listings
@@ -27,18 +25,26 @@ class TokensExtractor(Extractor):
         }
         self.coinmarketcap_classifier = CoinmarketcapTokensClassifier()
         self.coingecko_classifier = CoingeckoTokensClassifier()
-        self.ftx_classifier = FTXTokensClassifier()
 
     def run(self):
         settings = Config().get_settings()
         cg_markets_endpoint = settings.endpoints.coingecko.markets
-        ftx_markets_endpoint = settings.endpoints.ftx.markets
-        ftx_lending_endpoint = settings.endpoints.ftx.lending
 
         while True:
             runtime_settings = Config().get_settings().runtime
             refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
             max_pages = runtime_settings.extractors.tokens.max_pages
+
+            # fetch coinmarketcap listings
+            self.logger.info('Collecting listings from Coinmarketcap')
+
+            coinmarketcap_listings = get_listings()
+            coinmarketcap_tokens = self.coinmarketcap_classifier.classify(
+                coinmarketcap_listings)
+            cmc_tokens_df = pd.DataFrame([
+                token.__dict__ for token in coinmarketcap_tokens if token is not None])
+            cmc_tokens_df.to_csv(
+                get_data_path() + 'coinmarketcap_tokens.csv', index=False)
 
             # fetch markets from coingecko
             coingecko_markets = []
@@ -62,42 +68,21 @@ class TokensExtractor(Extractor):
 
             coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
             coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
-            pd.DataFrame(coingecko_tokens).to_csv(
+            coingecko_tokens = pd.DataFrame(coingecko_tokens)
+            coingecko_tokens.to_csv(
                 get_data_path() + 'coingecko_tokens.csv', index=False)
-
-            # fetch tokens for lend in FTX
-            self.logger.info(f'Collecting tokens from FTX')
-
-            ftx_lending = HttpRequest().get(ftx_lending_endpoint)
-            ftx_lending = ftx_lending['result']
-            ftx_lending_tokens = self.ftx_classifier.classify(
-                ftx_lending, TokenSource.FTX_LENDING)
-            ftx_lending_tokens = pd.DataFrame([
-                token.__dict__ for token in ftx_lending_tokens if token is not None])
-
-            # fetch markets from FTX
-            ftx_markets = HttpRequest().get(ftx_markets_endpoint)
-            ftx_markets = ftx_markets['result']
-            ftx_markets_tokens = self.ftx_classifier.classify(
-                ftx_markets, TokenSource.FTX)
-            ftx_markets_tokens = pd.DataFrame([
-                token.__dict__ for token in ftx_markets_tokens if token is not None])
-
-            ftx_tokens = ftx_lending_tokens.merge(
-                ftx_markets_tokens, how='left', on='symbol')
-            ftx_tokens.drop_duplicates(inplace=True, subset=['symbol'])
-
-            self.logger.info(
-                f'{len(ftx_tokens)} tokens collected for lending in FTX')
-
-            pd.DataFrame(ftx_lending_tokens).to_csv(
-                get_data_path() + 'ftx_lending_tokens.csv', index=False)
-            pd.DataFrame(ftx_markets_tokens).to_csv(
-                get_data_path() + 'ftx_markets_tokens.csv', index=False)
 
             # convert and merge
             self.logger.info('Produce tokens union list...')
-            tokens = merge_tokens_dicts_into_df(coingecko_tokens, ftx_tokens, 'symbol')
+            tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
+                'symbol'], suffixes=('', '_cmc'))
+
+            for col in tokens:
+                try:
+                    tokens[col].fillna(tokens[col+'_cmc'], inplace=True)
+                    tokens.drop([col + '_cmc'], axis=1, inplace=True)
+                except:
+                    pass
 
             # combine with tokenslist
             self.logger.info('Combine with tokenslist...')
@@ -112,13 +97,21 @@ class TokensExtractor(Extractor):
             tokenslist_df = pd.DataFrame(tokenslist_all_tokens)
             tokenslist_df['address'] = tokenslist_df['address'].str.lower()
             tokenslist_df.drop_duplicates(inplace=True)
-            tokens = tokens.merge(tokenslist_df, how='outer', on=['symbol', 'address'])
+            tokens = tokens.merge(tokenslist_df, how='outer', on=[
+                                  'symbol', 'address'], suffixes=('', '_tl'))
+
+            for col in tokens:
+                try:
+                    tokens[col].fillna(tokens[col+'_tl'], inplace=True)
+                    tokens.drop([col + '_tl'], axis=1, inplace=True)
+                except:
+                    pass
 
             # store locally for future reference
             tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
             self.logger.info(
-                f'Collected {tokens.symbol.size} tokens from Coingecko, FTX & Tokenslist')
+                f'Collected {tokens.symbol.size} tokens from Coingecko, Coinmarketcap & Tokenslist')
 
             self.logger.info(f'Sleeping for {refresh_interval} seconds.')
 

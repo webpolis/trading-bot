@@ -25,9 +25,7 @@ def get_listings():
         with open(filepath) as fp:
             return json.load(fp)
 
-    url = settings.endpoints.coinmarketcap.listings_latest.format(
-        api_key=settings.endpoints.coinmarketcap.api_key
-    )
+    url = settings.endpoints.coinmarketcap.listings_latest
     listings = []
     pages = 2
     limit = 5000
@@ -35,9 +33,13 @@ def get_listings():
     for ix in range(1, pages + 1):
         response = request.get(url, {
             'start': ix if ix == 1 else limit + 1,
-            'limit': limit
+            'limit': limit,
+            'CMC_PRO_API_KEY': settings.endpoints.coinmarketcap.api_key
         })
 
         listings += response.get('data', None)
 
-    return response.get('data', None)
+    with open(filepath, 'w') as fp:
+        json.dump(listings, fp)
+
+    return listings

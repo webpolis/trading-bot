@@ -247,13 +247,7 @@ class Token(Schema, RedisMixin):
             return self._alchemy_metadata
 
     def __str__(self):
-        return str({
-            'symbol': self.symbol,
-            'address': self.address,
-            'market_cap': self.market_cap,
-            'price_usd': self.price_usd,
-            'decimals': self.decimals
-        })
+        return str(self.__dict__)
 
     @property
     def __dict__(self):
