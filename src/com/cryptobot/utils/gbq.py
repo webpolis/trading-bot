@@ -23,3 +23,11 @@ def publish_to_table(table_name, data, schema=None):
                           project_id=settings.gbq.project_id, if_exists='append', table_schema=schema)
     except Exception as error:
         print({'error': error, 'data': data})
+
+
+def query_table(query: str):
+    return pandas_gbq.read_gbq(query)
+
+
+def get_table_path(table_name):
+    return f'{settings.gbq.dataset_id}.{table_name}'
