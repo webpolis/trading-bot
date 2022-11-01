@@ -175,3 +175,12 @@ def get_token_by_address(address) -> dict:
     result = result[0] if len(result) > 0 else None
 
     return result
+
+
+def fill_diverged_columns(df, suffix):
+    for col in df:
+        try:
+            df[col].fillna(df[col+suffix], inplace=True)
+            df.drop([col + suffix], axis=1, inplace=True)
+        except:
+            pass

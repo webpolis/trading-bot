@@ -10,6 +10,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.path import get_data_path
+from com.cryptobot.utils.pandas_utils import fill_diverged_columns
 from com.cryptobot.utils.request import HttpRequest
 from com.cryptobot.utils.coinmarketcap import get_listings
 from toolz import dissoc
@@ -77,12 +78,7 @@ class TokensExtractor(Extractor):
             tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
                 'symbol'], suffixes=('', '_cmc'))
 
-            for col in tokens:
-                try:
-                    tokens[col].fillna(tokens[col+'_cmc'], inplace=True)
-                    tokens.drop([col + '_cmc'], axis=1, inplace=True)
-                except:
-                    pass
+            fill_diverged_columns(tokens, '_cmc')
 
             # combine with tokenslist
             self.logger.info('Combine with tokenslist...')
@@ -100,12 +96,7 @@ class TokensExtractor(Extractor):
             tokens = tokens.merge(tokenslist_df, how='outer', on=[
                                   'symbol', 'address'], suffixes=('', '_tl'))
 
-            for col in tokens:
-                try:
-                    tokens[col].fillna(tokens[col+'_tl'], inplace=True)
-                    tokens.drop([col + '_tl'], axis=1, inplace=True)
-                except:
-                    pass
+            fill_diverged_columns(tokens, '_tl')
 
             # store locally for future reference
             tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
