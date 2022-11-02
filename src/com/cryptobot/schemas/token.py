@@ -119,8 +119,6 @@ class Token(Schema, RedisMixin):
             except Exception as error:
                 self._logger.error({'error': error, 'token': str(self)})
 
-        # @TODO: fetch price from coinmarketcap
-
         if self.price_usd != None:
             self.set('price_usd', self.price_usd,
                      ttl=settings.runtime.schemas.token.price_usd_ttl)
@@ -182,7 +180,7 @@ class Token(Schema, RedisMixin):
 
         # cache the metadata
         if _metadata != None and len(_metadata) > 0:
-            self.set('metadata', _metadata)
+            self.set('metadata', _metadata, ttl=settings.runtime.schemas.token.metadata_ttl)
 
         return _metadata
 
