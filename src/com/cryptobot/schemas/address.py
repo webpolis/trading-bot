@@ -37,14 +37,6 @@ class AddressBalance(Schema):
     def __str__(self):
         return str(self.__dict__)
 
-    @property
-    def __dict__(self):
-        return {
-            'token': self.token.__dict__,
-            'qty': self.qty,
-            'qty_usd': self.qty_usd
-        }
-
 
 class AddressPortfolioStats(Schema):
     def __init__(self, balance: AddressBalance, total_usd: float = 0) -> None:
@@ -58,14 +50,6 @@ class AddressPortfolioStats(Schema):
 
     def __str__(self):
         return str(self.__dict__)
-
-    @property
-    def __dict__(self):
-        return {
-            'balance': self.balance.__dict__,
-            'total_usd': self.total_usd,
-            'allocation_percent': self.allocation_percent
-        }
 
 
 class Address(Schema, RedisMixin):
