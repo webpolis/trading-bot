@@ -23,6 +23,11 @@ with open(get_data_path() + 'coingecko_coins.json') as f:
 
     f.close()
 
+with open(get_data_path() + 'coingecko_stablecoins.json') as f:
+    cg_stablecoins = json.load(f)
+
+    f.close()
+
 with open(get_data_path() + 'ftx_coins.json') as f:
     ftx_coins = json.load(f)
 
@@ -141,6 +146,13 @@ class Token(Schema, RedisMixin):
         return next(iter([coin for coin in ftx_coins if coin['id'].upper() == self.symbol
                           and coin.get('erc20Contract', None) != None]), None)
 
+    @property
+    def is_stablecoin(self):
+        stablecoin = next(iter([coin for coin in cg_stablecoins if
+                          coin['symbol'].upper() == self.symbol]), None)
+
+        return stablecoin != None
+
     def from_dict(dict_obj={}, address=None):
         dict_obj = {} if dict_obj == None else dict_obj
         _address = dict_obj.get('address', None)
@@ -180,7 +192,8 @@ class Token(Schema, RedisMixin):
 
         # cache the metadata
         if _metadata != None and len(_metadata) > 0:
-            self.set('metadata', _metadata, ttl=settings.runtime.schemas.token.metadata_ttl)
+            self.set('metadata', _metadata,
+                     ttl=settings.runtime.schemas.token.metadata_ttl)
 
         return _metadata
 
