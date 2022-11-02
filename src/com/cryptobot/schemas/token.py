@@ -1,33 +1,23 @@
 import json
-from enum import Enum
 import logging
+from enum import Enum
 
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.alchemy import api_post
-from com.cryptobot.utils.coingecko import get_markets
+from com.cryptobot.utils.coingecko import get_coin, get_markets, is_stablecoin
 from com.cryptobot.utils.ethereum import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
+from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
-from com.cryptobot.utils.logger import PrettyLogger
 from toolz import valfilter
 
 settings = Config().get_settings()
 alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
 
 # initialize data
-with open(get_data_path() + 'coingecko_coins.json') as f:
-    cg_coins = json.load(f)
-
-    f.close()
-
-with open(get_data_path() + 'coingecko_stablecoins.json') as f:
-    cg_stablecoins = json.load(f)
-
-    f.close()
-
 with open(get_data_path() + 'ftx_coins.json') as f:
     ftx_coins = json.load(f)
 
@@ -138,8 +128,7 @@ class Token(Schema, RedisMixin):
 
     @property
     def _coingecko_coin(self):
-        return next(iter([coin for coin in cg_coins if
-                          coin['symbol'].upper() == self.symbol]), None)
+        return get_coin(self.symbol)
 
     @property
     def _ftx_coin(self):
@@ -147,11 +136,8 @@ class Token(Schema, RedisMixin):
                           and coin.get('erc20Contract', None) != None]), None)
 
     @property
-    def is_stablecoin(self):
-        stablecoin = next(iter([coin for coin in cg_stablecoins if
-                          coin['symbol'].upper() == self.symbol]), None)
-
-        return stablecoin != None
+    def stablecoin(self):
+        return is_stablecoin(self.symbol)
 
     def from_dict(dict_obj={}, address=None):
         dict_obj = {} if dict_obj == None else dict_obj
