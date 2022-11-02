@@ -8,8 +8,8 @@ from com.cryptobot.events.consumer import EventsConsumerMixin
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.strategies.strategy import StrategyInput, StrategyResponse
-from com.cryptobot.strategies.whale_buy_sell_strategy import \
-    WhaleBuySellStrategy
+from com.cryptobot.strategies.whale_buy_strategy import \
+    WhaleBuyStrategy
 from com.cryptobot.utils.logger import PrettyLogger
 from jsonpickle import decode
 
@@ -25,7 +25,7 @@ class Trader(EventsConsumerMixin):
                 base_class.__init__(self, __name__)
 
         self.strategies = [
-            WhaleBuySellStrategy()
+            WhaleBuyStrategy()
         ]
         self.etherscan_tx_endpoint = Config().get_settings().endpoints.etherscan.tx
         self.logger = PrettyLogger(cls, logging.INFO)
