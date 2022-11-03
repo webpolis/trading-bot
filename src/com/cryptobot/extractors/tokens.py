@@ -9,6 +9,7 @@ from com.cryptobot.classifiers.coinmarketcap_tokens import CoinmarketcapTokensCl
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token
+from com.cryptobot.utils.coingecko import get_markets
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.pandas_utils import fill_diverged_columns
 from com.cryptobot.utils.request import HttpRequest
@@ -56,19 +57,13 @@ class TokensExtractor(Extractor):
                     self.logger.info(
                         f'Collecting markets from Coingecko (page #{page})')
 
-                    coingecko_markets += HttpRequest().get(cg_markets_endpoint, {
-                        'vs_currency': 'usd',
-                        'order': 'market_cap_desc,volume_desc',
-                        'per_page': 250,
-                        'page': page,
-                        'sparkline': 'false',
-                    })
+                    coingecko_markets += get_markets(page)
                     page += 1
 
                     self.logger.info(
                         f'{len(coingecko_markets)} markets collected so far')
 
-                    sleep(1)
+                    sleep(2)
 
                 coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
                 coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
