@@ -5,7 +5,7 @@ from enum import Enum
 from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.alchemy import api_post
-from com.cryptobot.utils.coingecko import get_coin, get_markets, is_stablecoin
+from com.cryptobot.utils.coingecko import get_coin, is_stablecoin
 from com.cryptobot.utils.ethereum import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.logger import PrettyLogger
@@ -94,25 +94,6 @@ class Token(Schema, RedisMixin):
         if self.price_usd is None:
             self.price_usd = float(self._ftx_coin.get(
                 'indexPrice', 0)) if self._ftx_coin is not None else None
-
-        no_price_or_market_cap = (
-            (self.price_usd is None or self.price_usd == 0)
-            or
-            (self.market_cap is None or self.market_cap == 0)
-        )
-
-        # fetch price and market cap from coingecko
-        if self._coingecko_coin is not None and no_price_or_market_cap:
-            try:
-                markets = get_markets(self._coingecko_coin['id'], 'usd')
-
-                if markets != None:
-                    self.price_usd = float(markets.get(
-                        'current_price', 0)) if self.price_usd == None else self.price_usd
-                    self.market_cap = float(markets.get(
-                        'market_cap', 0)) if self.market_cap == None else self.market_cap
-            except Exception as error:
-                self._logger.error({'error': error, 'token': str(self)})
 
         if self.price_usd != None:
             self.set('price_usd', self.price_usd,
