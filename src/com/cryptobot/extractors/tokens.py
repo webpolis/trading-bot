@@ -1,5 +1,6 @@
 import json
 from time import sleep
+import traceback
 from typing import List
 
 import pandas as pd
@@ -29,9 +30,6 @@ class TokensExtractor(Extractor):
         self.coingecko_classifier = CoingeckoTokensClassifier()
 
     def run(self):
-        settings = Config().get_settings()
-        cg_markets_endpoint = settings.endpoints.coingecko.markets
-
         while True:
             try:
                 runtime_settings = Config().get_settings().runtime
@@ -116,5 +114,7 @@ class TokensExtractor(Extractor):
                 self.logger.info(f'Sleeping for {refresh_interval} seconds.')
             except Exception as error:
                 self.logger.error(error)
+
+                print(traceback.format_exc())
             finally:
                 sleep(refresh_interval)

@@ -38,4 +38,4 @@ def get_markets(page, currency='usd'):
         'page': page,
     })
 
-    return response if response != None and len(response) > 0 else []
+    return response if response != None and len(response) > 0 else None
