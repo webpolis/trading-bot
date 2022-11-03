@@ -59,10 +59,10 @@ class WhaleBuyStrategy(SwapStrategy):
             total_bought_usd = (data.token_to_qty*data.token_to_price_usd).sum()
 
             if total_bought_usd >= self.settings.whale_wallet_value_threshold_usd \
-                    or total_bought_usd >= ((self.settings.whale_token_market_percent*metadata['token_to_market_cap'])/100):
+                    or total_bought_usd >= ((self.settings.whale_token_market_percent*metadata['token_to_market_cap'][0])/100):
                 self.logger.info('We got a BUY signal.')
 
-                metadata['buy'] = True
+                metadata['buy'] = [True]
 
                 response = StrategyResponse(
                     action=StrategyAction.BUY, token=metadata['_tx'].token_to, input=input)
@@ -70,12 +70,12 @@ class WhaleBuyStrategy(SwapStrategy):
                 self.logger.info(
                     'This trade doesn\'t meet the criteria. No BUY signal.')
 
-                metadata['buy'] = False
+                metadata['buy'] = [False]
         else:
             self.logger.info(
                 f'No previous whales action on this token since {time_window}.')
 
-            metadata['buy'] = False
+            metadata['buy'] = [False]
 
         del metadata['_tx']
 
