@@ -73,6 +73,7 @@ class TokensExtractor(Extractor):
                     finally:
                         sleep(3)
 
+                # coingecko may rate limit us (randomly), hence preserve best dataset
                 if len(coingecko_markets) >= len(coingecko_tokens):
                     coingecko_tokens = self.coingecko_classifier.classify(
                         coingecko_markets)
