@@ -74,13 +74,30 @@ class TokensExtractor(Extractor):
                     finally:
                         sleep(coingecko_page_interval)
 
-                # coingecko may rate limit us (randomly), hence preserve best dataset
-                if len(coingecko_markets) >= len(coingecko_tokens):
-                    coingecko_tokens = self.coingecko_classifier.classify(
-                        coingecko_markets)
-                    coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
-                    coingecko_tokens = pd.DataFrame(coingecko_tokens)
-                    coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
+                """ coingecko may rate limit us (randomly), hence refresh whatever tokens \
+                    we could collect this time """
+                coingecko_tokens_last = self.coingecko_classifier.classify(
+                    coingecko_markets)
+                coingecko_tokens_last = [
+                    token.__dict__ for token in coingecko_tokens_last]
+                coingecko_tokens_last = pd.DataFrame(coingecko_tokens_last)
+                coingecko_tokens = tokens.merge(coingecko_tokens_last, how='left', on=[
+                                                'symbol', 'name'], suffixes=('', '_last'))
+
+                # preserve latest price & market cap
+                coingecko_tokens['price_usd_last'].fillna(
+                    tokens['price_usd'], inplace=True)
+                coingecko_tokens['market_cap_last'].fillna(
+                    tokens['market_cap'], inplace=True)
+                coingecko_tokens['price_usd'] = coingecko_tokens['price_usd_last']
+                coingecko_tokens['market_cap'] = coingecko_tokens['market_cap_last']
+
+                del coingecko_tokens['price_usd_last']
+                del coingecko_tokens['market_cap_last']
+                del coingecko_tokens['address_last']
+                del coingecko_tokens['decimals_last']
+
+                coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
 
                 # convert and merge
                 self.logger.info('Produce tokens union list...')
