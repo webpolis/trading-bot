@@ -98,6 +98,7 @@ class TokensExtractor(Extractor):
                     del coingecko_tokens['address_last']
                     del coingecko_tokens['decimals_last']
 
+                    coingecko_tokens.drop_duplicates(inplace=True)
                     coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
 
                 # convert and merge
@@ -126,6 +127,7 @@ class TokensExtractor(Extractor):
                 fill_diverged_columns(tokens, '_tl')
 
                 # store locally for future reference
+                tokens.drop_duplicates(inplace=True)
                 tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
                 self.logger.info(
