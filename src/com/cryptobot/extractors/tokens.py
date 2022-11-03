@@ -55,7 +55,7 @@ class TokensExtractor(Extractor):
                 coingecko_tokens_path = get_data_path() + 'coingecko_tokens.csv'
                 coingecko_tokens = pd.read_csv(open(coingecko_tokens_path))
 
-                while page < max_coingecko_pages:
+                while page <= max_coingecko_pages:
                     try:
                         self.logger.info(
                             f'Collecting markets from Coingecko (page #{page})')

@@ -13,8 +13,6 @@ class CoingeckoTokensClassifier(TokenClassifier):
         return items
 
     def parse(self, items):
-        items.sort(key=lambda item: item['market_cap'], reverse=True)
-
         tokens: List[Token] = [token_parse(
             token, TokenSource.COINGECKO) for token in items]
 
