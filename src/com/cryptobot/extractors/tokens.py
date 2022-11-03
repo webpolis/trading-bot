@@ -35,6 +35,7 @@ class TokensExtractor(Extractor):
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
                 max_coingecko_pages = runtime_settings.extractors.tokens.max_coingecko_pages
+                coingecko_page_interval = runtime_settings.extractors.tokens.coingecko_page_interval
 
                 # fetch coinmarketcap listings
                 self.logger.info('Collecting listings from Coinmarketcap')
@@ -71,7 +72,7 @@ class TokensExtractor(Extractor):
 
                         break
                     finally:
-                        sleep(3)
+                        sleep(coingecko_page_interval)
 
                 # coingecko may rate limit us (randomly), hence preserve best dataset
                 if len(coingecko_markets) >= len(coingecko_tokens):
