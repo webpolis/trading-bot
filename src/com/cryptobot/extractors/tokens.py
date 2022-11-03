@@ -53,6 +53,10 @@ class TokensExtractor(Extractor):
                 coingecko_markets = []
                 page = 1
 
+                # preload stored tokens
+                coingecko_tokens_path = get_data_path() + 'coingecko_tokens.csv'
+                coingecko_tokens = pd.read_csv(open(coingecko_tokens_path))
+
                 while page < max_pages:
                     try:
                         self.logger.info(
@@ -62,7 +66,7 @@ class TokensExtractor(Extractor):
 
                         self.logger.info(
                             f'{len(coingecko_markets)} markets collected so far')
-                        
+
                         page += 1
                     except Exception as error:
                         self.logger.error(error)
@@ -71,11 +75,12 @@ class TokensExtractor(Extractor):
                     finally:
                         sleep(3)
 
-                coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
-                coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
-                coingecko_tokens = pd.DataFrame(coingecko_tokens)
-                coingecko_tokens.to_csv(
-                    get_data_path() + 'coingecko_tokens.csv', index=False)
+                if len(coingecko_markets) >= len(coingecko_tokens):
+                    coingecko_tokens = self.coingecko_classifier.classify(
+                        coingecko_markets)
+                    coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
+                    coingecko_tokens = pd.DataFrame(coingecko_tokens)
+                    coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
 
                 # convert and merge
                 self.logger.info('Produce tokens union list...')
