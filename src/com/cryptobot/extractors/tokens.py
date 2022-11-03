@@ -56,13 +56,13 @@ class TokensExtractor(Extractor):
                     self.logger.info(
                         f'Collecting markets from Coingecko (page #{page})')
 
-                    coingecko_markets = HttpRequest().get(cg_markets_endpoint, {
+                    coingecko_markets += HttpRequest().get(cg_markets_endpoint, {
                         'vs_currency': 'usd',
                         'order': 'market_cap_desc,volume_desc',
                         'per_page': 250,
                         'page': page,
                         'sparkline': 'false',
-                    }) + coingecko_markets
+                    })
                     page += 1
 
                     self.logger.info(
