@@ -1,10 +1,11 @@
 from datetime import datetime
-from com.cryptobot.config import Config
+from typing import TypedDict
 from com.cryptobot.schemas.address import AddressPortfolioStats
 from com.cryptobot.schemas.swap_tx import SwapTx
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.strategies.strategy import (Strategy, StrategyMetadata)
+from com.cryptobot.utils.coingecko import is_stablecoin
 from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
@@ -37,11 +38,20 @@ class SwapStrategyMetadata(StrategyMetadata):
     is_ftx_listed: bool
     btc_trend_7_days: float
     btc_trend_1_day: float
+    buy: bool
+    _tx: SwapTx
+
+
+class IgnoreStableOption(TypedDict):
+    token_from: bool
+    token_to: bool
 
 
 class SwapStrategy(Strategy, RedisMixin):
-    def __init__(self, cls=__name__):
+    def __init__(self, cls=__name__, ignore_stablecoins: IgnoreStableOption = {'token_to': False, 'token_from': False}):
         super().__init__(cls)
+
+        self.ignore_stablecoins = ignore_stablecoins
 
     @property
     def __key__(self):
@@ -56,6 +66,17 @@ class SwapStrategy(Strategy, RedisMixin):
         sender_token_to_stats = None
 
         if hasattr(tx, 'token_from') and tx.token_from is not None:
+            if self.ignore_stablecoins['token_from'] == True and is_stablecoin(tx.token_from.symbol):
+                self.logger.info(
+                    f"Ignoring token_from stablecoin {tx.token_from.symbol}.")
+
+                return None
+
+            if self.ignore_stablecoins['token_to'] == True and is_stablecoin(tx.token_to.symbol):
+                self.logger.info(f"Ignoring token_to stablecoin {tx.token_to.symbol}.")
+
+                return None
+
             try:
                 sender_stats = tx.sender.portfolio_stats()
                 sender_token_from_stats: AddressPortfolioStats = next(iter([stat for stat in sender_stats if stat.balance.token == tx.token_from]), None) \
@@ -143,7 +164,8 @@ class SwapStrategy(Strategy, RedisMixin):
             'is_kucoin_listed': [kucoin_listed],
             'is_ftx_listed': [ftx_listed],
             'btc_trend_7_days': [btc_trend_7_days],
-            'btc_trend_1_day': [btc_trend_1_day]
+            'btc_trend_1_day': [btc_trend_1_day],
+            '_tx': tx
         }
 
         return SwapStrategyMetadata(metadata)

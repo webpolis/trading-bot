@@ -52,4 +52,4 @@ def get_btc_trend(days=1):
 
         return trend
     except Exception as error:
-        return None
+        return float(0)
