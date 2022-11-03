@@ -1,4 +1,5 @@
 import json
+from backoff import expo, on_exception
 from com.cryptobot.config import Config
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
@@ -6,8 +7,8 @@ from ratelimit import RateLimitException, limits, sleep_and_retry
 
 request = HttpRequest()
 settings = Config().get_settings()
-max_calls = 25
-period_per_thread = 60
+max_calls = 17
+period_per_thread = 40
 
 with open(get_data_path() + 'coingecko_coins.json') as f:
     cg_coins = json.load(f)
@@ -32,7 +33,7 @@ def is_stablecoin(symbol):
     return stablecoin != None
 
 
-@sleep_and_retry
+@on_exception(expo, RateLimitException, max_tries=2)
 @limits(calls=max_calls, period=period_per_thread)
 def get_markets(page, currency='usd'):
     response = request.get(settings.endpoints.coingecko.markets, {
