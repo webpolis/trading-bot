@@ -13,7 +13,6 @@ from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.coingecko import get_markets
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.pandas_utils import fill_diverged_columns
-from com.cryptobot.utils.request import HttpRequest
 from com.cryptobot.utils.coinmarketcap import get_listings
 from toolz import dissoc
 
