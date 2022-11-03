@@ -80,14 +80,14 @@ class TokensExtractor(Extractor):
                 coingecko_tokens_last = [
                     token.__dict__ for token in coingecko_tokens_last]
                 coingecko_tokens_last = pd.DataFrame(coingecko_tokens_last)
-                coingecko_tokens = tokens.merge(coingecko_tokens_last, how='left', on=[
+                coingecko_tokens = coingecko_tokens.merge(coingecko_tokens_last, how='left', on=[
                                                 'symbol', 'name'], suffixes=('', '_last'))
 
                 # preserve latest price & market cap
                 coingecko_tokens['price_usd_last'].fillna(
-                    tokens['price_usd'], inplace=True)
+                    coingecko_tokens['price_usd'], inplace=True)
                 coingecko_tokens['market_cap_last'].fillna(
-                    tokens['market_cap'], inplace=True)
+                    coingecko_tokens['market_cap'], inplace=True)
                 coingecko_tokens['price_usd'] = coingecko_tokens['price_usd_last']
                 coingecko_tokens['market_cap'] = coingecko_tokens['market_cap_last']
 
