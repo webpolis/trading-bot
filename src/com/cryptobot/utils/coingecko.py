@@ -33,15 +33,18 @@ def is_stablecoin(symbol):
     return stablecoin != None
 
 
-@on_exception(expo, RateLimitException, max_tries=2)
+@sleep_and_retry
 @limits(calls=max_calls, period=period_per_thread)
 def get_markets(page, currency='usd'):
-    response = request.get(settings.endpoints.coingecko.markets, {
-        'vs_currency': currency,
-        'order': 'market_cap_desc,volume_desc',
-        'sparkline': 'false',
-        'per_page': 250,
-        'page': page,
-    })
+    try:
+        response = request.get(settings.endpoints.coingecko.markets, {
+            'vs_currency': currency,
+            'order': 'market_cap_desc,volume_desc',
+            'sparkline': 'false',
+            'per_page': 250,
+            'page': page,
+        })
+    except Exception as error:
+        raise error
 
     return response if len(response) > 0 else []

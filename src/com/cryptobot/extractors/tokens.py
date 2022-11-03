@@ -65,6 +65,8 @@ class TokensExtractor(Extractor):
                             f'{len(coingecko_markets)} markets collected so far')
                     except Exception as error:
                         self.logger.error(error)
+
+                        break
                     finally:
                         sleep(2)
 
