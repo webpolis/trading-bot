@@ -61,8 +61,8 @@ class TokensExtractor(Extractor):
                     try:
                         self.logger.info(
                             f'Collecting markets from Coingecko (page #{page})')
-
-                        coingecko_markets += get_markets(page)
+                        markets = get_markets(page)
+                        coingecko_markets += markets if markets != None else []
 
                         self.logger.info(
                             f'{len(coingecko_markets)} markets collected so far')
