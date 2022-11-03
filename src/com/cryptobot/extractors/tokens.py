@@ -59,16 +59,17 @@ class TokensExtractor(Extractor):
                             f'Collecting markets from Coingecko (page #{page})')
 
                         coingecko_markets += get_markets(page)
-                        page += 1
 
                         self.logger.info(
                             f'{len(coingecko_markets)} markets collected so far')
+                        
+                        page += 1
                     except Exception as error:
                         self.logger.error(error)
 
                         break
                     finally:
-                        sleep(2)
+                        sleep(3)
 
                 coingecko_tokens = self.coingecko_classifier.classify(coingecko_markets)
                 coingecko_tokens = [token.__dict__ for token in coingecko_tokens]
