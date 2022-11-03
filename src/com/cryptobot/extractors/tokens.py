@@ -34,7 +34,7 @@ class TokensExtractor(Extractor):
             try:
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
-                max_pages = runtime_settings.extractors.tokens.max_pages
+                max_coingecko_pages = runtime_settings.extractors.tokens.max_coingecko_pages
 
                 # fetch coinmarketcap listings
                 self.logger.info('Collecting listings from Coinmarketcap')
@@ -55,7 +55,7 @@ class TokensExtractor(Extractor):
                 coingecko_tokens_path = get_data_path() + 'coingecko_tokens.csv'
                 coingecko_tokens = pd.read_csv(open(coingecko_tokens_path))
 
-                while page < max_pages:
+                while page < max_coingecko_pages:
                     try:
                         self.logger.info(
                             f'Collecting markets from Coingecko (page #{page})')
