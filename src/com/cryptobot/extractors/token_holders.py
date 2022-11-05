@@ -1,6 +1,7 @@
 import os
 import time
 import traceback
+import shutil
 
 import pandas as pd
 from bs4 import BeautifulSoup as soup
@@ -21,11 +22,12 @@ class TokenHoldersExtractor(SeleniumExtractor):
                 refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
                 max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
                 max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
+                tmp_output_path = get_data_path() + 'tokens_holders_tmp.csv'
                 output_path = get_data_path() + 'tokens_holders.csv'
 
                 # truncate
                 initial = True
-                f = open(output_path, 'a')
+                f = open(tmp_output_path, 'a')
                 f.truncate(0)
                 f.close()
 
@@ -92,7 +94,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
                         holders_table_df['token_symbol'] = token_symbol
 
                         # store locally just for reference
-                        holders_table_df.to_csv(output_path, index=False, mode='a',
+                        holders_table_df.to_csv(tmp_output_path, index=False, mode='a',
                                                 header=initial)
                         initial = False
 
@@ -100,6 +102,8 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
                 self.driver.quit()
                 self.driver = None
+
+                shutil.copy(tmp_output_path, output_path)
 
                 self.logger.info('Tokens Holders extraction finished.')
             except Exception as error:
