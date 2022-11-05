@@ -5,6 +5,7 @@ from com.cryptobot.strategies.strategy import StrategyAction, StrategyInput, Str
 from com.cryptobot.strategies.swap_strategy import (SwapStrategy,
                                                     SwapStrategyMetadata)
 from com.cryptobot.utils.gbq import publish_to_table, query_table
+from com.cryptobot.schemas.swap_tx import SwapTx
 from pypika import Criterion, Order, Query, Table
 
 
@@ -18,6 +19,7 @@ class WhaleBuyStrategy(SwapStrategy):
     def apply(self, input: StrategyInput) -> StrategyResponse:
         response = super().apply(input)
         metadata: SwapStrategyMetadata = input.metadata
+        tx: SwapTx = input.tx
 
         if metadata is None or len(metadata) == 0:
             self.logger.info('No metadata was generated.')
@@ -65,7 +67,7 @@ class WhaleBuyStrategy(SwapStrategy):
                 metadata['buy'] = [True]
 
                 response = StrategyResponse(
-                    action=StrategyAction.BUY, token=metadata['_tx'].token_to, input=input)
+                    action=StrategyAction.BUY, token=tx.token_to, input=input)
             else:
                 self.logger.info(
                     'This trade doesn\'t meet the criteria. No BUY signal.')
@@ -76,8 +78,6 @@ class WhaleBuyStrategy(SwapStrategy):
                 f'No previous whales action on this token since {time_window}.')
 
             metadata['buy'] = [False]
-
-        del metadata['_tx']
 
         publish_to_table(self.settings.gbq_table, metadata)
 

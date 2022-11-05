@@ -39,7 +39,6 @@ class SwapStrategyMetadata(StrategyMetadata):
     btc_trend_7_days: float
     btc_trend_1_day: float
     buy: bool
-    _tx: SwapTx
 
 
 class IgnoreStableOption(TypedDict):
@@ -164,8 +163,7 @@ class SwapStrategy(Strategy, RedisMixin):
             'is_kucoin_listed': [kucoin_listed],
             'is_ftx_listed': [ftx_listed],
             'btc_trend_7_days': [btc_trend_7_days],
-            'btc_trend_1_day': [btc_trend_1_day],
-            '_tx': tx
+            'btc_trend_1_day': [btc_trend_1_day]
         }
 
         return SwapStrategyMetadata(metadata)
