@@ -132,7 +132,7 @@ class TokensExtractor(Extractor):
                 tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
 
                 # group rows
-                tokens.groupby(by=['symbol'], as_index=False).aggregate(
+                tokens = tokens.groupby(by=['symbol'], as_index=False).aggregate(
                     {'symbol': 'first', 'price_usd': 'first', 'name': 'first', 'market_cap': 'first', 'decimals': 'first', 'address': 'first'})
                 tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
 
