@@ -90,6 +90,7 @@ def main(args):
 
     args = parse_args(args)
     classifiers_paths = None
+    extractors_paths = None
 
     if len(args.debug_modules) > 0:
         logging.getLogger(__name__).addFilter(DebugModuleFilter(args.debug_modules))
