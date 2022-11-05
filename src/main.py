@@ -33,7 +33,6 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 # executable/script.
 
 settings = Config().get_settings()
-extractors_paths = settings.runtime.extractors.enabled
 threads = []
 
 
@@ -90,7 +89,7 @@ def main(args):
 
     args = parse_args(args)
     classifiers_paths = None
-    extractors_paths = None
+    extractors_paths = settings.runtime.extractors.enabled
 
     if len(args.debug_modules) > 0:
         logging.getLogger(__name__).addFilter(DebugModuleFilter(args.debug_modules))
