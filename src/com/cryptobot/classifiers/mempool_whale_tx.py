@@ -16,6 +16,8 @@ class MempoolWhaleTXClassifier(TXClassifier):
         self.whales_addresses = list(
             map(lambda address: address.lower(), list(self.tokens_holders_df.address.unique())))
 
+        self.logger.info(f'Loaded {len(self.whales_addresses)} addresses.')
+
     def filter(self, items: List[Tx]) -> List[Tx]:
         return list(item for item in items if (
             str(item.sender).lower() in self.whales_addresses
