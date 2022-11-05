@@ -31,15 +31,19 @@ class WhaleBuyStrategy(SwapStrategy):
         table_path = f'{Config().get_settings().gbq.project_id}.{Config().get_settings().gbq.dataset_id}.{self.settings.gbq_table}'
         table = Table(table_path)
 
-        # retrieve latest whales buy on same token
+        # retrieve latest whales' acquisitions for same token
         q = Query.from_(table).select('*').where(
+            # is whale?
             Criterion.any([
-                # is whale?
                 Criterion.all([
+                    # does it holds more than #% of a token's market cap?
                     ((table.sender_token_to_qty_usd*100) / \
                      table.token_to_market_cap) >= self.settings.whale_token_market_percent,
+                    # and does it holds a total portfolio value >= $#### ?
                     table.sender_total_usd >= self.settings.whale_wallet_value_threshold_usd
-                ]), table.sender_total_usd >= self.settings.whale_total_threshold_usd
+                ]), \
+                # otherwise, does it holds a total portfolio value >= $#### ?
+                table.sender_total_usd >= self.settings.whale_total_threshold_usd
             ]) \
             & Criterion.all([
                 # buying token
