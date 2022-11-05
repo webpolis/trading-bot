@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 
 import pandas as pd
 from bs4 import BeautifulSoup as soup
@@ -15,88 +16,97 @@ class TokenHoldersExtractor(SeleniumExtractor):
 
     def run(self):
         while True:
-            runtime_settings = Config().get_settings().runtime
-            refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
-            max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
-            max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
-            output_path = get_data_path() + 'tokens_holders.csv'
+            try:
+                runtime_settings = Config().get_settings().runtime
+                refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
+                max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
+                max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
+                output_path = get_data_path() + 'tokens_holders.csv'
 
-            # truncate
-            initial = True
-            f = open(output_path, 'a')
-            f.truncate(0)
-            f.close()
+                # truncate
+                initial = True
+                f = open(output_path, 'a')
+                f.truncate(0)
+                f.close()
 
-            tokens: pd.DataFrame = get_tokens_df()
-            tokens_addresses = tokens[tokens['address'].notnull()]
-            tokens_addresses.reset_index(inplace=True, drop=True)
-            tokens_addresses = tokens_addresses[['symbol', 'address']]
-            tokens_addresses = tokens_addresses.loc[0:max_token_addresses-1]
-            token_holders_endpoint = Config().get_settings().endpoints.etherscan.token_holders
-
-            self.logger.info(
-                f'Selecting Top #{max_token_addresses} tokens\' ERC20 addresses.')
-
-            for ix, token in tokens_addresses.iterrows():
-                page_number = 1
-                num_try_table_extract = 1
-                token_symbol = token['symbol']
-                token_address = token['address']
+                tokens: pd.DataFrame = get_tokens_df()
+                tokens.drop_duplicates(
+                    subset=['symbol', 'address', 'market_cap'], inplace=True)
+                tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
+                tokens_addresses = tokens[tokens['address'].notnull()]
+                tokens_addresses.reset_index(inplace=True, drop=True)
+                tokens_addresses = tokens_addresses[['symbol', 'address']]
+                tokens_addresses = tokens_addresses.loc[0:max_token_addresses-1]
+                token_holders_endpoint = Config().get_settings().endpoints.etherscan.token_holders
 
                 self.logger.info(
-                    f'Retrieving holders for {token_symbol} ({token_address})')
+                    f'Selecting Top #{max_token_addresses} tokens\' ERC20 addresses.')
 
-                while page_number <= max_holders_pages:
-                    holders_table_df = None
-                    url = token_holders_endpoint.format(token_address, page_number)
+                for ix, token in tokens_addresses.iterrows():
+                    page_number = 1
+                    num_try_table_extract = 1
+                    token_symbol = token['symbol']
+                    token_address = token['address']
 
-                    self.logger.info('Browsing to ' + url)
-                    time.sleep(3)
+                    self.logger.info(
+                        f'Retrieving holders for {token_symbol} ({token_address})')
 
-                    num_try = 1
+                    while page_number <= max_holders_pages:
+                        holders_table_df = None
+                        url = token_holders_endpoint.format(token_address, page_number)
 
-                    while num_try <= Config().get_settings().runtime.utils.selenium.max_tries:
+                        self.logger.info('Browsing to ' + url)
+                        time.sleep(3)
+
+                        num_try = 1
+
+                        while num_try <= Config().get_settings().runtime.utils.selenium.max_tries:
+                            try:
+                                self.driver.get(url)
+                                break
+                            except Exception as error:
+                                self.logger.error(error)
+
+                                num_try += 1
+                            finally:
+                                time.sleep(3)
+
+                        self.logger.info(url + ' loaded')
+
                         try:
-                            self.driver.get(url)
-                            break
+                            soup_data = soup(self.driver.page_source, 'html.parser')
+                            table_addresses_html = soup_data.findAll('table')[0]
                         except Exception as error:
                             self.logger.error(error)
 
-                            num_try += 1
-                        finally:
-                            time.sleep(3)
+                            if num_try_table_extract <= Config().get_settings().runtime.utils.selenium.max_tries:
+                                num_try_table_extract += 1
+                                continue
 
-                    self.logger.info(url + ' loaded')
+                        try:
+                            holders_table_df = holders_table_to_df(table_addresses_html)
+                        except:
+                            break
 
-                    try:
-                        soup_data = soup(self.driver.page_source, 'html.parser')
-                        table_addresses_html = soup_data.findAll('table')[0]
-                    except Exception as error:
-                        self.logger.error(error)
+                        holders_table_df['token_address'] = token_address
+                        holders_table_df['token_symbol'] = token_symbol
 
-                        if num_try_table_extract <= Config().get_settings().runtime.utils.selenium.max_tries:
-                            num_try_table_extract += 1
-                            continue
+                        # store locally just for reference
+                        holders_table_df.to_csv(output_path, index=False, mode='a',
+                                                header=initial)
+                        initial = False
 
-                    try:
-                        holders_table_df = holders_table_to_df(table_addresses_html)
-                    except:
-                        break
+                        page_number += 1
 
-                    holders_table_df['token_address'] = token_address
-                    holders_table_df['token_symbol'] = token_symbol
+                self.driver.quit()
+                self.driver = None
 
-                    # store locally just for reference
-                    holders_table_df.to_csv(output_path, index=False, mode='a',
-                                    header=initial)
-                    initial = False
+                self.logger.info('Tokens Holders extraction finished.')
+            except Exception as error:
+                self.logger.error(error)
 
-                    page_number += 1
+                print(traceback.format_exc())
+            finally:
+                self.logger.info(f'Sleeping for {refresh_interval} seconds.')
 
-            self.driver.quit()
-            self.driver = None
-
-            self.logger.info('Tokens Holders extraction finished.')
-            self.logger.info(f'Sleeping for {refresh_interval} seconds.')
-
-            time.sleep(refresh_interval)
+                time.sleep(refresh_interval)

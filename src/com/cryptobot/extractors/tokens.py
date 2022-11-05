@@ -126,8 +126,17 @@ class TokensExtractor(Extractor):
 
                 fill_diverged_columns(tokens, '_tl')
 
-                # store locally for future reference
-                tokens.drop_duplicates(inplace=True)
+                # sort & sanitize
+                tokens.drop_duplicates(
+                    subset=['symbol', 'address', 'market_cap'], inplace=True)
+                tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
+
+                # group rows
+                tokens.groupby(by=['symbol'], as_index=False).aggregate(
+                    {'symbol': 'first', 'price_usd': 'first', 'name': 'first', 'market_cap': 'first', 'decimals': 'first', 'address': 'first'})
+                tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
+
+                # export
                 tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
                 self.logger.info(
