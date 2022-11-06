@@ -51,7 +51,7 @@ class WhaleBuyStrategy(SwapStrategy):
                 # avoid div by zero
                 table.token_to_market_cap > 0,
                 # time window
-                table.tx_timestamp >= time_window
+                table.tx_timestamp >= time_window,
                 # ignore failed transactions
                 table.tx_status == True
             ]),
