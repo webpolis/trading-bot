@@ -141,8 +141,13 @@ class SwapStrategy(Strategy, RedisMixin):
             self.set('btc_trend_1_day', btc_trend_1_day, ttl=60*30)
 
         # check current status of transaction
-        tx_receipt = get_tx_receipt(tx.hash)
-        tx_status = tx_receipt.get('status', True) if tx_receipt != None else True
+        tx_status = True
+
+        try:
+            tx_receipt = get_tx_receipt(tx.hash)
+            tx_status = tx_receipt.get('status', True) if tx_receipt != None else True
+        except Exception as error:
+            self.logger.error(error)
 
         metadata = {
             'tx_timestamp': [tx.timestamp],
