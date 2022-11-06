@@ -62,7 +62,8 @@ class WhaleBuyStrategy(SwapStrategy):
 
         if len(data) > 0:
             # check if whales have bought above certain threshold
-            total_bought_usd = (data.token_to_qty*data.token_to_price_usd).sum()
+            total_bought_usd = (data.token_to_qty*data.token_to_price_usd).sum() + \
+                (metadata['token_to_qty'] * metadata['token_to_price_usd'])
 
             if total_bought_usd >= self.settings.whale_wallet_value_threshold_usd \
                     or total_bought_usd >= ((self.settings.whale_token_market_percent*metadata['token_to_market_cap'][0])/100):
