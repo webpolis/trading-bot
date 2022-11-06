@@ -10,10 +10,12 @@ from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
                                         is_kucoin_listed)
+from com.cryptobot.utils.ethereum import get_tx_receipt
 
 
 class SwapStrategyMetadata(StrategyMetadata):
     tx_timestamp: datetime
+    tx_status: bool
     hash: str
     sender: str
     sender_token_from_qty: float
@@ -138,6 +140,10 @@ class SwapStrategy(Strategy, RedisMixin):
         if btc_trend_1_day != cached_btc_trend_1_day:
             self.set('btc_trend_1_day', btc_trend_1_day, ttl=60*30)
 
+        # check current status of transaction
+        tx_receipt = get_tx_receipt(tx.hash)
+        tx_status = tx_receipt.get('status', True) if tx_receipt != None else True
+
         metadata = {
             'tx_timestamp': [tx.timestamp],
             'hash': [tx.hash],
@@ -163,7 +169,8 @@ class SwapStrategy(Strategy, RedisMixin):
             'is_kucoin_listed': [kucoin_listed],
             'is_ftx_listed': [ftx_listed],
             'btc_trend_7_days': [btc_trend_7_days],
-            'btc_trend_1_day': [btc_trend_1_day]
+            'btc_trend_1_day': [btc_trend_1_day],
+            'tx_status': [tx_status]
         }
 
         return SwapStrategyMetadata(metadata)

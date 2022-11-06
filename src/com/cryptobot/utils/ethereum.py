@@ -72,3 +72,7 @@ def get_contract(address):
         return None
 
     return w3Http.eth.contract(address=Web3.toChecksumAddress(address), abi=abi)
+
+
+def get_tx_receipt(hash: str):
+    return w3Http.eth.get_transaction_receipt(hash)
