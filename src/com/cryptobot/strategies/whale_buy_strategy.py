@@ -52,8 +52,12 @@ class WhaleBuyStrategy(SwapStrategy):
                 table.token_to_market_cap > 0,
                 # time window
                 table.tx_timestamp >= time_window,
-                # ignore failed transactions
-                table.tx_status == True
+                Criterion.any([
+                    # ignore failed transactions
+                    table.tx_status == True,
+                    # but keep in mind old dataset version (no status)
+                    table.tx_status == None
+                ])
             ]),
         ).orderby('time_utc', order=Order.desc).limit(self.settings.lookup_token_buy_whales)
         sql = q.get_sql(quote_char=None)
