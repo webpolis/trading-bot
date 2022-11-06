@@ -56,7 +56,7 @@ class WhaleBuyStrategy(SwapStrategy):
                     # ignore failed transactions
                     table.tx_status == True,
                     # but keep in mind old dataset version (no status)
-                    table.tx_status == None
+                    table.tx_status.isnull()
                 ])
             ]),
         ).orderby('time_utc', order=Order.desc).limit(self.settings.lookup_token_buy_whales)
