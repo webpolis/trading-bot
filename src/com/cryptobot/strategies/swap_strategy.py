@@ -170,7 +170,7 @@ class SwapStrategy(Strategy, RedisMixin):
             'is_ftx_listed': [ftx_listed],
             'btc_trend_7_days': [btc_trend_7_days],
             'btc_trend_1_day': [btc_trend_1_day],
-            'tx_status': [tx_status]
+            'tx_status': [bool(tx_status)]
         }
 
         return SwapStrategyMetadata(metadata)
