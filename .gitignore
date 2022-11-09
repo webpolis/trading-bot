@@ -56,4 +56,4 @@ output.log
 
 trading-bot.fs*
 config.json
-dev/trading-bot-365802-9c219f4811ea.json
+dev/trading-bot-*.json
