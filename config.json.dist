@@ -1,0 +1,133 @@
+{
+  "runtime": {
+    "strategies": {
+      "whale_buy": {
+        "whale_wallet_value_threshold_usd": 250000,
+        "whale_total_threshold_usd": 1000000,
+        "whale_token_allocation_percent": 10.0,
+        "whale_token_market_percent": 0.5,
+        "lookup_token_buy_whales": 3,
+        "lookup_token_buy_time": 259200,
+        "gbq_table": "WhaleBuySellStrategy"
+      }
+    },
+    "utils": {
+      "request": {
+        "max_tries": 5
+      },
+      "selenium": {
+        "max_tries": 5
+      },
+      "pandas": {
+        "tokens_df_refresh_interval": 60,
+        "tokens_holders_df_refresh_interval": 60
+      }
+    },
+    "extractors": {
+      "enabled": [
+        "com.cryptobot.extractors.tokens.TokensExtractor",
+        "com.cryptobot.extractors.token_holders.TokenHoldersExtractor",
+        "com.cryptobot.extractors.mempool.MempoolExtractor"
+      ],
+      "token_holders": {
+        "max_token_addresses": 100,
+        "max_holders_pages": 5,
+        "refresh_interval_secs": 86400
+      },
+      "tokens": {
+        "refresh_interval_secs": 30,
+        "max_coingecko_pages": 54,
+        "coingecko_page_interval": 3.5,
+        "coinmarketcap_listings_interval": 7200
+      },
+      "mempool": {
+        "classifiers": [
+          "com.cryptobot.classifiers.mempool_whale_tx.MempoolWhaleTXClassifier",
+          "com.cryptobot.classifiers.swap.SwapClassifier"
+        ]
+      }
+    },
+    "classifiers": {
+      "SwapClassifier": {
+        "max_concurrent_threads": 5
+      }
+    },
+    "traders": {
+      "max_concurrent_runs": 5
+    },
+    "schemas": {
+      "address": {
+        "portfolio_stats_cache_timeout": 600
+      },
+      "token": {
+        "metadata_ttl": 600,
+        "price_usd_ttl": 600,
+        "market_cap_ttl": 604800
+      }
+    }
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379
+  },
+  "selenium": {
+    "chromedriver_path": "/home/nico/dev/chromedriver"
+  },
+  "web3": {
+    "chain_id": "mainnet",
+    "providers": {
+      "infura": {
+        "http": "https://mainnet.infura.io/v3/XXXX",
+        "wss": "wss://mainnet.infura.io/ws/v3/XXXX"
+      },
+      "archivenode": {
+        "http": "https://api.archivenode.io/XXXX"
+      },
+      "alchemy": {
+        "wss": "wss://eth-mainnet.g.alchemy.com/v2/{api_key}",
+        "api_keys": [
+          "XXXX"
+        ]
+      }
+    }
+  },
+  "endpoints": {
+    "alchemy": {
+      "api": "https://eth-mainnet.alchemyapi.io/v2/{api_key}"
+    },
+    "coingecko": {
+      "coins": "https://api.coingecko.com/api/v3/coins",
+      "markets": "https://api.coingecko.com/api/v3/coins/markets",
+      "price": "https://api.coingecko.com/api/v3/simple/price",
+      "ohlc": "https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc?vs_currency=usd&days={days}"
+    },
+    "coinmarketcap": {
+      "api_key": "XXXX",
+      "listings_latest": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
+    },
+    "ftx": {
+      "markets": "https://ftx.com/api/markets",
+      "coins": "https://ftx.com/api/wallet/coins",
+      "lending": "https://ftx.com/api/spot_margin/lending_rates"
+    },
+    "etherscan": {
+      "tx": "https://etherscan.io/tx/{0}",
+      "api": "https://api.etherscan.io/api",
+      "api_key": "XXXX",
+      "api_calls_per_sec": 5,
+      "accounts": "https://etherscan.io/accounts",
+      "token_holders": "https://etherscan.io/token/generic-tokenholders2?m=normal&a={0}&s=40424999781259550&sid=b3f9fe67a3e82db021f7ba44682f4bdf0&p={1}",
+      "abis": "https://api.etherscan.io/api?module=contract&action=getabi&address={0}&apikey={1}"
+    },
+    "ethplorer": {
+      "api_key": "XXXX",
+      "token_info": "https://api.ethplorer.io/getTokenInfo/{address}?apiKey={api_key}",
+      "address_info": "https://api.ethplorer.io/getAddressInfo/{address}?apiKey={api_key}"
+    }
+  },
+  "gbq": {
+    "project_id": "XXXX",
+    "dataset_id": "trading_bot_data",
+    "service_credentials": "dev/gcloud-credentials.json"
+  }
+}

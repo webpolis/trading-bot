@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas_gbq
 from com.cryptobot.config import Config
-from com.cryptobot.utils.path import get_dev_path
+from com.cryptobot.utils.path import get_project_root
 from google.oauth2 import service_account
 
 import pandas as pd
@@ -10,7 +10,7 @@ import pandas as pd
 settings = Config().get_settings()
 
 pandas_gbq.context.credentials = service_account.Credentials.from_service_account_file(
-    get_dev_path() + settings.gbq.service_credentials,
+    f'{get_project_root()}/{settings.gbq.service_credentials}',
 )
 pandas_gbq.context.project = settings.gbq.project_id
 
