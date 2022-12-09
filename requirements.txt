@@ -22,3 +22,4 @@ simpy
 numpy==1.22.4
 toolz==0.11.2
 pypika==0.48.9
+polygonscan-python==2.25.1
