@@ -91,7 +91,9 @@ def main(args):
     args = parse_args(args)
 
     # setup params
-    settings = Config().get_settings(args.params_override)
+    Config().init_settings(args.params_override)
+
+    settings = Config().get_settings()
     classifiers_paths = None
     extractors_paths = settings.runtime.extractors.enabled
 
