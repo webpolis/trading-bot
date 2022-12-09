@@ -12,13 +12,6 @@ import logging
 import sys
 import threading
 
-from com.cryptobot.config import Config
-from com.cryptobot.extractors.fake_mempool import FakeMempoolExtractor
-from com.cryptobot.extractors.mempool import MempoolExtractor
-from com.cryptobot.traders.trader import Trader
-from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
-from com.cryptobot.utils.python import get_class_by_fullname
-
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
 __license__ = 'MIT'
@@ -87,13 +80,22 @@ def main(args):
           (for example  ``["--verbose", "42"]``).
     """
     global _logger
+    from com.cryptobot.config import Config
 
     args = parse_args(args)
 
     # setup params
-    Config().init_settings(args.params_override)
+    Config.init_settings(args.params_override)
 
     settings = Config().get_settings()
+
+    # import required modules
+    from com.cryptobot.extractors.fake_mempool import FakeMempoolExtractor
+    from com.cryptobot.extractors.mempool import MempoolExtractor
+    from com.cryptobot.traders.trader import Trader
+    from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
+    from com.cryptobot.utils.python import get_class_by_fullname
+
     classifiers_paths = None
     extractors_paths = settings.runtime.extractors.enabled
 
