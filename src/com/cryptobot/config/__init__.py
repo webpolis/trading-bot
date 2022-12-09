@@ -26,5 +26,5 @@ class Config:
     def __init__(self):
         self.builder = ConfigBuilder()
 
-    def get_settings(self):
-        return self.builder.parse_config(get_project_root() + '/config.json')
+    def get_settings(self, file='config.json'):
+        return self.builder.parse_config(get_project_root() + f'/{file}')

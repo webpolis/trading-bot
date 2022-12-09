@@ -85,6 +85,7 @@
       },
       "alchemy": {
         "wss": "wss://eth-mainnet.g.alchemy.com/v2/{api_key}",
+        "http": "https://eth-mainnet.g.alchemy.com/v2/{api_key}",
         "api_keys": [
           "XXXX"
         ]
@@ -123,6 +124,9 @@
       "api_key": "XXXX",
       "token_info": "https://api.ethplorer.io/getTokenInfo/{address}?apiKey={api_key}",
       "address_info": "https://api.ethplorer.io/getAddressInfo/{address}?apiKey={api_key}"
+    },
+    "polygonscan": {
+      "api_key": "XXXX"
     }
   },
   "gbq": {

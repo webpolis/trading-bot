@@ -32,7 +32,6 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 # API allowing them to be called directly from the terminal as a CLI
 # executable/script.
 
-settings = Config().get_settings()
 threads = []
 
 
@@ -71,10 +70,12 @@ def parse_args(args):
     )
     parser.add_argument('-d', '--debug_modules',
                         dest='debug_modules', nargs='+', default=[])
-    parser.add_argument('-e', '--extractors', help='Overrides enabled extractors in config.json',
+    parser.add_argument('-e', '--extractors', help='Overrides enabled extractors set in the parameters file',
                         dest='extractors_override', nargs='+', default=[])
-    parser.add_argument('-c', '--classifiers', help='Overrides mempool classifiers in config.json',
+    parser.add_argument('-c', '--classifiers', help='Overrides mempool classifiers set in the parameters file',
                         dest='classifiers_override', nargs='+', default=[])
+    parser.add_argument('-p', '--params', help='Override default parameters file (config.json)',
+                        dest='params_override', default='config.json')
 
     return parser.parse_args(args)
 
@@ -88,6 +89,9 @@ def main(args):
     global _logger
 
     args = parse_args(args)
+
+    # setup params
+    settings = Config().get_settings(args.params_override)
     classifiers_paths = None
     extractors_paths = settings.runtime.extractors.enabled
 

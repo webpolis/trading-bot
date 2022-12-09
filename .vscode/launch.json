@@ -17,7 +17,9 @@
                 // "com.cryptobot.extractors.tokens.TokensExtractor",
                 "com.cryptobot.extractors.mempool.MempoolExtractor",
                 "-c",
-                "com.cryptobot.classifiers.swap.SwapClassifier"
+                "com.cryptobot.classifiers.swap.SwapClassifier",
+                "-p",
+                "config.polygon.json"
             ],
             "cwd": "${workspaceFolder}/src",
         }
