@@ -27,8 +27,10 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.settings = Config().get_settings()
         self.cached_txs = TXQueue()
         self.classifiers = []
-        self.alchemy_api_keys = iter(self.settings.web3.providers.alchemy.api_keys)
-        self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=next(self.alchemy_api_keys)),
+        self.alchemy_api_keys = enumerate(
+            iter(self.settings.web3.providers.alchemy.api_keys))
+        self.alchemy_current_key = next(self.alchemy_api_keys)
+        self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=self.alchemy_current_key[1]),
                            callback=self.ws_callback)
 
         classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
@@ -79,8 +81,19 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         try:
             await self.ws.listen_forever(handshake=self.ws_handshake)
         except FatalWebsocketException as error:
-            # @TODO: fallback to http polling (utils.ethereum.fetch_mempool_txs)
             self.logger.error(error)
+
+            # use next key available (Alchemy)
+            has_next_key = (self.alchemy_current_key[0]+1) < len(self.alchemy_api_keys)
+
+            if has_next_key:
+                self.alchemy_current_key = next(self.alchemy_api_keys)
+                self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=self.alchemy_current_key[1]),
+                                   callback=self.ws_callback)
+
+                return self.get_pending_txs()
+
+            # fallback to http
             self.logger.info('Trying fallback to http polling...')
 
             while True:
