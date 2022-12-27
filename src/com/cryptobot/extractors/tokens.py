@@ -39,13 +39,20 @@ class TokensExtractor(Extractor):
                 # fetch coinmarketcap listings
                 self.logger.info('Collecting listings from Coinmarketcap')
 
-                coinmarketcap_listings = get_listings()
-                coinmarketcap_tokens = self.coinmarketcap_classifier.classify(
-                    coinmarketcap_listings)
-                cmc_tokens_df = pd.DataFrame([
-                    token.__dict__ for token in coinmarketcap_tokens if token is not None])
-                cmc_tokens_df.to_csv(
-                    get_data_path() + 'coinmarketcap_tokens.csv', index=False)
+                # preload stored tokens
+                coinmarketcap_tokens_path = get_data_path() + 'coinmarketcap_tokens.csv'
+                cmc_tokens_df = pd.read_csv(open(coinmarketcap_tokens_path))
+
+                try:
+                    coinmarketcap_listings = get_listings()
+                    coinmarketcap_tokens = self.coinmarketcap_classifier.classify(
+                        coinmarketcap_listings)
+                    cmc_tokens_df = pd.DataFrame([
+                        token.__dict__ for token in coinmarketcap_tokens if token is not None])
+                    cmc_tokens_df.to_csv(
+                        get_data_path() + 'coinmarketcap_tokens.csv', index=False)
+                except Exception as error:
+                    self.logger.error(error)
 
                 # fetch markets from coingecko
                 coingecko_markets = []
