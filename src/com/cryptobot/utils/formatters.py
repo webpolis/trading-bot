@@ -98,3 +98,36 @@ def parse_token_qty(token: Token = None, qty=None):
         return float(-1)
 
     return float(qty/10**token.decimals)
+
+
+def convert_dict_values(dictionary, to_array=False):
+    for key, value in dictionary.items():
+        # Try to convert the value to a float
+        try:
+            value = float(value)
+
+            # If the value is an integer, convert it to an int
+            if value.is_integer():
+                value = int(value)
+        except ValueError:
+            # If the value is not a float, try to convert it to a bool
+            if value.lower() == "true":
+                value = True
+            elif value.lower() == "false":
+                value = False
+            elif is_valid_timestamp(value):
+                value = datetime.strptime(value, '%m/%d/%Y %H:%M:%S')
+            # If the value is not a bool, leave it as a str
+            else:
+                pass
+        # Update the dictionary with the converted value
+        dictionary[key] = value if to_array is False else [value]
+    return dictionary
+
+
+def is_valid_timestamp(date_string, date_format='%m/%d/%Y %H:%M:%S'):
+    try:
+        datetime.strptime(date_string, date_format)
+        return True
+    except ValueError:
+        return False
