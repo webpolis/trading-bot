@@ -10,7 +10,7 @@ from com.cryptobot.utils.formatters import parse_token_qty
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from com.cryptobot.utils.trader import (get_btc_trend, is_ftx_listed,
                                         is_kucoin_listed)
-from com.cryptobot.utils.ethereum import get_tx_receipt
+from com.cryptobot.utils.network import get_tx_receipt
 
 
 class SwapStrategyMetadata(StrategyMetadata):

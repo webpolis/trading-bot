@@ -2,8 +2,7 @@ from enum import Enum
 
 from com.cryptobot.schemas.address import Address
 from com.cryptobot.schemas.schema import Schema
-from com.cryptobot.utils.ethereum import get_contract
-from ethtx.models.objects_model import Transaction
+from com.cryptobot.utils.network import get_contract
 
 
 class TxType(Enum):
@@ -12,7 +11,7 @@ class TxType(Enum):
 
 
 class Tx(Schema):
-    def __init__(self, timestamp, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw: Transaction = None):
+    def __init__(self, timestamp, block_number, hash, _from, to, gas, gas_price, value, input, decoded_input=None, _type=TxType.UNCLASSIFIED, raw = None):
         super().__init__()
 
         self.timestamp = timestamp

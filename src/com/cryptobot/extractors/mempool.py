@@ -11,7 +11,7 @@ from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
 from com.cryptobot.utils.websocket import FatalWebsocketException, WSClient
-from com.cryptobot.utils.ethereum import fetch_mempool_txs
+from com.cryptobot.utils.network import fetch_mempool_txs
 
 from jsonpickle import encode
 
