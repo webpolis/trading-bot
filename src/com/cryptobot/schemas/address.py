@@ -7,7 +7,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.alchemy import api_post
-from com.cryptobot.utils.ethereum import is_contract
+from com.cryptobot.utils.network import is_contract
 from com.cryptobot.utils.ethplorer import get_address_info
 from com.cryptobot.utils.pandas_utils import get_address_details
 from com.cryptobot.utils.redis_mixin import RedisMixin

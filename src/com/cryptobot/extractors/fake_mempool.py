@@ -10,7 +10,7 @@ from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
-from com.cryptobot.utils.ethereum import fetch_fake_mempool_txs
+from com.cryptobot.utils.network import fetch_fake_mempool_txs
 
 from jsonpickle import encode
 

@@ -1,9 +1,11 @@
+import json
 import locale
 import re
 import time
 
 from com.cryptobot.config import Config
-from com.cryptobot.utils.ethereum import is_contract, is_eth_address
+from com.cryptobot.utils.coingecko import get_coin_by_address
+from com.cryptobot.utils.network import is_contract, is_eth_address
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
@@ -174,7 +176,29 @@ def get_token_by_address(address) -> dict:
     result = result.to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
+    if result is None:
+        l1_address = uniswap_lookup_token_address(address)
+
+        if l1_address != None:
+            return get_token_by_address(l1_address)
+        else:
+            coin = get_coin_by_address(address)
+
+            if coin != None and 'ethereum' in coin['platforms']:
+                l1_address = coin['platforms']['ethereum']
+
     return result
+
+
+def uniswap_lookup_token_address(address):
+    tokenslist_uniswap = json.load(
+        open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
+
+    for token in tokenslist_uniswap:
+        if token['address'].lower() == address.lower():
+            return token['extensions']['bridgeInfo']['1']['tokenAddress']
+
+    return None
 
 
 def fill_diverged_columns(df, suffix):
