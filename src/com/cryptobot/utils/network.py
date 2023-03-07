@@ -83,7 +83,7 @@ def get_contract(address):
         with PolygonScan(settings.endpoints.polygonscan.api_key, False) as polygon:
             abi = polygon.get_contract_abi(address)
     elif network == ProviderNetwork.ARBITRUM:
-        url = f'https://api.arbiscan.io/api?module=contract&action=getabi&address={address}'
+        url = settings.endpoints.arbitrumscan.contract_abi.format(address=address)
         response = request.get(url)
         abi = json.loads(response['result']) if response['status'] != '0' else None
 
