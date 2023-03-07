@@ -58,7 +58,7 @@ class Token(Schema, RedisMixin):
 
         if self._metadata is not None:
             if self.symbol is None:
-                self.symbol = self._metadata.get('symbol', None)
+                self.symbol = self._metadata.get('symbol', None).upper()
 
             if self.name is None:
                 self.name = self._metadata.get('name', None)
