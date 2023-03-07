@@ -133,6 +133,10 @@
     },
     "polygonscan": {
       "api_key": "XXXX"
+    },
+    "arbitrumscan": {
+      "contract_abi": "https://api.arbiscan.io/api?module=contract&action=getabi&address={0}",
+      "api_key": "XXXX"
     }
   },
   "gbq": {
