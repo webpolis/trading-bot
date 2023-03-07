@@ -8,6 +8,7 @@ from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
+request = HttpRequest()
 w3Http = Web3(Web3.HTTPProvider(settings.web3.providers.infura.http))
 cached_abis = {}
 
@@ -81,6 +82,10 @@ def get_contract(address):
     elif network == ProviderNetwork.POLYGON:
         with PolygonScan(settings.endpoints.polygonscan.api_key, False) as polygon:
             abi = polygon.get_contract_abi(address)
+    elif network == ProviderNetwork.ARBITRUM:
+        url = f'https://api.arbiscan.io/api?module=contract&action=getabi&address={address}'
+        response = request.get(url)
+        abi = json.loads(response['result'])
 
     if abi == None:
         return None

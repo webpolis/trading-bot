@@ -72,9 +72,17 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.process_txs(mempool_txs)
 
     async def ws_handshake(self, ws):
-        initial_payload = '{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}'
+        payload = {
+            'jsonrpc': '2.0',
+            'id': 1,
+            'method': 'eth_subscribe',
+            'params': [
+                self.settings.runtime.extractors.mempool.subscriptions.transactions
+            ]
+        }
+        payload_str = json.dumps(payload).encode('utf-8')
 
-        await ws.send(initial_payload)
+        await ws.send(payload_str)
         await ws.recv()
 
     async def get_pending_txs(self):
