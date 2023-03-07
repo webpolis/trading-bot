@@ -85,7 +85,7 @@ def get_contract(address):
     elif network == ProviderNetwork.ARBITRUM:
         url = f'https://api.arbiscan.io/api?module=contract&action=getabi&address={address}'
         response = request.get(url)
-        abi = json.loads(response['result'])
+        abi = json.loads(response['result']) if response['status'] != '0' else None
 
     if abi == None:
         return None

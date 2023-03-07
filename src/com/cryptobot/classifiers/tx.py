@@ -24,6 +24,6 @@ class TXClassifier(Classifier):
         items = super().parse(items)
         tx_root_key = self.settings.tx_root_key if self.settings != None else None
         txs: List[Tx] = list(map(lambda item: tx_parse(
-            item[tx_root_key] if tx_root_key != None else item), items))
+            item[tx_root_key] if tx_root_key != None and tx_root_key in item else item), items))
 
         return txs
