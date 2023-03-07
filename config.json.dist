@@ -44,13 +44,19 @@
         "classifiers": [
           "com.cryptobot.classifiers.mempool_whale_tx.MempoolWhaleTXClassifier",
           "com.cryptobot.classifiers.swap.SwapClassifier"
-        ]
+        ],
+        "subscriptions": {
+          "transactions": "alchemy_pendingTransactions"
+        }
       }
     },
     "classifiers": {
       "SwapClassifier": {
         "max_concurrent_threads": 5
-      }
+      },
+      // "TXClassifier": {
+      //   "tx_root_key": "transaction"
+      // }
     },
     "traders": {
       "max_concurrent_runs": 5
