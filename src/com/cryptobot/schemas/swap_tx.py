@@ -1,3 +1,4 @@
+from com.cryptobot.mappers.mapper import map_runner
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx, TxType
 from com.cryptobot.utils.pandas_utils import get_token_by_address
@@ -10,6 +11,7 @@ class SwapTx(Tx):
 
         # handle multiple signatures while extracting the swap details
         params = self.decoded_input['func_params']
+        mapped = map_runner(params)
 
         self.token_from = None
         self.token_from_qty = -1
