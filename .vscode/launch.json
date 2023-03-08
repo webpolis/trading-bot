@@ -20,7 +20,7 @@
 				"-c",
 				"com.cryptobot.classifiers.swap.SwapClassifier",
 				"-p",
-				"config.arbitrum.json"
+				"config.json"
 			],
 			"cwd": "${workspaceFolder}/src"
 		}
