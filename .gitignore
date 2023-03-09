@@ -57,3 +57,6 @@ output.log
 trading-bot.fs*
 config.json
 dev/trading-bot-*.json
+
+config.arbitrum.json
+config.polygon.json

@@ -12,13 +12,6 @@ import logging
 import sys
 import threading
 
-from com.cryptobot.config import Config
-from com.cryptobot.extractors.fake_mempool import FakeMempoolExtractor
-from com.cryptobot.extractors.mempool import MempoolExtractor
-from com.cryptobot.traders.trader import Trader
-from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
-from com.cryptobot.utils.python import get_class_by_fullname
-
 __author__ = 'Nicolas Iglesias'
 __copyright__ = 'Nicolas Iglesias'
 __license__ = 'MIT'
@@ -32,7 +25,6 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
 # API allowing them to be called directly from the terminal as a CLI
 # executable/script.
 
-settings = Config().get_settings()
 threads = []
 
 
@@ -71,10 +63,12 @@ def parse_args(args):
     )
     parser.add_argument('-d', '--debug_modules',
                         dest='debug_modules', nargs='+', default=[])
-    parser.add_argument('-e', '--extractors', help='Overrides enabled extractors in config.json',
+    parser.add_argument('-e', '--extractors', help='Overrides enabled extractors set in the parameters file',
                         dest='extractors_override', nargs='+', default=[])
-    parser.add_argument('-c', '--classifiers', help='Overrides mempool classifiers in config.json',
+    parser.add_argument('-c', '--classifiers', help='Overrides mempool classifiers set in the parameters file',
                         dest='classifiers_override', nargs='+', default=[])
+    parser.add_argument('-p', '--params', help='Override default parameters file (config.json)',
+                        dest='params_override', default='config.json')
 
     return parser.parse_args(args)
 
@@ -86,8 +80,22 @@ def main(args):
           (for example  ``["--verbose", "42"]``).
     """
     global _logger
+    from com.cryptobot.config import Config
 
     args = parse_args(args)
+
+    # setup params
+    Config.init_settings(args.params_override)
+
+    settings = Config().get_settings()
+
+    # import required modules
+    from com.cryptobot.extractors.fake_mempool import FakeMempoolExtractor
+    from com.cryptobot.extractors.mempool import MempoolExtractor
+    from com.cryptobot.traders.trader import Trader
+    from com.cryptobot.utils.logger import DebugModuleFilter, PrettyLogger
+    from com.cryptobot.utils.python import get_class_by_fullname
+
     classifiers_paths = None
     extractors_paths = settings.runtime.extractors.enabled
 
