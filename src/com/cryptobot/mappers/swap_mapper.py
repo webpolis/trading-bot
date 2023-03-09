@@ -61,7 +61,7 @@ class UniswapV2RouterSwapArgs(TypedDict):
 This maps the actual parameters used during a swap call execution with the fields we want to extract.
 
 'destination field' : 'parameter name holding the value or a tuple indicating the field & index position 
-                      if parameter itself is a tuple'
+                      if parameter itself is a tuple or list'
 """
 BalancerSwapMap = {
     'token_from': ('singleSwap', 2),
