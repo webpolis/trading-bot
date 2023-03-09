@@ -21,6 +21,11 @@ class SwapTx(Tx):
             self.token_from_qty = map_output['token_from_qty']
             self.token_to = Token.from_dict(get_token_by_address(token_to), token_to)
             self.token_to_qty = map_output['token_to_qty']
+        else:
+            self.token_from = None
+            self.token_to = None
+            self.token_from_qty = -1
+            self.token_to_qty = -1
 
         if hasattr(self, 'token_from_qty') and type(self.token_from_qty) == str:
             self.token_from_qty = int(self.token_from_qty, 0)
