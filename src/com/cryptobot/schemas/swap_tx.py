@@ -22,18 +22,6 @@ class SwapTx(Tx):
             self.token_to = Token.from_dict(get_token_by_address(token_to), token_to)
             self.token_to_qty = map_output['token_to_qty']
 
-        if 'path' in params:
-            # Uniswap based contract
-            self.token_from = Token.from_dict(
-                get_token_by_address(params['path'][0].lower()), params['path'][0].lower())
-            self.token_to = Token.from_dict(
-                get_token_by_address(params['path'][-1].lower()), params['path'][-1].lower())
-            self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
-
-            # output qty's key may vary
-            self.token_to_qty = params['amountOutMin'] if 'amountOutMin' in params else None
-            self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
-
         if hasattr(self, 'token_from_qty') and type(self.token_from_qty) == str:
             self.token_from_qty = int(self.token_from_qty, 0)
 

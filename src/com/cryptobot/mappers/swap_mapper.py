@@ -42,6 +42,21 @@ class TransitSwapArgs(TypedDict):
     callbytesDesc: tuple
 
 
+class UniswapRouterSwapArgs(TypedDict):
+    amountOut: int
+    amountInMax: int
+    path: list
+    to: str
+    deadline: int
+
+class UniswapV2RouterSwapArgs(TypedDict):
+    amountIn: int
+    amountOutMin: int
+    path: list
+    to: str
+    deadline: int
+
+
 """
 This maps the actual parameters used during a swap call execution with the fields we want to extract.
 
@@ -74,6 +89,20 @@ TransitSwapMap = {
     'token_to': ('desc', 2),
     'token_from_qty': ('desc', 5),
     'token_to_qty': ('desc', 6)
+}
+
+UniswapRouterSwapMap = {
+    'token_from': ('path', 0),
+    'token_to': ('path', 1),
+    'token_from_qty': 'amountInMax',
+    'token_to_qty': 'amountOut'
+}
+
+UniswapV2RouterSwapMap = {
+    'token_from': ('path', 0),
+    'token_to': ('path', 1),
+    'token_from_qty': 'amountIn',
+    'token_to_qty': 'amountOutMin'
 }
 
 
