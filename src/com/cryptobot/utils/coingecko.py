@@ -22,6 +22,17 @@ def get_coin(symbol):
                       coin['symbol'].upper() == symbol]), None)
 
 
+def get_coin_by_address(address):
+    for coin in cg_coins:
+        if ('ethereum' in coin['platforms'] and coin['platforms']['ethereum'].lower() == address.lower()):
+            return coin
+
+        if ('polygon-pos' in coin['platforms'] and coin['platforms']['polygon-pos'].lower() == address.lower()):
+            return coin
+
+    return None
+
+
 def is_stablecoin(symbol):
     stablecoin = next(iter([coin for coin in cg_stablecoins if
                             coin['symbol'].upper() == symbol]), None)

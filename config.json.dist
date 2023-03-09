@@ -44,13 +44,19 @@
         "classifiers": [
           "com.cryptobot.classifiers.mempool_whale_tx.MempoolWhaleTXClassifier",
           "com.cryptobot.classifiers.swap.SwapClassifier"
-        ]
+        ],
+        "subscriptions": {
+          "transactions": "alchemy_pendingTransactions"
+        }
       }
     },
     "classifiers": {
       "SwapClassifier": {
         "max_concurrent_threads": 5
-      }
+      },
+      // "TXClassifier": {
+      //   "tx_root_key": "transaction"
+      // }
     },
     "traders": {
       "max_concurrent_runs": 5
@@ -85,6 +91,7 @@
       },
       "alchemy": {
         "wss": "wss://eth-mainnet.g.alchemy.com/v2/{api_key}",
+        "http": "https://eth-mainnet.g.alchemy.com/v2/{api_key}",
         "api_keys": [
           "XXXX"
         ]
@@ -123,6 +130,13 @@
       "api_key": "XXXX",
       "token_info": "https://api.ethplorer.io/getTokenInfo/{address}?apiKey={api_key}",
       "address_info": "https://api.ethplorer.io/getAddressInfo/{address}?apiKey={api_key}"
+    },
+    "polygonscan": {
+      "api_key": "XXXX"
+    },
+    "arbitrumscan": {
+      "contract_abi": "https://api.arbiscan.io/api?module=contract&action=getabi&address={0}",
+      "api_key": "XXXX"
     }
   },
   "gbq": {

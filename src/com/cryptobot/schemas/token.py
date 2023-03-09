@@ -6,7 +6,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.alchemy import api_post
 from com.cryptobot.utils.coingecko import get_coin, is_stablecoin
-from com.cryptobot.utils.ethereum import is_eth_address
+from com.cryptobot.utils.network import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
@@ -58,7 +58,7 @@ class Token(Schema, RedisMixin):
 
         if self._metadata is not None:
             if self.symbol is None:
-                self.symbol = self._metadata.get('symbol', None)
+                self.symbol = self._metadata.get('symbol', None).upper()
 
             if self.name is None:
                 self.name = self._metadata.get('name', None)

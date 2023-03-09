@@ -21,10 +21,24 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
+params_file = 'config.json'
+
 
 class Config:
     def __init__(self):
         self.builder = ConfigBuilder()
 
+    @staticmethod
+    def init_settings(file='config.json'):
+        global params_file
+
+        params_file = file
+
+    @property
+    def params_file(self):
+        global params_file
+
+        return params_file
+
     def get_settings(self):
-        return self.builder.parse_config(get_project_root() + '/config.json')
+        return self.builder.parse_config(get_project_root() + f'/{self.params_file}')

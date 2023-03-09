@@ -11,7 +11,7 @@ from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.python import get_class_by_fullname
 from com.cryptobot.utils.tx_queue import TXQueue
 from com.cryptobot.utils.websocket import FatalWebsocketException, WSClient
-from com.cryptobot.utils.ethereum import fetch_mempool_txs
+from com.cryptobot.utils.network import fetch_mempool_txs
 
 from jsonpickle import encode
 
@@ -27,8 +27,10 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.settings = Config().get_settings()
         self.cached_txs = TXQueue()
         self.classifiers = []
-        self.alchemy_api_keys = iter(self.settings.web3.providers.alchemy.api_keys)
-        self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=next(self.alchemy_api_keys)),
+        self.alchemy_api_keys = enumerate(
+            iter(self.settings.web3.providers.alchemy.api_keys))
+        self.alchemy_current_key = next(self.alchemy_api_keys)
+        self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=self.alchemy_current_key[1]),
                            callback=self.ws_callback)
 
         classifiers_paths = ['com.cryptobot.classifiers.tx.TXClassifier'] + \
@@ -70,17 +72,36 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
         self.process_txs(mempool_txs)
 
     async def ws_handshake(self, ws):
-        initial_payload = '{"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions"]}'
+        payload = {
+            'jsonrpc': '2.0',
+            'id': 1,
+            'method': 'eth_subscribe',
+            'params': [
+                self.settings.runtime.extractors.mempool.subscriptions.transactions
+            ]
+        }
+        payload_str = json.dumps(payload).encode('utf-8')
 
-        await ws.send(initial_payload)
+        await ws.send(payload_str)
         await ws.recv()
 
     async def get_pending_txs(self):
         try:
             await self.ws.listen_forever(handshake=self.ws_handshake)
         except FatalWebsocketException as error:
-            # @TODO: fallback to http polling (utils.ethereum.fetch_mempool_txs)
             self.logger.error(error)
+
+            # use next key available (Alchemy)
+            has_next_key = (self.alchemy_current_key[0]+1) < len(self.alchemy_api_keys)
+
+            if has_next_key:
+                self.alchemy_current_key = next(self.alchemy_api_keys)
+                self.ws = WSClient(self.settings.web3.providers.alchemy.wss.format(api_key=self.alchemy_current_key[1]),
+                                   callback=self.ws_callback)
+
+                return self.get_pending_txs()
+
+            # fallback to http
             self.logger.info('Trying fallback to http polling...')
 
             while True:

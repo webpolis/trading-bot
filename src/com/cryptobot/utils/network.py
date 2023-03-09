@@ -1,13 +1,22 @@
+from enum import Enum
 import json
+import re
 from web3 import Web3
-
+from polygonscan import PolygonScan
 from com.cryptobot.config import Config
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
+request = HttpRequest()
 w3Http = Web3(Web3.HTTPProvider(settings.web3.providers.infura.http))
 cached_abis = {}
+
+
+class ProviderNetwork(Enum):
+    ETHEREUM = 0
+    POLYGON = 1
+    ARBITRUM = 2
 
 
 def is_contract(address: str):
@@ -66,7 +75,17 @@ def get_contract_abi(address):
 
 
 def get_contract(address):
-    abi = get_contract_abi(address)
+    network = get_current_network()
+
+    if network == ProviderNetwork.ETHEREUM:
+        abi = get_contract_abi(address)
+    elif network == ProviderNetwork.POLYGON:
+        with PolygonScan(settings.endpoints.polygonscan.api_key, False) as polygon:
+            abi = polygon.get_contract_abi(address)
+    elif network == ProviderNetwork.ARBITRUM:
+        url = settings.endpoints.arbitrumscan.contract_abi.format(address=address)
+        response = request.get(url)
+        abi = json.loads(response['result']) if response['status'] != '0' else None
 
     if abi == None:
         return None
@@ -76,3 +95,13 @@ def get_contract(address):
 
 def get_tx_receipt(hash: str):
     return w3Http.eth.get_transaction_receipt(hash)
+
+
+def get_current_network():
+    if re.match(r'^.*polygon.*$', settings.web3.providers.infura.http, flags=re.IGNORECASE):
+        return ProviderNetwork.POLYGON
+
+    if re.match(r'^.*arbitrum.*$', settings.web3.providers.infura.http, flags=re.IGNORECASE):
+        return ProviderNetwork.ARBITRUM
+
+    return ProviderNetwork.ETHEREUM

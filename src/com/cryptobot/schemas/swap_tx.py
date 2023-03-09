@@ -1,3 +1,4 @@
+from com.cryptobot.mappers.mapper import MapType, map_runner
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx, TxType
 from com.cryptobot.utils.pandas_utils import get_token_by_address
@@ -10,50 +11,21 @@ class SwapTx(Tx):
 
         # handle multiple signatures while extracting the swap details
         params = self.decoded_input['func_params']
+        map_output = map_runner(params, MapType.SWAP)
 
-        self.token_from = None
-        self.token_from_qty = -1
-        self.token_to = None
-        self.token_to_qty = -1
-
-        if 'path' in params:
-            # Uniswap based contract
+        if map_output != None:
+            token_from = map_output['token_from'].lower()
+            token_to = map_output['token_to'].lower()
             self.token_from = Token.from_dict(
-                get_token_by_address(params['path'][0].lower()), params['path'][0].lower())
-            self.token_to = Token.from_dict(
-                get_token_by_address(params['path'][-1].lower()), params['path'][-1].lower())
-            self.token_from_qty = params['amountIn'] if 'amountIn' in params else self.value
-
-            # output qty's key may vary
-            self.token_to_qty = params['amountOutMin'] if 'amountOutMin' in params else None
-            self.token_to_qty = params['amountOut'] if 'amountOut' in params else self.token_to_qty
-        elif 'desc' in params:
-            desc = params['desc']
-
-            if type(desc[0]) == int:
-                # see 0x9865eebdd1ce65f45b6247aeed2fa2252eca7a08
-                self.token_from = Token.from_dict(
-                    get_token_by_address(desc[1].lower()), desc[1].lower())
-                self.token_to = Token.from_dict(
-                    get_token_by_address(desc[2].lower()), desc[2].lower())
-                self.token_from_qty = float(desc[5])
-                self.token_to_qty = float(desc[6])
-            else:
-                # 1inch based contract
-                self.token_from = Token.from_dict(
-                    get_token_by_address(desc[0].lower()), desc[0].lower())
-                self.token_to = Token.from_dict(
-                    get_token_by_address(desc[1].lower()), desc[1].lower())
-                self.token_from_qty = desc[-4]
-                self.token_to_qty = desc[-3]
-        elif 'singleSwap' in params:
-            # Balancer vault based contract
-            self.token_from = Token.from_dict(
-                get_token_by_address(params['singleSwap'][2].lower()), params['singleSwap'][2].lower())
-            self.token_to = Token.from_dict(
-                get_token_by_address(params['singleSwap'][3].lower()), params['singleSwap'][3].lower())
-            self.token_from_qty = params['singleSwap'][4]
-            self.token_to_qty = params['limit']  # a minimum amount to receive
+                get_token_by_address(token_from), token_from)
+            self.token_from_qty = map_output['token_from_qty']
+            self.token_to = Token.from_dict(get_token_by_address(token_to), token_to)
+            self.token_to_qty = map_output['token_to_qty']
+        else:
+            self.token_from = None
+            self.token_to = None
+            self.token_from_qty = -1
+            self.token_to_qty = -1
 
         if hasattr(self, 'token_from_qty') and type(self.token_from_qty) == str:
             self.token_from_qty = int(self.token_from_qty, 0)
