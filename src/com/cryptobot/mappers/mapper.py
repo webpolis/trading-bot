@@ -35,6 +35,9 @@ class Mapper():
         output = {}
 
         for key in map_def:
+            if map_def[key] == None:
+                continue
+
             if type(map_def[key]) == tuple:
                 field = map_def[key][0]
                 value = map_def[key][1]
@@ -63,7 +66,8 @@ def map_runner(input, map_type: MapType):
         for cls in attrs.keys():
             is_mappable = mapper.is_mappable(input, attrs[cls])
 
-            logger.info(f'{cls} mappable result: {is_mappable}')
+            if is_mappable:
+                logger.info(f'{cls} mappable result: {is_mappable}')
 
             if is_mappable:
                 map_def = getattr(module, cls.replace('Args', 'Map'))

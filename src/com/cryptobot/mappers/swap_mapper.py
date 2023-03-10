@@ -25,7 +25,7 @@ class OneInchSwapArgs(TypedDict):
     clientData: bytes
 
 
-class OneInchV5RouterSwapArgs(TypedDict):
+class OneInchV5RouterArgs(TypedDict):
     executor: str
     desc: tuple
     permit: bytes
@@ -37,7 +37,7 @@ class TransitSwapArgs(TypedDict):
     callbytesDesc: tuple
 
 
-class UniswapRouterSwapArgs(TypedDict):
+class UniswapRouterArgs(TypedDict):
     amountOut: int
     amountInMax: int
     path: list
@@ -45,7 +45,7 @@ class UniswapRouterSwapArgs(TypedDict):
     deadline: int
 
 
-class UniswapV2RouterSwapArgs(TypedDict):
+class UniswapV2RouterArgs(TypedDict):
     amountIn: int
     amountOutMin: int
     path: list
@@ -81,7 +81,7 @@ OneInchSwapMap = {
     'token_to_qty': ('desc', -3)
 }
 
-OneInchV5RouterSwapMap = {
+OneInchV5RouterMap = {
     'token_from': ('desc', 0),
     'token_to': ('desc', 1),
     'token_from_qty': ('desc', -3),
@@ -95,14 +95,14 @@ TransitSwapMap = {
     'token_to_qty': ('desc', 6)
 }
 
-UniswapRouterSwapMap = {
+UniswapRouterMap = {
     'token_from': ('path', 0),
     'token_to': ('path', 1),
     'token_from_qty': 'amountInMax',
     'token_to_qty': 'amountOut'
 }
 
-UniswapV2RouterSwapMap = {
+UniswapV2RouterMap = {
     'token_from': ('path', 0),
     'token_to': ('path', 1),
     'token_from_qty': 'amountIn',
