@@ -9,6 +9,8 @@ class SwapMapOutput(TypedDict):
     token_to_qty: int
 
 # Swap function signatures
+
+
 class BalancerSwapArgs(TypedDict):
     singleSwap: tuple
     funds: tuple
@@ -108,7 +110,10 @@ UniswapV2RouterSwapMap = {
 }
 
 KyberSwapMap = {
-    # the execution field is a tuple (desc), hence last number on these tuples is the index location of the value
+    """
+    The execution field is a tuple (similar to 1inch's desc), hence last number on these tuples is the index 
+    location of the value we want to extract.
+    """
     'token_from': ('execution', 3, 0),
     'token_to': ('execution', 3, 1),
     'token_from_qty': ('execution', 3, -4),
