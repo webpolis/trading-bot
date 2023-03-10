@@ -9,16 +9,11 @@ class SwapMapOutput(TypedDict):
     token_to_qty: int
 
 
-# Balancer Swap
-
-
 class BalancerSwapArgs(TypedDict):
     singleSwap: tuple
     funds: tuple
     limit: int
     deadline: int
-
-# 1Inch Swap
 
 
 class OneInchSwapArgs(TypedDict):
@@ -34,8 +29,6 @@ class OneInchV5RouterSwapArgs(TypedDict):
     permit: bytes
     data: bytes
 
-# TransitSwap
-
 
 class TransitSwapArgs(TypedDict):
     desc: tuple
@@ -49,12 +42,21 @@ class UniswapRouterSwapArgs(TypedDict):
     to: str
     deadline: int
 
+
 class UniswapV2RouterSwapArgs(TypedDict):
     amountIn: int
     amountOutMin: int
     path: list
     to: str
     deadline: int
+
+
+class KyberSwapArgs(TypedDict):
+    execution: tuple
+
+
+class KyberElasticRouterArgs(TypedDict):
+    params: tuple
 
 
 """
@@ -103,6 +105,21 @@ UniswapV2RouterSwapMap = {
     'token_to': ('path', 1),
     'token_from_qty': 'amountIn',
     'token_to_qty': 'amountOutMin'
+}
+
+KyberSwapMap = {
+    # the execution field is a tuple (desc), hence last number on these tuples is the index location of the value
+    'token_from': ('execution', 3, 0),
+    'token_to': ('execution', 3, 1),
+    'token_from_qty': ('execution', 3, -4),
+    'token_to_qty': ('execution', 3, -3)
+}
+
+KyberElasticRouterMap = {
+    'token_from': ('params', 1),
+    'token_to': ('params', 0),
+    'token_from_qty': ('params', -3),
+    'token_to_qty': ('params', -2)
 }
 
 
