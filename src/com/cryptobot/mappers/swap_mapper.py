@@ -61,6 +61,13 @@ class KyberElasticRouterArgs(TypedDict):
     params: tuple
 
 
+class SushiSwapRouterArgs(TypedDict):
+    amountOutMin: int
+    path: list
+    to: str
+    deadline: int
+
+
 """
 The following maps the actual parameters used during a swap call execution with the fields we want to extract.
 
@@ -125,6 +132,13 @@ KyberElasticRouterMap = {
     'token_to': ('params', 0),
     'token_from_qty': ('params', -3),
     'token_to_qty': ('params', -2)
+}
+
+SushiSwapRouterMap = {
+    'token_from': ('path', 0),
+    'token_to': ('path', 1),
+    'token_from_qty': None,
+    'token_to_qty': 'amountOutMin'
 }
 
 
