@@ -5,7 +5,7 @@ import time
 
 from com.cryptobot.config import Config
 from com.cryptobot.utils.coingecko import get_coin_by_address
-from com.cryptobot.utils.network import is_contract, is_eth_address
+from com.cryptobot.utils.network import ProviderNetwork, get_current_network, is_contract, is_eth_address
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
@@ -15,6 +15,8 @@ tokens_df = None
 tokens_df_last_update = None
 tokens_holders_df = None
 tokens_holders_df_last_update = None
+network = get_current_network()
+suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
 
 
 def format_str_as_number(number):
@@ -37,12 +39,13 @@ def get_tokens_df():
 def get_tokens_holders_df():
     global tokens_holders_df
     global tokens_holders_df_last_update
+    global suffix
 
     elapsed_time = time.time() - \
         tokens_holders_df_last_update if tokens_holders_df_last_update is not None else None
 
     if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
-        tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders.csv')
+        tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders{0}.csv'.format(suffix))
         tokens_holders_df_last_update = time.time()
 
     return tokens_holders_df

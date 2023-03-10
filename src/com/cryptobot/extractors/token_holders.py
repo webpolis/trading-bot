@@ -7,6 +7,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
+from com.cryptobot.utils.network import ProviderNetwork, get_current_network
 from com.cryptobot.utils.pandas_utils import get_tokens_df, holders_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
@@ -18,12 +19,15 @@ class TokenHoldersExtractor(SeleniumExtractor):
     def run(self):
         while True:
             try:
+                network = get_current_network()
+                suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
                 max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
                 max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
-                tmp_output_path = get_data_path() + 'tokens_holders_tmp.csv'
-                output_path = get_data_path() + 'tokens_holders.csv'
+                tmp_output_path = get_data_path(
+                ) + 'tokens_holders{0}tmp.csv'.format(suffix)
+                output_path = get_data_path() + 'tokens_holders{0}.csv'.format(suffix)
 
                 # truncate
                 initial = True
