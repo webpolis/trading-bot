@@ -90,6 +90,6 @@ class WhaleBuyStrategy(SwapStrategy):
 
             metadata['buy'] = [False]
 
-        # publish_to_table(self.settings.gbq_table, metadata)
+        publish_to_table(self.settings.gbq_table, metadata)
 
         return response
