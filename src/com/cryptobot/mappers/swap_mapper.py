@@ -8,7 +8,7 @@ class SwapMapOutput(TypedDict):
     token_to: str
     token_to_qty: int
 
-
+# Swap function signatures
 class BalancerSwapArgs(TypedDict):
     singleSwap: tuple
     funds: tuple
@@ -60,7 +60,7 @@ class KyberElasticRouterArgs(TypedDict):
 
 
 """
-This maps the actual parameters used during a swap call execution with the fields we want to extract.
+The following maps the actual parameters used during a swap call execution with the fields we want to extract.
 
 'destination field' : 'parameter name holding the value or a tuple indicating the field & index position 
                       if parameter itself is a tuple or list'
