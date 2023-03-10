@@ -118,8 +118,8 @@ UniswapV2RouterMap = {
 
 KyberSwapMap = {
     """
-    The execution field is a tuple (similar to 1inch's desc), hence last number on these tuples is the index 
-    location of the value we want to extract.
+    The execution field is a tuple which contains a desc field (similar to 1inch's desc), 
+    hence last number on these tuples is the index location of the value we want to extract from desc.
     """
     'token_from': ('execution', 3, 0),
     'token_to': ('execution', 3, 1),
