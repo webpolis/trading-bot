@@ -1,6 +1,8 @@
+import logging
 from com.cryptobot.mappers.mapper import MapType, map_runner
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.schemas.tx import Tx, TxType
+from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 
 
@@ -8,6 +10,8 @@ class SwapTx(Tx):
     def __init__(self, tx: Tx):
         super().__init__(tx.timestamp, tx.block_number, tx.hash, tx.sender, tx.receiver,
                          tx.gas, tx.gas_price, tx.value, tx.input, tx.decoded_input, TxType.SWAP, tx.raw)
+
+        self.logger = PrettyLogger(__name__, logging.INFO)
 
         # handle multiple signatures while extracting the swap details
         params = self.decoded_input['func_params']
@@ -26,6 +30,8 @@ class SwapTx(Tx):
             self.token_to = None
             self.token_from_qty = -1
             self.token_to_qty = -1
+
+            self.logger.info(f'No mapping output for Swap transaction {self.hash}')
 
         if hasattr(self, 'token_from_qty') and type(self.token_from_qty) == str:
             self.token_from_qty = int(self.token_from_qty, 0)
