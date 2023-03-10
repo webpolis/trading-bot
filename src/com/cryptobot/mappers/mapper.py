@@ -36,7 +36,13 @@ class Mapper():
 
         for key in map_def:
             if type(map_def[key]) == tuple:
-                output[key] = input[map_def[key][0]][map_def[key][1]]
+                field = map_def[key][0]
+                value = map_def[key][1]
+
+                if len(map_def[key]) == 2:
+                    output[key] = input[field][value]
+                elif len(map_def[key]) == 3:
+                    output[key] = input[field][value][map_def[key][2]]
             elif type(map_def[key]) == str:
                 output[key] = input[map_def[key]]
 
