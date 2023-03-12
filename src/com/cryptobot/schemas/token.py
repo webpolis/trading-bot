@@ -146,9 +146,12 @@ class Token(Schema, RedisMixin):
         self._metadata = get_token_by_address(self.address)
 
         # start fetching from other sources
+        _explorer_metadata = None
         _alchemy_metadata = self.fetch_alchemy_metadata()
         _ethplorer_metadata = self.fetch_ethplorer_metadata()
-        _explorer_metadata = self.fetch_explorer_metadata(metadata=self._metadata)
+
+        if get_current_network() != ProviderNetwork.ETHEREUM:
+            _explorer_metadata = self.fetch_explorer_metadata(metadata=self._metadata)
 
         # combine all the data
         if self._metadata is not None:
@@ -173,10 +176,6 @@ class Token(Schema, RedisMixin):
         return self._metadata
 
     def fetch_explorer_metadata(self, metadata=None) -> dict:
-        # we don't need anything extra than these attributes
-        if (self.price_usd != None and self.market_cap != None and self.address != None):
-            return {}
-
         has_local_metadata = self._explorer_metadata is not None
         has_cached_metadata = self.address in Token.cached_explorer_metadata
 
