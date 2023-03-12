@@ -30,6 +30,9 @@ def get_coin_by_address(address):
         if ('polygon-pos' in coin['platforms'] and coin['platforms']['polygon-pos'].lower() == address.lower()):
             return coin
 
+        if ('arbitrum-one' in coin['platforms'] and coin['platforms']['arbitrum-one'].lower() == address.lower()):
+            return coin
+
     return None
 
 
