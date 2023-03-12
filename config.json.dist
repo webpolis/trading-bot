@@ -119,6 +119,7 @@
     },
     "etherscan": {
       "tx": "https://etherscan.io/tx/{0}",
+      "token": "https://etherscan.io/token/{address}",
       "api": "https://api.etherscan.io/api",
       "api_key": "XXXX",
       "api_calls_per_sec": 5,
