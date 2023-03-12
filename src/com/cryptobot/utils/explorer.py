@@ -1,4 +1,5 @@
 import logging
+import re
 from threading import RLock
 from backoff import expo, on_exception
 from bs4 import BeautifulSoup
@@ -17,22 +18,30 @@ period_per_thread = int(30/max_threads)
 
 @on_exception(expo, RateLimitException, max_tries=3, max_time=10)
 @limits(calls=max_calls, period=period_per_thread)
-def get_token_info(token):
+def get_token_info(address):
     global lock
 
     with lock:
         response = request.get(
-            settings.endpoints.etherscan.token.format(address=token.address), raw=True)
+            settings.endpoints.etherscan.token.format(address=address), raw=True)
         soup = BeautifulSoup(response, "html.parser")
-        value_per_token = soup.find('.ContentPlaceHolder1_tr_valuepertoken')
+        overview = soup.find('div', {'id': 'ContentPlaceHolder1_tr_valuepertoken'})
+        overview = re.sub(r'[\r\n]+', '', overview.text,
+                          flags=re.MULTILINE | re.IGNORECASE)
+        price_usd = re.sub(r'.*Price[\s\t]*\$([\d\.\,]+).*$',
+                           '\\1', overview, flags=re.MULTILINE | re.IGNORECASE)
+        price_usd = float(price_usd.replace(',', ''))
+        market_cap = re.sub(r'.*Market Cap[\s\t\n\r]*\$([\d\.\,]+).*$',
+                            '\\1', overview, flags=re.MULTILINE | re.IGNORECASE)
+        market_cap = float(market_cap.replace(',', ''))
 
         return {
-            'address': token.address,
+            'address': address,
             'name': None,
             'symbol': None,
-            'decimals': int(0),
-            'price_usd': None,
-            'market_cap': None
+            'decimals': None,
+            'price_usd': price_usd,
+            'market_cap': market_cap
         }
 
 
