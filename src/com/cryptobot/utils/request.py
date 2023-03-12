@@ -16,7 +16,7 @@ class FatalRequestException(Exception):
 
 
 class HttpRequest():
-    def get(self, url, params: dict = None):
+    def get(self, url, params: dict = None, raw=False):
         out = None
         params_encoded = urllib.parse.urlencode(params) if params != None else None
         url_encoded = f'{url}%s' % (('?' + params_encoded)
@@ -33,7 +33,7 @@ class HttpRequest():
         except Exception as error:
             raise FatalRequestException(error)
 
-        return json.loads(out) if type(out) == str else out
+        return json.loads(out) if type(out) == str and not raw else out
 
     def post(self, url, data: dict = None):
         out = None

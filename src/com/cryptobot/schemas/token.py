@@ -8,6 +8,7 @@ from com.cryptobot.utils.alchemy import api_post
 from com.cryptobot.utils.coingecko import get_coin, is_stablecoin
 from com.cryptobot.utils.network import is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
+from com.cryptobot.utils.explorer import get_token_info as get_xp_token_info
 from com.cryptobot.utils.logger import PrettyLogger
 from com.cryptobot.utils.pandas_utils import get_token_by_address
 from com.cryptobot.utils.path import get_data_path
@@ -35,6 +36,7 @@ class TokenSource(Enum):
 class Token(Schema, RedisMixin):
     cached_alchemy_metadata = {}
     cached_ethplorer_metadata = {}
+    cached_explorer_metadata = {}
 
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_live_checkup=False):
         self._logger = PrettyLogger(__name__, logging.INFO)
@@ -48,6 +50,7 @@ class Token(Schema, RedisMixin):
         self.decimals = decimals
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
+        self._explorer_metadata = None
         self.no_live_checkup = no_live_checkup
 
         if self.no_live_checkup:
@@ -144,6 +147,7 @@ class Token(Schema, RedisMixin):
         # start fetching from other sources
         _alchemy_metadata = self.fetch_alchemy_metadata()
         _ethplorer_metadata = self.fetch_ethplorer_metadata()
+        _explorer_metadata = self.fetch_explorer_metadata()
 
         # combine all the data
         if _metadata is not None:
@@ -155,6 +159,9 @@ class Token(Schema, RedisMixin):
         if _ethplorer_metadata is not None:
             mixed_metadata = {**mixed_metadata, **_ethplorer_metadata}
 
+        if _explorer_metadata is not None:
+            mixed_metadata = {**mixed_metadata, **_explorer_metadata}
+
         _metadata = valfilter(lambda v: v != None, mixed_metadata)
 
         # cache the metadata
@@ -163,6 +170,33 @@ class Token(Schema, RedisMixin):
                      ttl=settings.runtime.schemas.token.metadata_ttl)
 
         return _metadata
+
+    def fetch_explorer_metadata(self) -> dict:
+        # we don't need anything extra than these attributes
+        # if (self.price_usd != None and self.market_cap != None and self.address != None):
+        #     return {}
+
+        has_local_metadata = self._explorer_metadata is not None
+        has_cached_metadata = self.address in Token.cached_explorer_metadata
+
+        # if has_local_metadata:
+        #     return self._explorer_metadata
+
+        if has_cached_metadata:
+            return Token.cached_explorer_metadata[self.address]
+
+        try:
+            response = get_xp_token_info(self)
+            _explorer_metadata = valfilter(
+                lambda v: v != None, response if type(response) == dict else dict())
+
+            if len(_explorer_metadata) > 0:
+                self._explorer_metadata = _explorer_metadata
+                Token.cached_explorer_metadata[self.address] = self._explorer_metadata
+        except Exception as error:
+            self._logger.error({'error': error.with_traceback(), 'token': str(self)})
+        finally:
+            return self._explorer_metadata
 
     def fetch_ethplorer_metadata(self) -> dict:
         # we don't need anything extra than these attributes
