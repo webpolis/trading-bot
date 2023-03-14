@@ -15,6 +15,8 @@ tokens_df = None
 tokens_df_last_update = None
 tokens_holders_df = None
 tokens_holders_df_last_update = None
+tokenslist_uniswap_tokens = json.load(
+    open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
 network = get_current_network()
 suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
 
@@ -45,7 +47,8 @@ def get_tokens_holders_df():
         tokens_holders_df_last_update if tokens_holders_df_last_update is not None else None
 
     if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
-        tokens_holders_df = pd.read_csv(get_data_path() + 'tokens_holders{0}.csv'.format(suffix))
+        tokens_holders_df = pd.read_csv(
+            get_data_path() + 'tokens_holders{0}.csv'.format(suffix))
         tokens_holders_df_last_update = time.time()
 
     return tokens_holders_df
@@ -179,18 +182,45 @@ def get_token_by_address(address) -> dict:
     result = result.to_dict(orient='records')
     result = result[0] if len(result) > 0 else None
 
-    if result is None:
-        l1_address = uniswap_lookup_token_address(address)
+    if result != None:
+        return populate_l2_token_addresses(result)
 
-        if l1_address != None:
+    l1_address = uniswap_lookup_token_address(address)
+
+    if l1_address != None:
+        return get_token_by_address(l1_address)
+    else:
+        coin = get_coin_by_address(address)
+
+        if coin != None and 'ethereum' in coin['platforms']:
+            l1_address = coin['platforms']['ethereum']
+
             return get_token_by_address(l1_address)
-        else:
-            coin = get_coin_by_address(address)
 
-            if coin != None and 'ethereum' in coin['platforms']:
-                l1_address = coin['platforms']['ethereum']
+    return None
 
-    return result
+
+def populate_l2_token_addresses(token_dict: dict) -> dict:
+    coin = get_coin_by_address(token_dict['address'])
+
+    if coin != None:
+        token_dict['address_arbitrum'] = coin['platforms']['arbitrum-one'] \
+            if 'arbitrum-one' in coin['platforms'] else None
+        token_dict['address_polygon'] = coin['platforms']['polygon-pos'] \
+            if 'polygon-pos' in coin['platforms'] else None
+        token_dict['address_bsc'] = coin['platforms']['binance-smart-chain'] \
+            if 'binance-smart-chain' in coin['platforms'] else None
+    else:
+        coin = next(iter([c for c in tokenslist_uniswap_tokens if c['address'].upper(
+        ) == token_dict['address'].upper()]), None)
+
+        if coin != None:
+            token_dict['address_arbitrum'] = coin['extensions']['bridgeInfo']['42161'] \
+                if '42161' in coin['extensions']['bridgeInfo'] else None
+            token_dict['address_polygon'] = coin['extensions']['bridgeInfo']['137'] \
+                if '137' in coin['extensions']['bridgeInfo'] else None
+
+    return token_dict
 
 
 def uniswap_lookup_token_address(address):
