@@ -3,6 +3,7 @@ import locale
 import re
 import time
 
+from toolz import valfilter
 from com.cryptobot.config import Config
 from com.cryptobot.utils.coingecko import get_coin_by_address
 from com.cryptobot.utils.network import ProviderNetwork, get_current_network, is_contract, is_eth_address
@@ -176,62 +177,50 @@ def get_token_by_address(address) -> dict:
             'address': '0x0000000000000000000000000000000000000000'
         }
 
+    # 1st collect info from existing dataset
     tokens = get_tokens_df().copy()
     result = tokens[tokens['address'] == address.lower()]
     result = result.dropna(axis='columns')
     result = result.to_dict(orient='records')
-    result = result[0] if len(result) > 0 else None
+    result = valfilter(lambda v: v != None, result[0]) if len(result) > 0 else {}
 
-    if result != None:
-        return populate_l2_token_addresses(result)
+    # collect from uniswap dataset
+    uniswap_token = valfilter(lambda v: v != None, fetch_uniswap_token(address))
+    # collect from coingecko dataset
+    coingecko_token = valfilter(lambda v: v != None, get_coin_by_address(address))
 
-    l1_address = uniswap_lookup_token_address(address)
+    # merge info
+    token_info = {**result, **uniswap_token, **coingecko_token}
 
-    if l1_address != None:
-        return get_token_by_address(l1_address)
-    else:
-        coin = get_coin_by_address(address)
-
-        if coin != None and 'ethereum' in coin['platforms']:
-            l1_address = coin['platforms']['ethereum']
-
-            return get_token_by_address(l1_address)
-
-    return None
+    return token_info
 
 
-def populate_l2_token_addresses(token_dict: dict) -> dict:
-    coin = get_coin_by_address(token_dict['address'])
+def fetch_uniswap_token(address):
+    address = address.lower()
 
-    if coin != None:
-        token_dict['address_arbitrum'] = coin['platforms']['arbitrum-one'] \
-            if 'arbitrum-one' in coin['platforms'] else None
-        token_dict['address_polygon'] = coin['platforms']['polygon-pos'] \
-            if 'polygon-pos' in coin['platforms'] else None
-        token_dict['address_bsc'] = coin['platforms']['binance-smart-chain'] \
-            if 'binance-smart-chain' in coin['platforms'] else None
-    else:
-        coin = next(iter([c for c in tokenslist_uniswap_tokens if c['address'].upper(
-        ) == token_dict['address'].upper()]), None)
+    for token in tokenslist_uniswap_tokens:
+        if token['address'].lower() == address:
+            chains = token['extensions']['bridgeInfo']
+            ethereum_address = chains['1']['tokenAddress'] if '1' in chains else None
+            ethereum_address = address if token['chainId'] == 1 else ethereum_address
+            arbitrum_address = chains['42161']['tokenAddress'] if '42161' in chains else None
+            arbitrum_address = address if token['chainId'] == 42161 else arbitrum_address
+            polygon_address = chains['137']['tokenAddress'] if '137' in chains else None
+            polygon_address = address if token['chainId'] == 137 else polygon_address
 
-        if coin != None:
-            token_dict['address_arbitrum'] = coin['extensions']['bridgeInfo']['42161'] \
-                if '42161' in coin['extensions']['bridgeInfo'] else None
-            token_dict['address_polygon'] = coin['extensions']['bridgeInfo']['137'] \
-                if '137' in coin['extensions']['bridgeInfo'] else None
+            # construct token's metadata
+            metadata = {
+                'address_ethereum': ethereum_address,
+                'address_arbitrum': arbitrum_address,
+                'address_polygon': polygon_address,
+                'name': token['name'],
+                'symbol': token['symbol'],
+                'decimals': token['decimals']
+            }
 
-    return token_dict
+            return metadata
 
-
-def uniswap_lookup_token_address(address):
-    tokenslist_uniswap = json.load(
-        open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
-
-    for token in tokenslist_uniswap:
-        if token['address'].lower() == address.lower():
-            return token['extensions']['bridgeInfo']['1']['tokenAddress']
-
-    return None
+    return {}
 
 
 def fill_diverged_columns(df, suffix):
