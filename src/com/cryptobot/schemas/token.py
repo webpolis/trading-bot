@@ -186,6 +186,10 @@ class Token(Schema, RedisMixin):
         return self._metadata
 
     def fetch_explorer_metadata(self, metadata=None) -> dict:
+        # we don't need anything extra than these attributes
+        if (self.price_usd != None and self.market_cap != None and self.address != None):
+            return {}
+
         has_local_metadata = self._explorer_metadata is not None
         has_cached_metadata = self.address in Token.cached_explorer_metadata
 
