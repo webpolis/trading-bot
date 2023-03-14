@@ -20,10 +20,11 @@ class SwapTx(Tx):
         if map_output != None:
             token_from = map_output['token_from'].lower()
             token_to = map_output['token_to'].lower()
-            self.token_from = Token.from_dict(
-                get_token_by_address(token_from), token_from)
+            token_from_info = get_token_by_address(token_from)
+            self.token_from = Token.from_dict(token_from_info, address=token_from)
             self.token_from_qty = map_output['token_from_qty'] if 'token_from_qty' in map_output else tx.value
-            self.token_to = Token.from_dict(get_token_by_address(token_to), token_to)
+            token_to_info = get_token_by_address(token_to)
+            self.token_to = Token.from_dict(token_to_info, address=token_to)
             self.token_to_qty = map_output['token_to_qty']
         else:
             self.token_from = None

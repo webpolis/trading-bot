@@ -1,3 +1,4 @@
+from importlib.metadata import metadata
 import json
 from com.cryptobot.config import Config
 from com.cryptobot.utils.path import get_data_path
@@ -23,17 +24,24 @@ def get_coin(symbol):
 
 
 def get_coin_by_address(address):
+    address = address.lower()
+
     for coin in cg_coins:
-        if ('ethereum' in coin['platforms'] and coin['platforms']['ethereum'].lower() == address.lower()):
-            return coin
+        if ('ethereum' in coin['platforms'] and coin['platforms']['ethereum'].lower() == address) \
+                or ('polygon-pos' in coin['platforms'] and coin['platforms']['polygon-pos'].lower() == address) \
+                or ('arbitrum-one' in coin['platforms'] and coin['platforms']['arbitrum-one'].lower() == address):
+            platforms = coin['platforms']
+            metadata = {
+                'symbol': coin['symbol'],
+                'name': coin['name'],
+                'address_ethereum': platforms['ethereum'].lower() if 'ethereum' in platforms else None,
+                'address_arbitrum': platforms['arbitrum-one'].lower() if 'arbitrum-one' in platforms else None,
+                'address_polygon': platforms['polygon-pos'].lower() if 'polygon-pos' in platforms else None
+            }
 
-        if ('polygon-pos' in coin['platforms'] and coin['platforms']['polygon-pos'].lower() == address.lower()):
-            return coin
+            return metadata
 
-        if ('arbitrum-one' in coin['platforms'] and coin['platforms']['arbitrum-one'].lower() == address.lower()):
-            return coin
-
-    return None
+    return {}
 
 
 def is_stablecoin(symbol):

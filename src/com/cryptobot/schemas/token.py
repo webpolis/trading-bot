@@ -126,11 +126,21 @@ class Token(Schema, RedisMixin):
 
     def from_dict(dict_obj={}, address=None):
         dict_obj = {} if dict_obj == None else dict_obj
-        _address = dict_obj.get('address', None)
+        network = get_current_network()
 
-        return Token(dict_obj.get('symbol', None), dict_obj.get('name', None), dict_obj.get('market_cap', None), dict_obj.get('price_usd', None),
-                     _address if _address is not None else address) \
-            if dict_obj is not None else Token(address=address)
+        # map network's token address
+        address = dict_obj.get('address', address)
+
+        if network == ProviderNetwork.ARBITRUM:
+            address = dict_obj.get('address_arbitrum', address)
+        elif network == ProviderNetwork.POLYGON:
+            address = dict_obj.get('address_polygon', address)
+
+        return Token(dict_obj.get('symbol', None),
+                     dict_obj.get('name', None),
+                     dict_obj.get('market_cap', None),
+                     dict_obj.get('price_usd', None),
+                     address)
 
     def metadata(self) -> dict:
         """Populate token with all the data we can gather from many different sources"""
@@ -186,16 +196,7 @@ class Token(Schema, RedisMixin):
             return Token.cached_explorer_metadata[self.address]
 
         try:
-            current_network = get_current_network()
-            address = self.address
-
-            # use the corresponding network's token address
-            if current_network == ProviderNetwork.ARBITRUM:
-                address = metadata['address_arbitrum']
-            elif current_network == ProviderNetwork.POLYGON:
-                address = metadata['address_polygon']
-
-            response = get_xp_token_info(address)
+            response = get_xp_token_info(self.address)
             _explorer_metadata = valfilter(
                 lambda v: v != None, response if type(response) == dict else dict())
 
