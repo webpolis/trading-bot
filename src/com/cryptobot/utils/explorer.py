@@ -16,13 +16,14 @@ settings = Config().get_settings()
 max_threads = settings.runtime.classifiers.SwapClassifier.max_concurrent_threads
 max_calls = int(300/max_threads)
 period_per_thread = int(30/max_threads)
+network = get_current_network()
 
 
 @on_exception(expo, RateLimitException, max_tries=3, max_time=10)
 @limits(calls=max_calls, period=period_per_thread)
 def get_token_info(address):
     global lock
-    network = get_current_network()
+    global network
 
     with lock:
         response = request.get(
