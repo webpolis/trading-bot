@@ -199,7 +199,7 @@ def fetch_uniswap_token(address):
     address = address.lower()
 
     for token in tokenslist_uniswap_tokens:
-        if token['address'].lower() == address:
+        if token['address'].lower() == address and 'extensions' in token:
             chains = token['extensions']['bridgeInfo']
             ethereum_address = chains['1']['tokenAddress'] if '1' in chains else None
             ethereum_address = address if token['chainId'] == 1 else ethereum_address
