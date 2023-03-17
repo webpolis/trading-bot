@@ -63,11 +63,11 @@
     },
     "schemas": {
       "address": {
-        "portfolio_stats_cache_timeout": 600
+        "portfolio_stats_cache_timeout": 900
       },
       "token": {
-        "metadata_ttl": 600,
-        "price_usd_ttl": 600,
+        "metadata_ttl": 900,
+        "price_usd_ttl": 900,
         "market_cap_ttl": 604800
       }
     }
