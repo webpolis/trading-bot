@@ -21,7 +21,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
         while True:
             try:
                 network = get_current_network()
-                suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
+                suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
                 max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
