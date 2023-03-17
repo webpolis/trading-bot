@@ -159,9 +159,7 @@ class Token(Schema, RedisMixin):
         _explorer_metadata = None
         _alchemy_metadata = self.fetch_alchemy_metadata()
         _ethplorer_metadata = self.fetch_ethplorer_metadata()
-
-        if get_current_network() != ProviderNetwork.ETHEREUM:
-            _explorer_metadata = self.fetch_explorer_metadata(metadata=self._metadata)
+        _explorer_metadata = self.fetch_explorer_metadata(metadata=self._metadata)
 
         # combine all the data
         if self._metadata is not None:
