@@ -92,7 +92,7 @@ class MempoolExtractor(Extractor, EventsProducerMixin):
             self.logger.error(error)
 
             # use next key available (Alchemy)
-            has_next_key = (self.alchemy_current_key[0]+1) < len(self.alchemy_api_keys)
+            has_next_key = (self.alchemy_current_key[0]+1) < len(list(self.alchemy_api_keys))
 
             if has_next_key:
                 self.alchemy_current_key = next(self.alchemy_api_keys)
