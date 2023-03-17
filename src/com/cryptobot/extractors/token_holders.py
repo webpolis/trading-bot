@@ -7,6 +7,7 @@ import pandas as pd
 from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
+from com.cryptobot.utils.explorer import get_tokens_by_page
 from com.cryptobot.utils.network import ProviderNetwork, get_current_network
 from com.cryptobot.utils.pandas_utils import get_tokens_df, holders_table_to_df
 from com.cryptobot.utils.path import get_data_path
@@ -20,14 +21,15 @@ class TokenHoldersExtractor(SeleniumExtractor):
         while True:
             try:
                 network = get_current_network()
-                suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
+                suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
                 max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
                 max_holders_pages = runtime_settings.extractors.token_holders.max_holders_pages
                 tmp_output_path = get_data_path(
                 ) + 'tokens_holders{0}tmp.csv'.format(suffix)
-                output_path = get_data_path() + 'tokens_holders{0}.csv'.format(suffix)
+                output_path = get_data_path(
+                ) + 'tokens_holders{0}.csv'.format(suffix[:-1])
 
                 # truncate
                 initial = True
@@ -35,7 +37,17 @@ class TokenHoldersExtractor(SeleniumExtractor):
                 f.truncate(0)
                 f.close()
 
-                tokens: pd.DataFrame = get_tokens_df()
+                if network == ProviderNetwork.ETHEREUM:
+                    tokens: pd.DataFrame = get_tokens_df()
+                else:
+                    # secondary networks have better data in their explorers' websites
+                    tokens = []
+
+                    for p in [1, 2]:
+                        tokens = tokens + get_tokens_by_page(p)
+
+                    tokens = pd.DataFrame.from_dict(tokens)
+
                 tokens.drop_duplicates(
                     subset=['symbol', 'address', 'market_cap'], inplace=True)
                 tokens.sort_values(by=['market_cap'], ascending=False, inplace=True)
