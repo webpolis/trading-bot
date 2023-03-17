@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as soup
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.selenium_extractor import SeleniumExtractor
 from com.cryptobot.utils.explorer import get_tokens_by_page
-from com.cryptobot.utils.network import ProviderNetwork, get_current_network
+from com.cryptobot.utils.network import get_network_suffix
 from com.cryptobot.utils.pandas_utils import get_tokens_df, holders_table_to_df
 from com.cryptobot.utils.path import get_data_path
 
@@ -20,8 +20,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
     def run(self):
         while True:
             try:
-                network = get_current_network()
-                suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
+                suffix = get_network_suffix()
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.token_holders.refresh_interval_secs
                 max_token_addresses = runtime_settings.extractors.token_holders.max_token_addresses
@@ -37,7 +36,8 @@ class TokenHoldersExtractor(SeleniumExtractor):
                 f.truncate(0)
                 f.close()
 
-                if network == ProviderNetwork.ETHEREUM:
+                # an empty suffix means it's ProviderNetwork.ETHEREUM
+                if suffix == '':
                     tokens: pd.DataFrame = get_tokens_df()
                 else:
                     # secondary networks have better data in their explorers' websites

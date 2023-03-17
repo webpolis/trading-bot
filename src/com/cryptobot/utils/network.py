@@ -105,3 +105,10 @@ def get_current_network():
         return ProviderNetwork.ARBITRUM
 
     return ProviderNetwork.ETHEREUM
+
+
+def get_network_suffix():
+    network = get_current_network()
+    suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
+
+    return suffix

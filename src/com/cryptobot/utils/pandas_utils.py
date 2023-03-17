@@ -6,7 +6,7 @@ import time
 from toolz import valfilter
 from com.cryptobot.config import Config
 from com.cryptobot.utils.coingecko import get_coin_by_address
-from com.cryptobot.utils.network import ProviderNetwork, get_current_network, is_contract, is_eth_address
+from com.cryptobot.utils.network import get_network_suffix, is_contract, is_eth_address
 from com.cryptobot.utils.path import get_data_path
 
 import pandas as pd
@@ -18,8 +18,7 @@ tokens_holders_df = None
 tokens_holders_df_last_update = None
 tokenslist_uniswap_tokens = json.load(
     open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
-network = get_current_network()
-suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
+suffix = get_network_suffix()
 
 
 def format_str_as_number(number):
