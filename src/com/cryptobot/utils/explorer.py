@@ -1,5 +1,6 @@
 import logging
 import re
+import requests
 from threading import RLock
 from backoff import expo, on_exception
 from bs4 import BeautifulSoup
@@ -43,6 +44,30 @@ def get_token_info(address):
             'price_usd': price_usd,
             'market_cap': market_cap
         }
+
+
+def get_tokens_by_page(page_num):
+    tokens = []
+    url = f'{settings.endpoints.etherscan.tokens}?ps=100&p={page_num}'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    tokens_table = soup.find('table', {'id': 'tblResult'})
+    rows = tokens_table.find('tbody').find_all('tr')
+
+    for row in rows:
+        cols = row.find_all('td')
+        link = cols[1].find('a')
+        symbol = re.sub(r'.*\(([\w]+)\)$', '\\1', link.text.strip())
+        price = float(re.sub(r'[^\d\.]+', '', cols[2].find('span').text.strip()))
+        market_cap = re.sub(r'[^\d\.]+', '', cols[5].text.strip())
+        market_cap = float(market_cap) if market_cap != '' else None
+        address = link.attrs['href'].split('/')[-1]
+        token = {'symbol': symbol, 'address': address,
+                 'price': price, 'market_cap': market_cap}
+
+        tokens.append(token)
+
+    return tokens
 
 
 explorer_logger = PrettyLogger(HttpRequest.__name__, logging.INFO)
