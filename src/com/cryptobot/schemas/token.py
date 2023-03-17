@@ -34,10 +34,6 @@ class TokenSource(Enum):
 
 
 class Token(Schema, RedisMixin):
-    cached_alchemy_metadata = {}
-    cached_ethplorer_metadata = {}
-    cached_explorer_metadata = {}
-
     def __init__(self, symbol=None, name=None, market_cap=None, price_usd=None, address=None, decimals=None, no_live_checkup=False):
         self._logger = PrettyLogger(__name__, logging.INFO)
         self.address = address.lower() if type(address) == str else address
@@ -189,22 +185,24 @@ class Token(Schema, RedisMixin):
             return {}
 
         has_local_metadata = self._explorer_metadata is not None
-        has_cached_metadata = self.address in Token.cached_explorer_metadata
+        _cached_metadata = self.get('explorer_metadata')
 
         if has_local_metadata:
             return self._explorer_metadata
 
-        if has_cached_metadata:
-            return Token.cached_explorer_metadata[self.address]
+        if _cached_metadata != None:
+            return _cached_metadata
 
         try:
             response = get_xp_token_info(self.address)
             _explorer_metadata = valfilter(
                 lambda v: v != None, response if type(response) == dict else dict())
 
-            if len(_explorer_metadata) > 0:
+            # cache the metadata
+            if _explorer_metadata != None and len(_explorer_metadata) > 0:
                 self._explorer_metadata = _explorer_metadata
-                Token.cached_explorer_metadata[self.address] = self._explorer_metadata
+                self.set('explorer_metadata', _explorer_metadata,
+                         ttl=settings.runtime.schemas.token.metadata_ttl)
         except Exception as error:
             self._logger.error({'error': error.with_traceback(), 'token': str(self)})
         finally:
@@ -216,22 +214,24 @@ class Token(Schema, RedisMixin):
             return {}
 
         has_local_metadata = self._ethplorer_metadata is not None
-        has_cached_metadata = self.address in Token.cached_ethplorer_metadata
+        _cached_metadata = self.get('ethplorer_metadata')
 
         if has_local_metadata:
             return self._ethplorer_metadata
 
-        if has_cached_metadata:
-            return Token.cached_ethplorer_metadata[self.address]
+        if _cached_metadata != None:
+            return _cached_metadata
 
         try:
             response = get_token_info(self)
             _ethplorer_metadata = valfilter(
                 lambda v: v != None, response if type(response) == dict else dict())
 
-            if len(_ethplorer_metadata) > 0:
+            # cache the metadata
+            if _ethplorer_metadata != None and len(_ethplorer_metadata) > 0:
                 self._ethplorer_metadata = _ethplorer_metadata
-                Token.cached_ethplorer_metadata[self.address] = self._ethplorer_metadata
+                self.set('ethplorer_metadata', _ethplorer_metadata,
+                         ttl=settings.runtime.schemas.token.metadata_ttl)
         except Exception as error:
             self._logger.error({'error': error.with_traceback(), 'token': str(self)})
         finally:
@@ -243,13 +243,13 @@ class Token(Schema, RedisMixin):
             return {}
 
         has_local_metadata = self._alchemy_metadata is not None
-        has_cached_metadata = self.address in Token.cached_alchemy_metadata
+        _cached_metadata = self.get('alchemy_metadata')
 
         if has_local_metadata:
             return self._alchemy_metadata
 
-        if has_cached_metadata:
-            return Token.cached_alchemy_metadata[self.address]
+        if _cached_metadata != None:
+            return _cached_metadata
 
         payload = {
             'id': 1,
@@ -263,9 +263,11 @@ class Token(Schema, RedisMixin):
             _alchemy_metadata = valfilter(
                 lambda v: v != None, response.get('result', {}))
 
-            if len(_alchemy_metadata) > 0:
+            # cache the metadata
+            if _alchemy_metadata != None and len(_alchemy_metadata) > 0:
                 self._alchemy_metadata = _alchemy_metadata
-                Token.cached_alchemy_metadata[self.address] = self._alchemy_metadata
+                self.set('alchemy_metadata', _alchemy_metadata,
+                         ttl=settings.runtime.schemas.token.metadata_ttl)
         except Exception as error:
             self._logger.error({'error': error, 'token': str(self)})
         finally:
