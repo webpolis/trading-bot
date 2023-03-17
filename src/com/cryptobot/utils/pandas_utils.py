@@ -48,7 +48,7 @@ def get_tokens_holders_df():
 
     if tokens_holders_df is None or elapsed_time is None or elapsed_time > settings.runtime.utils.pandas.tokens_holders_df_refresh_interval:
         tokens_holders_df = pd.read_csv(
-            get_data_path() + 'tokens_holders{0}.csv'.format(suffix))
+            get_data_path() + 'tokens_holders{0}.csv'.format(suffix[:-1]))
         tokens_holders_df_last_update = time.time()
 
     return tokens_holders_df
