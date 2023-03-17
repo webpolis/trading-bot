@@ -19,7 +19,7 @@ tokens_holders_df_last_update = None
 tokenslist_uniswap_tokens = json.load(
     open(get_data_path() + 'tokenslist_uniswap.json'))['tokens']
 network = get_current_network()
-suffix = f'_{network}_' if network != ProviderNetwork.ETHEREUM else ''
+suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
 
 
 def format_str_as_number(number):
