@@ -21,6 +21,9 @@
       "pandas": {
         "tokens_df_refresh_interval": 60,
         "tokens_holders_df_refresh_interval": 60
+      },
+      "txqueue": {
+        "max_queue_ttl": 3600
       }
     },
     "extractors": {

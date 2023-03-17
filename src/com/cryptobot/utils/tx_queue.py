@@ -1,9 +1,12 @@
 import itertools
-from heapq import heappop, heappush
 import logging
+from datetime import datetime
+from heapq import heappop, heappush
 from threading import Lock
-
+from com.cryptobot.config import Config
 from com.cryptobot.utils.logger import PrettyLogger
+
+settings = Config().get_settings().runtime.utils.txqueue
 
 
 class TXQueue():
@@ -15,6 +18,19 @@ class TXQueue():
 
     def __init__(self):
         self.logger = PrettyLogger(__name__, logging.INFO)
+        self.time_started = datetime.now()
+
+    def recycle(self):
+        now = datetime.now()
+        time_elapsed = now - self.time_started
+
+        # clear the queue if enough time has passed
+        if time_elapsed.total_seconds() > settings.max_queue_ttl:
+            self.entry_finder.clear()
+            self.pq = []
+
+            # reset clock
+            self.time_started = datetime.now()
 
     def count(self):
         count = self.counter
@@ -35,6 +51,8 @@ class TXQueue():
 
     def add_tx(self, tx: str, priority=0):
         with self.lock:
+            self.recycle()
+
             try:
                 tx = hash(tx)
 
