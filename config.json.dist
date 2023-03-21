@@ -66,7 +66,8 @@
     },
     "schemas": {
       "address": {
-        "portfolio_stats_cache_timeout": 900
+        "portfolio_stats_cache_timeout": 900,
+        "balances_cache_timeout": 14400
       },
       "token": {
         "metadata_ttl": 900,
