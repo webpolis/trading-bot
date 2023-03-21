@@ -16,9 +16,10 @@ settings = Config().get_settings()
 
 
 class AddressBalance(Schema):
-    def __init__(self, token: Token, qty: int = 0):
+    def __init__(self, address: str, token: Token, qty: int = 0):
         super().__init__()
 
+        self.address = address
         self.token = token
         self.qty = qty
         self.qty_usd = float(0)
@@ -36,6 +37,34 @@ class AddressBalance(Schema):
 
     def __str__(self):
         return str(self.__dict__)
+
+    @property
+    def __key__(self):
+        return (self.token.__key__, self.qty)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, type(self)) \
+            and (self.address == other.address) \
+            and (self.token.address == other.token.address)
+
+    def __hash__(self) -> int:
+        return hash((self.address, self.token.address))
+
+    @property
+    def __dict__(self):
+        return {
+            'token': self.token.__dict__,
+            'qty': self.qty,
+            'qty_usd': self.qty_usd
+        }
+
+
+def merge_address_balances(balances1: AddressBalance, balances2: AddressBalance):
+    shared_balances = list(set(balances1) & set(balances2))
+    balancesA = list(set(balances1) - set(balances2))
+    balancesB = list(set(balances2) - set(balances1))
+
+    return shared_balances + balancesA + balancesB
 
 
 class AddressPortfolioStats(Schema):
@@ -113,7 +142,7 @@ class Address(Schema, RedisMixin):
                             continue
 
                         token = Token(address=balance['contractAddress'])
-                        address_balance = AddressBalance(token, qty)
+                        address_balance = AddressBalance(self.address, token, qty)
 
                         balances.append(address_balance)
                 else:
@@ -125,10 +154,6 @@ class Address(Schema, RedisMixin):
             print(error)
             print(traceback.format_exc())
         finally:
-            if len(balances) > 0:
-                self.set('alchemy_balances', balances,
-                         ttl=settings.runtime.schemas.address.balances_cache_timeout)
-
             return balances
 
     def balances_ethplorer(self) -> List[AddressBalance]:
@@ -157,9 +182,7 @@ class Address(Schema, RedisMixin):
                             token = Token(symbol, name, market_cap,
                                           price_usd, address, int(decimals) if decimals != None else None)
 
-                            address_balance = AddressBalance(token, qty)
-
-                            # print(f'Got balance for {self.address}: {str(address_balance)}')
+                            address_balance = AddressBalance(self.address, token, qty)
 
                             balances.append(address_balance)
                         except Exception as _error:
@@ -183,17 +206,30 @@ class Address(Schema, RedisMixin):
 
         try:
             balances_ethplorer = self.balances_ethplorer()
+            balances_alchemy = self.balances_alchemy()
+            tokens_ethplorer = sorted(
+                list(set([b.token.symbol for b in balances_ethplorer])))
+            tokens_alchemy = sorted(
+                list(set([b.token.symbol for b in balances_alchemy])))
+            address_tokens = sorted(list(set(tokens_ethplorer+tokens_alchemy)))
+            address_balances = merge_address_balances(
+                balances_ethplorer, balances_alchemy)
 
             print(
                 f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')
+            print(
+                f'Retrieved {len(balances_alchemy)} balance(s) for {self.address} via alchemy')
+            print(
+                f'Address {self.address} owns: {address_tokens}')
 
             total_usd = 0
 
-            for balance in balances_ethplorer:
+            for balance in address_balances:
                 if type(balance.qty_usd) == float and not math.isnan(balance.qty_usd):
+
                     total_usd += balance.qty_usd
 
-            for balance in balances_ethplorer:
+            for balance in address_balances:
                 stats.append(AddressPortfolioStats(balance, total_usd))
         except Exception as error:
             print(error)
