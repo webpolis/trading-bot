@@ -67,6 +67,18 @@ class SushiSwapRouterArgs(TypedDict):
     to: str
     deadline: int
 
+class CamelotRouterArgs(TypedDict):
+    amountOutMin: int
+    path: list
+    to: str
+    referrer: str
+    deadline: int
+
+class FirebirdAggregatorArgs(TypedDict):
+    caller: str
+    desc: tuple
+    data: bytes
+
 
 """
 The following maps the actual parameters used during a swap call execution with the fields we want to extract.
@@ -139,6 +151,20 @@ SushiSwapRouterMap = {
     'token_to': ('path', 1),
     'token_from_qty': None,
     'token_to_qty': 'amountOutMin'
+}
+
+CamelotRouterMap = {
+    'token_from': ('path', 0),
+    'token_to': ('path', 1),
+    'token_from_qty': None,
+    'token_to_qty': 'amountOutMin'
+}
+
+FirebirdAggregatorMap = {
+    'token_from': ('desc', 0),
+    'token_to': ('desc', 1),
+    'token_from_qty': ('desc', 4),
+    'token_to_qty': ('desc', 5)
 }
 
 
