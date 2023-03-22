@@ -38,7 +38,7 @@ def get_tokens_df():
     return tokens_df
 
 
-def get_tokens_holders_df():
+def get_tokens_holders_df(min_wallet_alloc_usd=None):
     global tokens_holders_df
     global tokens_holders_df_last_update
     global suffix
@@ -50,6 +50,11 @@ def get_tokens_holders_df():
         tokens_holders_df = pd.read_csv(
             get_data_path() + 'tokens_holders{0}.csv'.format(suffix[:-1]))
         tokens_holders_df_last_update = time.time()
+
+        # filter results
+        if min_wallet_alloc_usd != None:
+            tokens_holders_df = tokens_holders_df[tokens_holders_df.qty >
+                                                  min_wallet_alloc_usd]
 
     return tokens_holders_df
 

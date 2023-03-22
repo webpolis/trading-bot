@@ -2,17 +2,21 @@ from typing import List
 
 import pandas as pd
 from com.cryptobot.classifiers.tx import TXClassifier
+from com.cryptobot.config import Config
 from com.cryptobot.schemas.tx import Tx
 from com.cryptobot.utils.pandas_utils import get_tokens_holders_df
-from com.cryptobot.utils.path import get_data_path
 
 
 class MempoolWhaleTXClassifier(TXClassifier):
     def __init__(self, **args):
         super().__init__(__name__, **args)
 
+        settings = Config().get_settings().runtime.classifiers
+        self.settings = settings.MempoolWhaleTXClassifier if hasattr(
+            settings, 'MempoolWhaleTXClassifier') else None
+
         # load up the list of big wallets collected by com.cryptobot.extractors.TokenHoldersExtractor
-        self.tokens_holders_df = get_tokens_holders_df()
+        self.tokens_holders_df = get_tokens_holders_df(self.settings.min_wallet_alloc_usd)
         self.whales_addresses = list(
             map(lambda address: address.lower(), list(self.tokens_holders_df.address.unique())))
 

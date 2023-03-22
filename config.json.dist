@@ -4,7 +4,6 @@
       "whale_buy": {
         "whale_wallet_value_threshold_usd": 250000,
         "whale_total_threshold_usd": 1000000,
-        "whale_token_allocation_percent": 10.0,
         "whale_token_market_percent": 0.5,
         "lookup_token_buy_whales": 3,
         "lookup_token_buy_time": 259200,
@@ -59,7 +58,10 @@
       },
       // "TXClassifier": {
       //   "tx_root_key": "transaction"
-      // }
+      // },
+			"MempoolWhaleTXClassifier": {
+				"min_wallet_alloc_usd": 50000
+			}
     },
     "traders": {
       "max_concurrent_runs": 5
