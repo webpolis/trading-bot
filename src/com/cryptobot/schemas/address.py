@@ -194,6 +194,9 @@ class Address(Schema, RedisMixin):
         finally:
             return balances
 
+    def balances_explorer(self) -> List[AddressBalance]:
+        return []
+
     def portfolio_stats(self) -> List[AddressPortfolioStats]:
         cached_portfolio_stats = self.get('portfolio_stats')
         cached_portfolio_stats = [decode(
@@ -206,19 +209,19 @@ class Address(Schema, RedisMixin):
 
         try:
             balances_ethplorer = self.balances_ethplorer()
-            balances_alchemy = self.balances_alchemy()
+            balances_explorer = self.balances_explorer()
             tokens_ethplorer = sorted(
                 list(set([b.token.symbol for b in balances_ethplorer])))
-            tokens_alchemy = sorted(
-                list(set([b.token.symbol for b in balances_alchemy])))
-            address_tokens = sorted(list(set(tokens_ethplorer+tokens_alchemy)))
+            tokens_explorer = sorted(
+                list(set([b.token.symbol for b in balances_explorer])))
+            address_tokens = sorted(list(set(tokens_ethplorer+tokens_explorer)))
             address_balances = merge_address_balances(
-                balances_ethplorer, balances_alchemy)
+                balances_ethplorer, balances_explorer)
 
             print(
                 f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')
             print(
-                f'Retrieved {len(balances_alchemy)} balance(s) for {self.address} via alchemy')
+                f'Retrieved {len(balances_explorer)} balance(s) for {self.address} via explorer')
             print(
                 f'Address {self.address} owns: {address_tokens}')
 
