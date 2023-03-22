@@ -44,7 +44,7 @@ class TokenHoldersExtractor(SeleniumExtractor):
                     tokens = []
 
                     for p in [1, 2]:
-                        tokens = tokens + get_tokens_by_page(p)
+                        tokens = tokens + get_tokens_by_page(p, self.driver)
 
                     tokens = pd.DataFrame.from_dict(tokens)
 
