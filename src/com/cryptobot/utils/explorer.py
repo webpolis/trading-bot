@@ -56,11 +56,16 @@ def get_token_info(address):
         }
 
 
-def get_tokens_by_page(page_num):
+def get_tokens_by_page(page_num, selenium_driver):
     tokens = []
     url = f'{settings.endpoints.etherscan.tokens}?ps=100&p={page_num}'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+
+    try:
+        selenium_driver.get(url)
+    except Exception as error:
+        print(error)
+
+    soup = BeautifulSoup(selenium_driver.page_source, 'html.parser')
     tokens_table = soup.find('table', {'id': 'tblResult'})
     rows = tokens_table.find('tbody').find_all('tr')
 
