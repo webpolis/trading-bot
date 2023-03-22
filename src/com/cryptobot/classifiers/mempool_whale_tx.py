@@ -12,11 +12,11 @@ class MempoolWhaleTXClassifier(TXClassifier):
         super().__init__(__name__, **args)
 
         settings = Config().get_settings().runtime.classifiers
-        self.settings = settings.MempoolWhaleTXClassifier if hasattr(
+        settings = settings.MempoolWhaleTXClassifier if hasattr(
             settings, 'MempoolWhaleTXClassifier') else None
 
         # load up the list of big wallets collected by com.cryptobot.extractors.TokenHoldersExtractor
-        self.tokens_holders_df = get_tokens_holders_df(self.settings.min_wallet_alloc_usd)
+        self.tokens_holders_df = get_tokens_holders_df(settings.min_wallet_alloc_usd)
         self.whales_addresses = list(
             map(lambda address: address.lower(), list(self.tokens_holders_df.address.unique())))
 
