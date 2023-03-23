@@ -6,7 +6,7 @@ from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.utils.alchemy import api_post
 from com.cryptobot.utils.coingecko import get_coin, is_stablecoin
-from com.cryptobot.utils.network import ProviderNetwork, get_current_network, is_eth_address
+from com.cryptobot.utils.network import ProviderNetwork, get_current_network, get_network_name, is_eth_address
 from com.cryptobot.utils.ethplorer import get_token_info
 from com.cryptobot.utils.explorer import get_token_info as get_xp_token_info
 from com.cryptobot.utils.logger import PrettyLogger
@@ -15,7 +15,10 @@ from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.redis_mixin import RedisMixin
 from toolz import valfilter
 
+from com.cryptobot.utils.request import HttpRequest
+
 settings = Config().get_settings()
+request = HttpRequest()
 alchemy_api_keys = iter(settings.web3.providers.alchemy.api_keys)
 
 # initialize data
@@ -48,6 +51,7 @@ class Token(Schema, RedisMixin):
         self._alchemy_metadata = None
         self._ethplorer_metadata = None
         self._explorer_metadata = None
+        self._portals_metadata = None
         self._metadata = None
         self.no_live_checkup = no_live_checkup
 
@@ -160,6 +164,7 @@ class Token(Schema, RedisMixin):
         _alchemy_metadata = self.fetch_alchemy_metadata()
         _ethplorer_metadata = self.fetch_ethplorer_metadata()
         _explorer_metadata = self.fetch_explorer_metadata()
+        _portals_metadata = self.fetch_portals_metadata()
 
         # combine all the data
         if self._metadata is not None:
@@ -173,6 +178,9 @@ class Token(Schema, RedisMixin):
 
         if _explorer_metadata is not None:
             mixed_metadata = {**mixed_metadata, **_explorer_metadata}
+
+        if _portals_metadata is not None:
+            mixed_metadata = {**mixed_metadata, **_portals_metadata}
 
         self._metadata = valfilter(lambda v: v != None, mixed_metadata)
 
@@ -276,6 +284,52 @@ class Token(Schema, RedisMixin):
             self._logger.error({'error': error, 'token': str(self)})
         finally:
             return self._alchemy_metadata
+
+    def fetch_portals_metadata(self) -> dict:
+        # we don't need anything extra than these attributes
+        if (self.price_usd != None and self.market_cap != None and self.address != None):
+            return {}
+
+        has_local_metadata = self._portals_metadata is not None
+        _cached_metadata = self.get('portals_metadata')
+
+        if has_local_metadata:
+            return self._portals_metadata
+
+        if _cached_metadata != None:
+            return _cached_metadata
+
+        try:
+            response = request.get(
+                Config().get_settings().endpoints.portals.tokens, {
+                    'addresses': [
+                        ':'.join([
+                            get_network_name(),
+                            self.address
+                        ])
+                    ]
+                })
+            tokens = response['tokens'] if response['totalItems'] >= 1 else None
+            token = response['tokens'][0] if tokens != None else None
+            token = {
+                'symbol': token['symbol'].upper(),
+                'name': token['name'],
+                'address': token['address'].lower(),
+                'price_usd': token['price'],
+                'market_cap': token['liquidity']
+            } if token != None else None
+            _portals_metadata = valfilter(
+                lambda v: v != None, token if type(token) == dict else dict())
+
+            # cache the metadata
+            if _portals_metadata != None and len(_portals_metadata) > 0:
+                self._portals_metadata = _portals_metadata
+                self.set('portals_metadata', _portals_metadata,
+                         ttl=settings.runtime.schemas.token.metadata_ttl)
+        except Exception as error:
+            self._logger.error({'error': error.with_traceback(), 'token': str(self)})
+        finally:
+            return self._portals_metadata
 
     def __str__(self):
         return str(self.__dict__)

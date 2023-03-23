@@ -147,7 +147,8 @@
       "api_key": "XXXX"
     },
     "portals": {
-      "tokens": "https://api.portals.fi/v2/tokens"
+      "tokens": "https://api.portals.fi/v2/tokens",
+      "account": "https://api.portals.fi/v2/account"
     }
   },
   "gbq": {
