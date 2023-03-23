@@ -112,3 +112,9 @@ def get_network_suffix():
     suffix = f'_{str(network).split(".")[-1]}_' if network != ProviderNetwork.ETHEREUM else ''
 
     return suffix
+
+
+def get_network_name():
+    lsuffix = get_network_suffix().lower()
+
+    return re.sub(r'[^a-z]*', '', lsuffix, flags=re.IGNORECASE)
