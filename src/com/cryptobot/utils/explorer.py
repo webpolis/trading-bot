@@ -31,6 +31,9 @@ def get_token_info(address):
         soup = BeautifulSoup(response, "html.parser")
         overview = soup.find('div', {'id': 'ContentPlaceHolder1_tr_valuepertoken'})
 
+        if overview == None:
+            return None
+
         if network != ProviderNetwork.ETHEREUM:
             overview_clr = re.sub(r'[\r\n]+', '', overview.text.strip(),
                                   flags=re.MULTILINE | re.IGNORECASE)

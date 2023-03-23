@@ -7,13 +7,15 @@ from com.cryptobot.config import Config
 from com.cryptobot.schemas.schema import Schema
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.alchemy import api_post
-from com.cryptobot.utils.network import is_contract
+from com.cryptobot.utils.network import get_network_name, is_contract
 from com.cryptobot.utils.ethplorer import get_address_info
 from com.cryptobot.utils.pandas_utils import get_address_details
 from com.cryptobot.utils.python import combine_lists
 from com.cryptobot.utils.redis_mixin import RedisMixin
+from com.cryptobot.utils.request import HttpRequest
 
 settings = Config().get_settings()
+request = HttpRequest()
 
 
 class AddressBalance(Schema):
@@ -187,6 +189,48 @@ class Address(Schema, RedisMixin):
         finally:
             return balances
 
+    def balances_portals(self) -> List[AddressBalance]:
+        balances = []
+
+        try:
+            response = request.get(
+                Config().get_settings().endpoints.portals.account, {
+                    'ownerAddress': self.address,
+                    'networks': [
+                        get_network_name(),
+                    ]
+                })
+            response = response['balances'] if 'balances' in response else None
+
+            for balance in response:
+                token_info = {key: balance[key] for key in balance.keys()
+                              & {'name', 'symbol', 'address', 'price', 'liquidity', 'decimals'}}
+                qty = balance.get('rawBalance', None)
+
+                if token_info != None and qty != None:
+                    try:
+                        address = token_info.get('address', None)
+                        name = token_info.get('name', None)
+                        symbol = token_info.get('symbol', None)
+                        decimals = token_info.get('decimals', None)
+                        price_usd = token_info.get('price', None)
+                        market_cap = token_info.get('liquidity', None)
+
+                        token = Token(symbol, name, market_cap,
+                                      price_usd, address, int(decimals) if decimals != None else None)
+
+                        address_balance = AddressBalance(self.address, token, int(qty))
+
+                        balances.append(address_balance)
+                    except Exception as _error:
+                        print({'error': _error, 'balance': str(balance)})
+                        print(traceback.format_exc())
+        except Exception as error:
+            print(error)
+            print(traceback.format_exc())
+        finally:
+            return balances
+
     def balances_explorer(self) -> List[AddressBalance]:
         return []
 
@@ -203,17 +247,24 @@ class Address(Schema, RedisMixin):
         try:
             balances_ethplorer = self.balances_ethplorer()
             balances_explorer = self.balances_explorer()
+            balances_portals = self.balances_portals()
             tokens_ethplorer = sorted(
                 list(set([b.token.symbol for b in balances_ethplorer])))
             tokens_explorer = sorted(
                 list(set([b.token.symbol for b in balances_explorer])))
-            address_tokens = sorted(list(set(tokens_ethplorer+tokens_explorer)))
+            tokens_portals = sorted(
+                list(set([b.token.symbol for b in balances_portals])))
+            address_tokens = sorted(
+                list(set(tokens_ethplorer+tokens_explorer+tokens_portals)))
             address_balances = combine_lists(balances_ethplorer, balances_explorer)
+            address_balances = combine_lists(address_balances, balances_portals)
 
             print(
                 f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')
             print(
                 f'Retrieved {len(balances_explorer)} balance(s) for {self.address} via explorer')
+            print(
+                f'Retrieved {len(balances_portals)} balance(s) for {self.address} via portals')
             print(
                 f'Address {self.address} owns: {address_tokens}')
 

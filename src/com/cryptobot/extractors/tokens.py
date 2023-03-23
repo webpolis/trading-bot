@@ -184,7 +184,7 @@ class TokensExtractor(Extractor):
                 tokens.to_csv(get_data_path() + 'tokens.csv', index=False)
 
                 self.logger.info(
-                    f'Collected {tokens.symbol.size} tokens from Coingecko, Coinmarketcap & Tokenslist')
+                    f'Collected {tokens.symbol.size} tokens from Portals.fi, Coingecko, Coinmarketcap & Tokenslist')
 
                 self.logger.info(f'Sleeping for {refresh_interval} seconds.')
             except Exception as error:
