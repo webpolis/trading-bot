@@ -234,3 +234,28 @@ def fill_diverged_columns(df, suffix):
             df.drop([col + suffix], axis=1, inplace=True)
         except:
             pass
+
+
+def refresh_tokens(current_tokens, last_tokens):
+    if len(last_tokens) <= 0:
+        return current_tokens
+
+    tokens = current_tokens.merge(last_tokens, how='left', on=[
+        'symbol', 'name'], suffixes=('', '_last'))
+
+    # preserve latest price & market cap
+    tokens['price_usd_last'].fillna(
+        tokens['price_usd'], inplace=True)
+    tokens['market_cap_last'].fillna(
+        tokens['market_cap'], inplace=True)
+    tokens['price_usd'] = tokens['price_usd_last']
+    tokens['market_cap'] = tokens['market_cap_last']
+
+    del tokens['price_usd_last']
+    del tokens['market_cap_last']
+    del tokens['address_last']
+    del tokens['decimals_last']
+
+    tokens.drop_duplicates(inplace=True)
+
+    return tokens
