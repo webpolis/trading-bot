@@ -14,7 +14,7 @@ from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token
 from com.cryptobot.utils.coingecko import get_markets
 from com.cryptobot.utils.path import get_data_path
-from com.cryptobot.utils.pandas_utils import fill_diverged_columns
+from com.cryptobot.utils.pandas_utils import fill_diverged_columns, refresh_tokens
 from com.cryptobot.utils.coinmarketcap import get_listings
 from com.cryptobot.utils.python import combine_lists
 from com.cryptobot.utils.request import HttpRequest
@@ -67,10 +67,6 @@ class TokensExtractor(Extractor):
                         parsed_tokens = self.portals_classifier.classify(
                             portals_response.get('tokens'))
                         portals_tokens = combine_lists(portals_tokens, parsed_tokens)
-
-                        portals_tokens_df = pd.DataFrame([
-                            token.__dict__ for token in portals_tokens if token is not None])
-                        portals_tokens_df.to_csv(portals_tokens_path, index=False)
                     except Exception as error:
                         self.logger.error(error)
 
@@ -80,6 +76,14 @@ class TokensExtractor(Extractor):
                             portals_page += 1
 
                         sleep(page_interval)
+
+                # refresh portals' tokens
+                portals_tokens_last = pd.DataFrame([
+                    token.__dict__ for token in portals_tokens if token is not None])
+                portals_tokens_df = refresh_tokens(
+                    portals_tokens_df, portals_tokens_last)
+                portals_tokens_df.to_csv(
+                    get_data_path() + 'portals_tokens.csv', index=False)
 
                 # fetch coinmarketcap listings
                 self.logger.info('Collecting listings from Coinmarketcap')
@@ -132,26 +136,9 @@ class TokensExtractor(Extractor):
                 coingecko_tokens_last = [
                     token.__dict__ for token in coingecko_tokens_last]
                 coingecko_tokens_last = pd.DataFrame(coingecko_tokens_last)
-
-                if len(coingecko_tokens_last) > 0:
-                    coingecko_tokens = coingecko_tokens.merge(coingecko_tokens_last, how='left', on=[
-                        'symbol', 'name'], suffixes=('', '_last'))
-
-                    # preserve latest price & market cap
-                    coingecko_tokens['price_usd_last'].fillna(
-                        coingecko_tokens['price_usd'], inplace=True)
-                    coingecko_tokens['market_cap_last'].fillna(
-                        coingecko_tokens['market_cap'], inplace=True)
-                    coingecko_tokens['price_usd'] = coingecko_tokens['price_usd_last']
-                    coingecko_tokens['market_cap'] = coingecko_tokens['market_cap_last']
-
-                    del coingecko_tokens['price_usd_last']
-                    del coingecko_tokens['market_cap_last']
-                    del coingecko_tokens['address_last']
-                    del coingecko_tokens['decimals_last']
-
-                    coingecko_tokens.drop_duplicates(inplace=True)
-                    coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
+                coingecko_tokens = refresh_tokens(
+                    coingecko_tokens, coingecko_tokens_last)
+                coingecko_tokens.to_csv(coingecko_tokens_path, index=False)
 
                 # convert and merge
                 self.logger.info('Produce tokens union list...')
