@@ -2,11 +2,13 @@ import json
 from time import sleep
 import traceback
 from typing import List
+from urllib import request
 
 import pandas as pd
 from com.cryptobot.classifiers.coingecko_tokens import \
     CoingeckoTokensClassifier
 from com.cryptobot.classifiers.coinmarketcap_tokens import CoinmarketcapTokensClassifier
+from com.cryptobot.classifiers.portals_tokens import PortalsTokensClassifier
 from com.cryptobot.config import Config
 from com.cryptobot.extractors.extractor import Extractor
 from com.cryptobot.schemas.token import Token
@@ -14,7 +16,11 @@ from com.cryptobot.utils.coingecko import get_markets
 from com.cryptobot.utils.path import get_data_path
 from com.cryptobot.utils.pandas_utils import fill_diverged_columns
 from com.cryptobot.utils.coinmarketcap import get_listings
+from com.cryptobot.utils.python import combine_lists
+from com.cryptobot.utils.request import HttpRequest
 from toolz import dissoc
+
+request = HttpRequest()
 
 
 class TokensExtractor(Extractor):
@@ -27,6 +33,7 @@ class TokensExtractor(Extractor):
         }
         self.coinmarketcap_classifier = CoinmarketcapTokensClassifier()
         self.coingecko_classifier = CoingeckoTokensClassifier()
+        self.portals_classifier = PortalsTokensClassifier()
 
     def run(self):
         while True:
@@ -34,7 +41,45 @@ class TokensExtractor(Extractor):
                 runtime_settings = Config().get_settings().runtime
                 refresh_interval = runtime_settings.extractors.tokens.refresh_interval_secs
                 max_coingecko_pages = runtime_settings.extractors.tokens.max_coingecko_pages
-                coingecko_page_interval = runtime_settings.extractors.tokens.coingecko_page_interval
+                page_interval = runtime_settings.extractors.tokens.coingecko_page_interval
+
+                # fetch portals.fi tokens
+                portals_more = True
+                portals_page = 0
+                portals_tokens = []
+
+                # preload stored tokens
+                portals_tokens_path = get_data_path() + 'portals_tokens.csv'
+                portals_tokens_df = pd.read_csv(open(portals_tokens_path))
+
+                while portals_more:
+                    try:
+                        self.logger.info(
+                            f'Collecting listings from Portals.fi (page #{portals_page+1})')
+
+                        portals_response = request.get(
+                            Config().get_settings().endpoints.portals.tokens, {
+                                'limit': 250,
+                                'page': portals_page,
+                                'networks': ['arbitrum', 'ethereum', 'polygon']
+                            })
+                        portals_more = portals_response.get('more', False)
+                        parsed_tokens = self.portals_classifier.classify(
+                            portals_response.get('tokens'))
+                        portals_tokens = combine_lists(portals_tokens, parsed_tokens)
+
+                        portals_tokens_df = pd.DataFrame([
+                            token.__dict__ for token in portals_tokens if token is not None])
+                        portals_tokens_df.to_csv(portals_tokens_path, index=False)
+                    except Exception as error:
+                        self.logger.error(error)
+
+                        break
+                    finally:
+                        if portals_more:
+                            portals_page += 1
+
+                        sleep(page_interval)
 
                 # fetch coinmarketcap listings
                 self.logger.info('Collecting listings from Coinmarketcap')
@@ -78,7 +123,7 @@ class TokensExtractor(Extractor):
 
                         break
                     finally:
-                        sleep(coingecko_page_interval)
+                        sleep(page_interval)
 
                 """ coingecko may rate limit us (randomly), hence refresh whatever tokens \
                     we could collect this time """
@@ -112,8 +157,11 @@ class TokensExtractor(Extractor):
                 self.logger.info('Produce tokens union list...')
                 tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
                     'symbol'], suffixes=('', '_cmc'))
+                tokens = tokens.merge(portals_tokens_df, how='outer', on=[
+                    'symbol'], suffixes=('', '_pfi'))
 
                 fill_diverged_columns(tokens, '_cmc')
+                fill_diverged_columns(tokens, '_pfi')
 
                 # combine with tokenslist
                 self.logger.info('Combine with tokenslist...')

@@ -46,8 +46,6 @@ def tx_parse(tx: dict):
 
 def token_parse(token, token_source: TokenSource):
     parsed_token = None
-    price_usd = None
-    address = None
 
     if token_source == TokenSource.COINMARKETCAP:
         parsed_token = {key: token[key] for key in token.keys()
@@ -56,16 +54,16 @@ def token_parse(token, token_source: TokenSource):
         platform = parsed_token.get('platform', None)
 
         if platform != None and platform['slug'] == 'ethereum':
-            address = platform.get('token_address', None)
+            parsed_token['address'] = platform.get('token_address', None)
 
         if quote != None:
             parsed_token['market_cap'] = quote.get('market_cap', None)
-            price_usd = quote.get('price', None)
+            parsed_token['price_usd'] = quote.get('price', None)
 
     if token_source == TokenSource.COINGECKO:
         parsed_token = {key: token[key] for key in token.keys()
                         & {'name', 'symbol', 'market_cap', 'current_price'}}
-        price_usd = parsed_token['current_price']
+        parsed_token['price_usd'] = parsed_token['current_price']
 
     if token_source == TokenSource.FTX:
         parsed_token = {key: token[key] for key in token.keys()
@@ -77,15 +75,21 @@ def token_parse(token, token_source: TokenSource):
                         & {'coin'}}
         parsed_token['symbol'] = parsed_token['coin'].upper()
 
+    if token_source == TokenSource.PORTALS:
+        parsed_token = {key: token[key] for key in token.keys()
+                        & {'name', 'symbol', 'price', 'liquidity', 'address', 'decimals'}}
+        parsed_token['price_usd'] = parsed_token['price']
+        parsed_token['market_cap'] = parsed_token['liquidity']
+
     if parsed_token.get('symbol') is None:
         return None
 
+    parsed_token = {key: value for key,
+                    value in parsed_token.items() if key in
+                    ['name', 'symbol', 'address', 'price_usd', 'market_cap', 'decimals']}
+
     return Token(
-        parsed_token['symbol'].upper(),
-        parsed_token['name'].upper() if 'name' in parsed_token else None,
-        parsed_token.get('market_cap', None),
-        price_usd,
-        address,
+        **parsed_token,
         no_live_checkup=True
     ) if parsed_token != None else None
 

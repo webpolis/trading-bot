@@ -31,6 +31,7 @@ class TokenSource(Enum):
     FTX_LENDING = 3
     ETHPLORER = 4
     COINMARKETCAP = 5
+    PORTALS = 6
 
 
 class Token(Schema, RedisMixin):
@@ -107,6 +108,9 @@ class Token(Schema, RedisMixin):
     def __key__(self):
         return (self.symbol, self.address)
 
+    def __hash__(self) -> int:
+        return hash(self.__key__)
+
     @property
     def _coingecko_coin(self):
         return get_coin(self.symbol)
@@ -155,7 +159,7 @@ class Token(Schema, RedisMixin):
         _explorer_metadata = None
         _alchemy_metadata = self.fetch_alchemy_metadata()
         _ethplorer_metadata = self.fetch_ethplorer_metadata()
-        _explorer_metadata = self.fetch_explorer_metadata(metadata=self._metadata)
+        _explorer_metadata = self.fetch_explorer_metadata()
 
         # combine all the data
         if self._metadata is not None:
@@ -179,7 +183,7 @@ class Token(Schema, RedisMixin):
 
         return self._metadata
 
-    def fetch_explorer_metadata(self, metadata=None) -> dict:
+    def fetch_explorer_metadata(self) -> dict:
         # we don't need anything extra than these attributes
         if (self.price_usd != None and self.market_cap != None and self.address != None):
             return {}

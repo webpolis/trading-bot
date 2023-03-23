@@ -18,7 +18,8 @@ class FatalRequestException(Exception):
 class HttpRequest():
     def get(self, url, params: dict = None, raw=False):
         out = None
-        params_encoded = urllib.parse.urlencode(params) if params != None else None
+        params_encoded = urllib.parse.urlencode(
+            params, doseq=True) if params != None else None
         url_encoded = f'{url}%s' % (('?' + params_encoded)
                                     if params_encoded != None else '')
         req = Request(url_encoded)
