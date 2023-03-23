@@ -10,6 +10,7 @@ from com.cryptobot.utils.alchemy import api_post
 from com.cryptobot.utils.network import is_contract
 from com.cryptobot.utils.ethplorer import get_address_info
 from com.cryptobot.utils.pandas_utils import get_address_details
+from com.cryptobot.utils.python import combine_lists
 from com.cryptobot.utils.redis_mixin import RedisMixin
 
 settings = Config().get_settings()
@@ -57,14 +58,6 @@ class AddressBalance(Schema):
             'qty': self.qty,
             'qty_usd': self.qty_usd
         }
-
-
-def merge_address_balances(balances1: AddressBalance, balances2: AddressBalance):
-    shared_balances = list(set(balances1) & set(balances2))
-    balancesA = list(set(balances1) - set(balances2))
-    balancesB = list(set(balances2) - set(balances1))
-
-    return shared_balances + balancesA + balancesB
 
 
 class AddressPortfolioStats(Schema):
@@ -215,8 +208,7 @@ class Address(Schema, RedisMixin):
             tokens_explorer = sorted(
                 list(set([b.token.symbol for b in balances_explorer])))
             address_tokens = sorted(list(set(tokens_ethplorer+tokens_explorer)))
-            address_balances = merge_address_balances(
-                balances_ethplorer, balances_explorer)
+            address_balances = combine_lists(balances_ethplorer, balances_explorer)
 
             print(
                 f'Retrieved {len(balances_ethplorer)} balance(s) for {self.address} via ethplorer')

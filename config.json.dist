@@ -145,6 +145,9 @@
     "arbitrumscan": {
       "contract_abi": "https://api.arbiscan.io/api?module=contract&action=getabi&address={0}",
       "api_key": "XXXX"
+    },
+    "portals": {
+      "tokens": "https://api.portals.fi/v2/tokens"
     }
   },
   "gbq": {

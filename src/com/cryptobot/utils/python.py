@@ -52,3 +52,11 @@ def get_class_attributes(module) -> dict:
             class_attributes[attribute.__name__] = type_hints
 
     return class_attributes
+
+
+def combine_lists(listA, listB):
+    shared_items = list(set(listA) & set(listB))
+    itemsA = list(set(listA) - set(listB))
+    itemsB = list(set(listB) - set(listA))
+
+    return shared_items + itemsA + itemsB
