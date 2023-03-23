@@ -157,10 +157,12 @@ class TokensExtractor(Extractor):
                 self.logger.info('Produce tokens union list...')
                 tokens = coingecko_tokens.merge(cmc_tokens_df, how='outer', on=[
                     'symbol'], suffixes=('', '_cmc'))
-                tokens = tokens.merge(portals_tokens_df, how='outer', on=[
-                    'symbol'], suffixes=('', '_pfi'))
 
                 fill_diverged_columns(tokens, '_cmc')
+
+                tokens = tokens.merge(portals_tokens_df, how='outer', on=[
+                    'symbol', 'address'], suffixes=('', '_pfi'))
+
                 fill_diverged_columns(tokens, '_pfi')
 
                 # combine with tokenslist
